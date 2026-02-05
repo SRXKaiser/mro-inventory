@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-primary">
+            <div class="card-body">
+                <h5 class="card-title">Bienvenido</h5>
+                <p class="card-text">
+                    Sistema de Gestión de Inventario MRO
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3">Alertas de stock bajo</h4>
+
+{% if low_stock %}
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>SKU</th>
+            <th>Artículo</th>
+            <th>Stock actual</th>
+            <th>Stock mínimo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for snap in low_stock %}
+        <tr class="table-danger">
+            <td>{{ snap.item.sku }}</td>
+            <td>{{ snap.item.name }}</td>
+            <td>{{ snap.on_hand }}</td>
+            <td>{{ snap.item.min_stock }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-success">
+    No hay artículos con stock bajo.
+</div>
+{% endif %}
+{% endblock %}

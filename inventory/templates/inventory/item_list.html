@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Artículos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Artículos</h2>
+    <a class="btn btn-primary" href="{% url 'item_create' %}">
+        Nuevo artículo
+    </a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-8">
+        <input type="text" name="q" class="form-control" placeholder="Buscar por SKU o nombre"
+               value="{{ q|default:'' }}">
+    </div>
+    <div class="col-md-4 d-flex gap-2">
+        <button class="btn btn-outline-secondary w-100" type="submit">Buscar</button>
+        <a class="btn btn-outline-dark w-100" href="{% url 'item_list' %}">Limpiar</a>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>SKU</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Criticidad</th>
+                        <th>UoM</th>
+                        <th>Mínimo</th>
+                        <th>Activo</th>
+                        <th style="width: 170px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="fw-semibold">{{ item.sku }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.item_type }}</td>
+                        <td>{{ item.criticality }}</td>
+                        <td>{{ item.uom }}</td>
+                        <td>{{ item.min_stock }}</td>
+                        <td>
+                            {% if item.is_active %}
+                                <span class="badge text-bg-success">Sí</span>
+                            {% else %}
+                                <span class="badge text-bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                        <td class="d-flex gap-2">
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{% url 'item_detail' item.id %}">
+                                Ver
+                            </a>
+                            <a class="btn btn-sm btn-outline-secondary"
+                               href="{% url 'item_edit' item.id %}">
+                                Editar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            No hay artículos registrados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
