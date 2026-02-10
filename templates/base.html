@@ -15,28 +15,119 @@
     <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'dashboard' %}">MRO Inventory</a>
 
-        <div class="collapse navbar-collapse">
+        <!-- Toggler responsive -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 {% if user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'item_list' %}">Artículos</a>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'movement_create' %}">Registrar movimiento</a>
+                </li>
+
+                {% if can_transfer %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'transfer_create' %}">Transferir</a>
+                </li>
+                {% endif %}
+
+                {% if can_adjust %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'adjustment_create' %}">Ajuste (ADJ)</a>
+                </li>
+                {% endif %}
+
+                {% if can_adjust %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'workorders:list' %}">Work Orders</a>
+                </li>
+                {% endif %}
+
+                {% if can_export %}
+                <!-- Export dropdown (solo admin) -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        Exportaciones
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'export_movements_csv' %}">
+                                Movimientos (CSV)
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'export_snapshots_csv' %}">
+                                Existencias (CSV)
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% endif %}
+
+                <!-- LOCATIONS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        Ubicaciones
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'warehouse_list' %}">
+                                Almacenes
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'location_list' %}">
+                                Ubicaciones internas
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 {% endif %}
             </ul>
 
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <span class="navbar-text text-white me-3">
+                <li class="nav-item d-flex align-items-center">
+                    <span class="navbar-text text-white me-2">
                         {{ user.username }}
                     </span>
+
+                    {% if inventory_roles %}
+                        {% for r in inventory_roles %}
+                            {% if r == "Superuser" %}
+                                <span class="badge bg-danger me-1">Superuser</span>
+                            {% elif r == "Admin" %}
+                                <span class="badge bg-success me-1">Admin</span>
+                            {% elif r == "Supervisor" %}
+                                <span class="badge bg-warning text-dark me-1">Supervisor</span>
+                            {% elif r == "Operator" %}
+                                <span class="badge bg-info text-dark me-1">Operator</span>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="badge bg-secondary me-1">Sin rol</span>
+                    {% endif %}
                 </li>
-                <li class="nav-item">
-                    <a class="btn btn-outline-light btn-sm" href="{% url 'logout' %}">
+
+                <li class="nav-item ms-2">
+                    <!-- Botón que abre el modal -->
+                    <button class="btn btn-outline-light btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#logoutModal">
                         Cerrar sesión
+                    </button>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">
+                        Iniciar sesión
                     </a>
                 </li>
                 {% endif %}
@@ -57,6 +148,40 @@
 
     {% block content %}{% endblock %}
 </div>
+
+<!-- ========================= -->
+<!-- MODAL CONFIRMAR LOGOUT -->
+<!-- ========================= -->
+{% if user.is_authenticated %}
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Cerrar sesión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                ¿Seguro que deseas cerrar sesión?
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <!-- LOGOUT POST -->
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        Sí, cerrar sesión
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 {% block extra_js %}{% endblock %}

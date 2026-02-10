@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Ubicaciones{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Ubicaciones</h2>
+    <a class="btn btn-primary" href="{% url 'location_create' %}">Nueva ubicación</a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-4">
+        <select class="form-select" name="warehouse">
+            <option value="">(Todos los almacenes)</option>
+            {% for w in warehouses %}
+                <option value="{{ w.id }}" {% if warehouse_id == w.id|stringformat:"s" %}selected{% endif %}>
+                    {{ w.code }} - {{ w.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-5">
+        <input type="text" name="q" class="form-control" placeholder="Buscar (código, nombre, almacén...)"
+               value="{{ q|default:'' }}">
+    </div>
+
+    <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-outline-secondary w-100" type="submit">Filtrar</button>
+        <a class="btn btn-outline-dark w-100" href="{% url 'location_list' %}">Limpiar</a>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Almacén</th>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Activo</th>
+                        <th style="width: 120px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in locations %}
+                    <tr>
+                        <td class="fw-semibold">{{ l.warehouse.code }}</td>
+                        <td>{{ l.code }}</td>
+                        <td>{{ l.name|default:"-" }}</td>
+                        <td>
+                            {% if l.is_active %}
+                                <span class="badge text-bg-success">Sí</span>
+                            {% else %}
+                                <span class="badge text-bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'location_edit' l.id %}">
+                                Editar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No hay ubicaciones.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

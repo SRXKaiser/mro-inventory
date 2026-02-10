@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Registrar movimiento{% endblock %}
+{% block title %}Conteo físico{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">Registrar movimiento</h2>
-    <a class="btn btn-outline-dark" href="{% url 'item_list' %}">Volver</a>
+    <h2 class="mb-0">Conteo físico (Cycle Count)</h2>
+    <a class="btn btn-outline-dark" href="{% url 'dashboard' %}">Volver</a>
 </div>
 
 <div class="card shadow-sm">
@@ -25,20 +25,20 @@
                     {% if form.item.errors %}<div class="text-danger small">{{ form.item.errors }}</div>{% endif %}
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Tipo</label>
-                    {{ form.movement_type }}
-                    {% if form.movement_type.errors %}<div class="text-danger small">{{ form.movement_type.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Cantidad</label>
-                    {{ form.quantity }}
-                    {% if form.quantity.errors %}<div class="text-danger small">{{ form.quantity.errors }}</div>{% endif %}
-                    <div class="form-text">{{ form.quantity.help_text }}</div>
-                </div>
-
                 <div class="col-md-6">
+                    <label class="form-label">Ubicación</label>
+                    {{ form.location }}
+                    {% if form.location.errors %}<div class="text-danger small">{{ form.location.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Cantidad contada</label>
+                    {{ form.counted_qty }}
+                    {% if form.counted_qty.errors %}<div class="text-danger small">{{ form.counted_qty.errors }}</div>{% endif %}
+                    <div class="form-text">Captura la cantidad física observada. Se aplicará un ajuste SET.</div>
+                </div>
+
+                <div class="col-md-8">
                     <label class="form-label">Referencia</label>
                     {{ form.reference }}
                     {% if form.reference.errors %}<div class="text-danger small">{{ form.reference.errors }}</div>{% endif %}
@@ -54,7 +54,7 @@
             <hr class="my-4">
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Guardar</button>
+                <button type="submit" class="btn btn-warning">Aplicar conteo</button>
                 <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
             </div>
         </form>

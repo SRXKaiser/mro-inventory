@@ -6,7 +6,9 @@
     <div>
         <h2 class="mb-0">{{ item.sku }} - {{ item.name }}</h2>
         <div class="text-muted">
-            Tipo: {{ item.item_type }} | Criticidad: {{ item.criticality }} | Unidad: {{ item.uom }}
+            Tipo: {{ item.item_type }} |
+            Criticidad: {{ item.criticality }} |
+            Unidad: {{ item.uom }}
         </div>
     </div>
 
@@ -16,40 +18,117 @@
     </div>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Stock</h5>
+<!-- ACCIONES -->
+<div class="d-flex flex-wrap gap-2 mb-4">
+    <a class="btn btn-primary" href="{% url 'movement_create' %}?item_id={{ item.id }}">
+        Registrar entrada / salida
+    </a>
 
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="text-muted">Stock actual</div>
-                        <div class="fs-3 fw-semibold">
-                            {% if snapshot %}{{ snapshot.on_hand }}{% else %}0.000{% endif %}
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <div class="text-muted">Mínimo</div>
-                        <div class="fs-3 fw-semibold">{{ item.min_stock }}</div>
-                    </div>
-                </div>
+    {% if can_transfer %}
+  <a class="btn btn-sm btn-outline-primary ms-1"
+     href="{% url 'transfer_create' %}?item_id={{ item.id }}&from_location_id={{ s.location.id }}">
+      Transfer
+   <a class="btn btn-outline-info" href="{% url 'reserve_create' %}">Reservar</a>
+  <a class="btn btn-outline-secondary" href="{% url 'release_create' %}">Liberar reserva</a>   
+  </a>
+{% endif %}
 
-                {% if snapshot and snapshot.on_hand <= item.min_stock %}
-                    <div class="alert alert-warning mt-3 mb-0">
-                        Stock bajo mínimo. Considera reabastecimiento.
-                    </div>
-                {% endif %}
 
-                <div class="mt-3">
-                    <a class="btn btn-primary" href="{% url 'movement_create' %}">
-                        Registrar entrada/salida
-                    </a>
-                </div>
-            </div>
+    {% if can_adjust %}
+        <a class="btn btn-outline-warning" href="{% url 'adjustment_create' %}">
+            Ajuste (ADJ)
+        </a>
+
+        <a class="btn btn-outline-warning" href="{% url 'cycle_count' %}">
+            Conteo físico (Cycle Count)
+        </a>
+    {% endif %}
+
+    {% if can_export %}
+        <a class="btn btn-outline-success"
+           href="{% url 'export_movements_csv' %}?item_id={{ item.id }}">
+            Exportar Kardex CSV
+        </a>
+    {% endif %}
+    {% if can_adjust %}
+  <a class="btn btn-outline-info" href="{% url 'reservation_manage' %}?item_id={{ item.id }}">
+    Reservar / Liberar
+  </a>
+{% endif %}
+
+</div>
+
+<!-- STOCK POR UBICACIÓN -->
+<h4 class="mb-3">Stock por ubicación</h4>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Almacén</th>
+                        <th>Ubicación</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
+                        <th>Reservado</th>
+                        <th>Disponible</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in stock_by_location %}
+                    <tr>
+                        <td>
+                            {% if s.location %}
+                                {{ s.location.warehouse.code }}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if s.location %}
+                                {{ s.location.code }}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-semibold {% if s.on_hand <= item.min_stock %}text-danger{% endif %}">
+                            {{ s.on_hand }}
+                        </td>
+                        <td>
+                            {% if s.location %}
+                                <a class="btn btn-sm btn-outline-success"
+                                   href="{% url 'movement_create' %}?item_id={{ item.id }}&location_id={{ s.location.id }}">
+                                    IN
+                                </a>
+                                <a class="btn btn-sm btn-outline-danger ms-1"
+                                   href="{% url 'movement_create' %}?item_id={{ item.id }}&location_id={{ s.location.id }}">
+                                    OUT
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4">
+                            No hay stock registrado para este artículo.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 
+<div class="alert {% if total_stock <= item.min_stock %}alert-warning{% else %}alert-info{% endif %}">
+    <strong>Stock total:</strong> {{ total_stock }}
+</div>
+
+<!-- INFORMACIÓN -->
+<div class="row g-3 mb-4">
     <div class="col-md-6">
         <div class="card shadow-sm">
             <div class="card-body">
@@ -75,8 +154,68 @@
     </div>
 </div>
 
-<h4 class="mb-3">Kardex (movimientos recientes)</h4>
+<!-- KARDEX -->
+<h4 class="mb-3">Kardex</h4>
 
+<!-- FILTROS -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label">Tipo</label>
+                <select name="type" class="form-select">
+                    <option value="">(Todos)</option>
+                    <option value="IN"  {% if filter_type == "IN" %}selected{% endif %}>IN</option>
+                    <option value="OUT" {% if filter_type == "OUT" %}selected{% endif %}>OUT</option>
+                    <option value="ADJ" {% if filter_type == "ADJ" %}selected{% endif %}>ADJ</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Ubicación</label>
+                <select name="location" class="form-select">
+                    <option value="">(Todas)</option>
+                    {% for opt in location_options %}
+                        {% with lid=opt.location_id|stringformat:"s" %}
+                        <option value="{{ lid }}" {% if filter_location == lid %}selected{% endif %}>
+                            {{ opt.location__warehouse__code }} / {{ opt.location__code }}
+                        </option>
+                        {% endwith %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Desde</label>
+                <input type="date" name="from" class="form-control" value="{{ filter_from }}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Hasta</label>
+                <input type="date" name="to" class="form-control" value="{{ filter_to }}">
+            </div>
+
+            <div class="col-md-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1" id="voidCheck" name="void"
+                           {% if filter_void == "1" %}checked{% endif %}>
+                    <label class="form-check-label" for="voidCheck">
+                        Incluir VOID
+                    </label>
+                </div>
+
+                <div class="d-flex gap-2 mt-2">
+                    <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
+                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'item_detail' item.id %}">
+                        Limpiar
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- TABLA -->
 <div class="card shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -86,33 +225,58 @@
                         <th>Fecha</th>
                         <th>Tipo</th>
                         <th>Cantidad</th>
+                        <th>Ubicación</th>
                         <th>Referencia</th>
                         <th>Registrado por</th>
                         <th>Notas</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for m in movements %}
-                    <tr>
+                    <tr class="{% if m.is_void %}table-secondary{% endif %}">
                         <td>{{ m.occurred_at }}</td>
                         <td>
                             {% if m.movement_type == "IN" %}
                                 <span class="badge text-bg-success">IN</span>
                             {% elif m.movement_type == "OUT" %}
                                 <span class="badge text-bg-danger">OUT</span>
+                            {% elif m.movement_type == "ADJ" %}
+                                <span class="badge text-bg-warning">ADJ</span>
                             {% else %}
                                 <span class="badge text-bg-secondary">{{ m.movement_type }}</span>
                             {% endif %}
+                            {% if m.is_void %}
+                                <span class="badge text-bg-secondary ms-1">VOID</span>
+                            {% endif %}
                         </td>
                         <td class="fw-semibold">{{ m.quantity }}</td>
+                        <td>
+                            {% if m.location %}
+                                {{ m.location.warehouse.code }} / {{ m.location.code }}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
                         <td>{{ m.reference|default:"-" }}</td>
                         <td>{{ m.registered_by|default:"-" }}</td>
-                        <td>{{ m.notes|default:"-" }}</td>
+                        <td style="white-space: pre-wrap;">{{ m.notes|default:"-" }}</td>
+
+                        <td>
+                            {% if can_export and not m.is_void and not m.voided_by_movement %}
+                                <a class="btn btn-sm btn-outline-danger"
+                                   href="{% url 'movement_void' m.id %}">
+                                    Anular
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center py-4">
-                            No hay movimientos registrados para este artículo.
+                        <td colspan="8" class="text-center py-4">
+                            No hay movimientos para los filtros seleccionados.
                         </td>
                     </tr>
                     {% endfor %}
@@ -121,4 +285,41 @@
         </div>
     </div>
 </div>
+
+<!-- PAGINACIÓN -->
+{% if movements.paginator.num_pages > 1 %}
+<nav class="mt-3">
+    <ul class="pagination pagination-sm">
+
+        {% if movements.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ movements.previous_page_number }}&type={{ filter_type }}&location={{ filter_location }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}">
+                    Anterior
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+
+        <li class="page-item disabled">
+            <span class="page-link">
+                Página {{ movements.number }} de {{ movements.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if movements.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ movements.next_page_number }}&type={{ filter_type }}&location={{ filter_location }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}">
+                    Siguiente
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
 {% endblock %}

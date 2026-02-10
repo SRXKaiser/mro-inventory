@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Reservar / Liberar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Reservar / Liberar</h2>
+  <a class="btn btn-outline-dark" href="{% url 'dashboard' %}">Volver</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Acción</label>
+          {{ form.mode }}
+          {% if form.mode.errors %}<div class="text-danger small">{{ form.mode.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-8">
+          <label class="form-label">Artículo</label>
+          {{ form.item }}
+          {% if form.item.errors %}<div class="text-danger small">{{ form.item.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Warehouse</label>
+          {{ form.warehouse }}
+          {% if form.warehouse.errors %}<div class="text-danger small">{{ form.warehouse.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Ubicación</label>
+          {{ form.location }}
+          {% if form.location.errors %}<div class="text-danger small">{{ form.location.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Cantidad</label>
+          {{ form.quantity }}
+          {% if form.quantity.errors %}<div class="text-danger small">{{ form.quantity.errors }}</div>{% endif %}
+          <div id="stockInfo" class="form-text"></div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Referencia</label>
+          {{ form.reference }}
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Notas</label>
+          {{ form.notes }}
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <button class="btn btn-primary" type="submit">Guardar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Bootstrap classes
+  const inputs = document.querySelectorAll("input, select, textarea");
+  inputs.forEach(el => {
+    if (el.type === "checkbox") return;
+    if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
+    else el.classList.add("form-control");
+  });
+
+  const wh = document.getElementById("id_warehouse");
+  const loc = document.getElementById("id_location");
+
+  function reset(select) {
+    const keep = select.value;
+    select.innerHTML = "";
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "---------";
+    select.appendChild(opt);
+    select.disabled = true;
+    return keep;
+  }
+
+  async function loadLocations() {
+    const wid = wh.value;
+    const wanted = reset(loc);
+    if (!wid) return;
+
+    const res = await fetch("{% url 'locations_by_warehouse' %}?warehouse_id=" + wid);
+    const data = await res.json();
+
+    for (const x of data) {
+      const opt = document.createElement("option");
+      opt.value = x.id;
+      opt.textContent = x.code ? `${x.code} - ${x.name}` : x.name;
+      loc.appendChild(opt);
+    }
+    loc.disabled = false;
+
+    if (wanted && [...loc.options].some(o => o.value === wanted)) {
+      loc.value = wanted;
+      loc.dispatchEvent(new Event("change"));
+    }
+  }
+
+  wh.addEventListener("change", loadLocations);
+  if (wh.value) loadLocations();
+})();
+</script>
+
+<script>
+(function(){
+  const item = document.getElementById("id_item");
+  const loc = document.getElementById("id_location");
+  const info = document.getElementById("stockInfo");
+
+  async function refresh(){
+    if(!item.value || !loc.value){ info.innerText=""; return; }
+    const url = "{% url 'stock_by_item_location' %}" + `?item_id=${item.value}&location_id=${loc.value}`;
+    const r = await fetch(url);
+    const d = await r.json();
+
+    info.innerText = `OnHand: ${d.on_hand} | Reservado: ${d.reserved} | Disponible: ${d.available}`;
+  }
+
+  item.addEventListener("change", refresh);
+  loc.addEventListener("change", refresh);
+  refresh();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Agregar línea{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-0">Agregar línea</h3>
+    <div class="text-muted">OT: <a href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a></div>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Volver</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label">Item</label>
+          {{ form.item }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Cantidad requerida</label>
+          {{ form.qty_required }}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary" type="submit">Agregar</button>
+        <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

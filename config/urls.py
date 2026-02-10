@@ -12,5 +12,11 @@ urlpatterns = [
     ),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 
+    # Inventory (dashboard, items, movements)
     path("", include("inventory.urls")),
+
+    # Locations (warehouses, locations)
+    path("locations/", include("locations.urls")),
+    path("workorders/", include("workorders.urls", namespace="workorders")),
+    
 ]

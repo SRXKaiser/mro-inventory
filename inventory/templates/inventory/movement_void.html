@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Anular movimiento{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Anular movimiento</h2>
+    <a class="btn btn-outline-dark" href="{% url 'item_detail' movement.item.id %}">Volver</a>
+</div>
+
+<div class="alert alert-warning">
+    <div><strong>Movimiento:</strong> #{{ movement.id }}</div>
+    <div><strong>Item:</strong> {{ movement.item.sku }} - {{ movement.item.name }}</div>
+    <div><strong>Tipo:</strong> {{ movement.movement_type }} | <strong>Cantidad:</strong> {{ movement.quantity }}</div>
+    <div><strong>Ubicación:</strong>
+        {% if movement.location %}
+            {{ movement.location.warehouse.code }} / {{ movement.location.code }}
+        {% else %}
+            N/A
+        {% endif %}
+    </div>
+    <div><strong>Fecha:</strong> {{ movement.occurred_at }}</div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Motivo</label>
+                    {{ form.reason }}
+                    {% if form.reason.errors %}<div class="text-danger small">{{ form.reason.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Referencia</label>
+                    {{ form.reference }}
+                    {% if form.reference.errors %}<div class="text-danger small">{{ form.reference.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Notas</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors }}</div>{% endif %}
+                </div>
+
+            <hr class="my-4">
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Anular</button>
+                <a class="btn btn-outline-secondary" href="{% url 'item_detail' movement.item.id %}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    const inputs = document.querySelectorAll("input, select, textarea");
+    inputs.forEach(el => {
+        if (el.type === "checkbox") return;
+        if (el.tagName.toLowerCase() === "select") {
+            el.classList.add("form-select");
+        } else {
+            el.classList.add("form-control");
+        }
+    });
+})();
+</script>
+{% endblock %}

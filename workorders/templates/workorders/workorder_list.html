@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Work Orders</h3>
+
+    <a class="btn btn-primary" href="{% url 'workorders:create' %}">
+      Nueva Work Order
+    </a>
+  </div>
+
+  <form class="row g-2 mb-3" method="get">
+    <div class="col-md-4">
+      <input class="form-control" name="q" value="{{ q }}" placeholder="Buscar por código">
+    </div>
+
+    <div class="col-md-4">
+      <select class="form-select" name="status">
+        <option value="">-- Status --</option>
+        {% for v, t in status_choices %}
+          <option value="{{ v }}" {% if status == v %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+    </div>
+
+    <div class="col-md-2">
+      <a class="btn btn-outline-secondary w-100" href="{% url 'workorders:list' %}">
+        Limpiar
+      </a>
+    </div>
+  </form>
+
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>Código</th>
+              <th>Status</th>
+              <th>Prioridad</th>
+              <th>Asignado</th>
+              <th>Creado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for wo in workorders %}
+            <tr>
+              <td>
+                <a href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a>
+              </td>
+              <td>{{ wo.status }}</td>
+              <td>{{ wo.priority }}</td>
+              <td>{{ wo.assigned_to|default:"-" }}</td>
+              <td>{{ wo.created_at }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-muted p-3">Sin resultados</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

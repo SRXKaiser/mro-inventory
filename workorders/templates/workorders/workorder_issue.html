@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h3 class="mb-0">Issue (Consumo)</h3>
+      <div class="text-muted">
+        OT: <a href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a>
+      </div>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Volver</a>
+  </div>
+
+  {% if messages %}
+    {% for m in messages %}
+      <div class="alert alert-{{ m.tags }} py-2">{{ m }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card mb-3">
+    <div class="card-header">Líneas de la OT</div>
+    <div class="card-body p-0">
+      <table class="table table-sm mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th class="text-end">Req</th>
+            <th class="text-end">Res</th>
+            <th class="text-end">Cons</th>
+            <th class="text-end">Dev</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ln in wo.lines.all %}
+          <tr>
+            <td>{{ ln.item.sku }} - {{ ln.item.name }}</td>
+            <td class="text-end">{{ ln.qty_required }}</td>
+            <td class="text-end">{{ ln.qty_reserved }}</td>
+            <td class="text-end">{{ ln.qty_consumed }}</td>
+            <td class="text-end">{{ ln.qty_returned }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Registrar consumo (OUT)</div>
+    <div class="card-body">
+      <form method="post" action="{% url 'workorders:issue' wo.id %}">
+        {% csrf_token %}
+
+        {% if consume_form.non_field_errors %}
+          <div class="alert alert-danger">
+            {{ consume_form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Item</label>
+            {{ consume_form.item }}
+            {% if consume_form.item.errors %}
+              <div class="text-danger small">{{ consume_form.item.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Ubicación</label>
+            {{ consume_form.location }}
+            {% if consume_form.location.errors %}
+              <div class="text-danger small">{{ consume_form.location.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Cantidad</label>
+            {{ consume_form.qty }}
+            {% if consume_form.qty.errors %}
+              <div class="text-danger small">{{ consume_form.qty.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-8">
+            <label class="form-label">Reserva (opcional)</label>
+            {{ consume_form.reservation }}
+            {% if consume_form.reservation.errors %}
+              <div class="text-danger small">{{ consume_form.reservation.errors }}</div>
+            {% endif %}
+            <div class="form-text">
+              Si eliges una reserva, se descuenta primero de <code>reserved</code> y luego se hace el OUT real.
+            </div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Notas (opcional)</label>
+            {{ consume_form.notes }}
+            {% if consume_form.notes.errors %}
+              <div class="text-danger small">{{ consume_form.notes.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-danger" type="submit">Registrar Issue</button>
+          <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
+        </div>
+
+        <div class="text-muted small mt-3">
+          Nota: Esto genera un <code>InventoryMovement OUT</code> y queda trazado en Kardex con referencia <code>WO:&lt;code&gt;</code>.
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

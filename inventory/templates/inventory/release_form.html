@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Liberar reserva{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Liberar reserva</h2>
+  <a class="btn btn-outline-dark" href="{% url 'dashboard' %}">Volver</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Artículo</label>
+          {{ form.item }}
+          {% if form.item.errors %}<div class="text-danger small">{{ form.item.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Cantidad a liberar</label>
+          {{ form.quantity }}
+          {% if form.quantity.errors %}<div class="text-danger small">{{ form.quantity.errors }}</div>{% endif %}
+          <div class="form-text" id="stockInfo"></div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Warehouse</label>
+          {{ form.warehouse }}
+          {% if form.warehouse.errors %}<div class="text-danger small">{{ form.warehouse.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Ubicación</label>
+          {{ form.location }}
+          {% if form.location.errors %}<div class="text-danger small">{{ form.location.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Referencia</label>
+          {{ form.reference }}
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Notas</label>
+          {{ form.notes }}
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <button class="btn btn-primary" type="submit">Liberar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Bootstrap
+  const inputs = document.querySelectorAll("input, select, textarea");
+  inputs.forEach(el => {
+    if (el.type === "checkbox") return;
+    if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
+    else el.classList.add("form-control");
+  });
+
+  // Dependent locations
+  const wh = document.getElementById("id_warehouse");
+  const loc = document.getElementById("id_location");
+
+  function reset(select) {
+    select.innerHTML = "";
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "---------";
+    select.appendChild(opt);
+    select.disabled = true;
+  }
+
+  async function loadLocations() {
+    const wid = wh.value;
+    reset(loc);
+    if (!wid) return;
+    const res = await fetch("{% url 'locations_by_warehouse' %}?warehouse_id=" + wid);
+    const data = await res.json();
+    for (const x of data) {
+      const opt = document.createElement("option");
+      opt.value = x.id;
+      opt.textContent = x.code ? `${x.code} - ${x.name}` : x.name;
+      loc.appendChild(opt);
+    }
+    loc.disabled = false;
+  }
+
+  wh.addEventListener("change", loadLocations);
+  if (wh.value) loadLocations();
+
+  // Stock info + validation
+  const item = document.getElementById("id_item");
+  const qty = document.getElementById("id_quantity");
+  const info = document.getElementById("stockInfo");
+
+  async function refreshStock() {
+    if(!item.value || !loc.value) { info.innerText = ""; return; }
+    const url = "{% url 'stock_by_item_location' %}" + `?item_id=${item.value}&location_id=${loc.value}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    info.innerText = `On hand: ${d.on_hand} | Reservado: ${d.reserved} | Disponible: ${d.available}`;
+  }
+
+  function validateQty(){
+    const m = (info.innerText.match(/Reservado:\s*([\d.]+)/) || []);
+    const reserved = parseFloat(m[1] || "0");
+    const q = parseFloat(qty.value || "0");
+    if(q > reserved){
+      qty.setCustomValidity("Cantidad mayor a lo reservado.");
+    }else{
+      qty.setCustomValidity("");
+    }
+  }
+
+  item.addEventListener("change", refreshStock);
+  loc.addEventListener("change", refreshStock);
+  qty.addEventListener("input", validateQty);
+})();
+</script>
+{% endblock %}

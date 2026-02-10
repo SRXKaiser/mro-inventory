@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Ajuste de inventario{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Ajuste de inventario (ADJ)</h2>
+  <a class="btn btn-outline-dark" href="{% url 'dashboard' %}">Volver</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Artículo</label>
+          {{ form.item }}
+          {% if form.item.errors %}<div class="text-danger small">{{ form.item.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Warehouse</label>
+          {{ form.warehouse }}
+          {% if form.warehouse.errors %}<div class="text-danger small">{{ form.warehouse.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Ubicación</label>
+          {{ form.location }}
+          {% if form.location.errors %}<div class="text-danger small">{{ form.location.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Modo</label>
+          {{ form.mode }}
+        </div>
+
+        <div class="col-md-4" id="deltaWrap">
+          <label class="form-label">Delta (+/-)</label>
+          {{ form.delta }}
+        </div>
+
+        <div class="col-md-4" id="setWrap">
+          <label class="form-label">Nuevo on_hand</label>
+          {{ form.new_on_hand }}
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Motivo (obligatorio)</label>
+          {{ form.reason }}
+          {% if form.reason.errors %}<div class="text-danger small">{{ form.reason.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Referencia</label>
+          {{ form.reference }}
+        </div>
+        <div class="col-md-12">
+          <label class="form-label">Notas</label>
+          {{ form.notes }}
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <button class="btn btn-primary" type="submit">Aplicar ajuste</button>
+      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Bootstrap
+  const inputs = document.querySelectorAll("input, select, textarea");
+  inputs.forEach(el => {
+    if (el.type === "checkbox") return;
+    if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
+    else el.classList.add("form-control");
+  });
+
+  // Dependent location
+  const wh = document.getElementById("id_warehouse");
+  const loc = document.getElementById("id_location");
+
+  function resetLocations() {
+    loc.innerHTML = "";
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "---------";
+    loc.appendChild(opt);
+    loc.disabled = true;
+  }
+
+  async function loadLocations() {
+    const wid = wh.value;
+    resetLocations();
+    if (!wid) return;
+    const res = await fetch("{% url 'locations_by_warehouse' %}?warehouse_id=" + wid);
+    const data = await res.json();
+    for (const x of data) {
+      const opt = document.createElement("option");
+      opt.value = x.id;
+      opt.textContent = x.code ? `${x.code} - ${x.name}` : x.name;
+      loc.appendChild(opt);
+    }
+    loc.disabled = false;
+  }
+
+  wh.addEventListener("change", loadLocations);
+  if (wh.value) loadLocations();
+
+  // Mode toggle
+  const mode = document.getElementById("id_mode");
+  const deltaWrap = document.getElementById("deltaWrap");
+  const setWrap = document.getElementById("setWrap");
+
+  function syncMode() {
+    const m = mode.value;
+    if (m === "DELTA") {
+      deltaWrap.style.display = "";
+      setWrap.style.display = "none";
+    } else {
+      deltaWrap.style.display = "none";
+      setWrap.style.display = "";
+    }
+  }
+
+  mode.addEventListener("change", syncMode);
+  syncMode();
+})();
+</script>
+{% endblock %}

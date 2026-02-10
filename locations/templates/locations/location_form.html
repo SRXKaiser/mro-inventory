@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">{{ title }}</h2>
+    <a class="btn btn-outline-dark" href="{% url 'location_list' %}">Volver</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Almacén</label>
+                    {{ form.warehouse }}
+                    {% if form.warehouse.errors %}<div class="text-danger small">{{ form.warehouse.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Código</label>
+                    {{ form.code }}
+                    {% if form.code.errors %}<div class="text-danger small">{{ form.code.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Nombre</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Descripción</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label">Activo</label>
+                    </div>
+                    {% if form.is_active.errors %}<div class="text-danger small">{{ form.is_active.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Guardar</button>
+                <a class="btn btn-outline-secondary" href="{% url 'location_list' %}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    const inputs = document.querySelectorAll("input, select, textarea");
+    inputs.forEach(el => {
+        if (el.type === "checkbox") return;
+        if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
+        else el.classList.add("form-control");
+    });
+})();
+</script>
+{% endblock %}

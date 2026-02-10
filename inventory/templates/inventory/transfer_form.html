@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Transferir stock{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Transferir stock</h2>
+  <a class="btn btn-outline-dark" href="{% url 'dashboard' %}">Volver</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Artículo</label>
+          {{ form.item }}
+          {% if form.item.errors %}<div class="text-danger small">{{ form.item.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Cantidad</label>
+          {{ form.quantity }}
+          {% if form.quantity.errors %}<div class="text-danger small">{{ form.quantity.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Warehouse origen</label>
+          {{ form.from_warehouse }}
+          {% if form.from_warehouse.errors %}<div class="text-danger small">{{ form.from_warehouse.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Ubicación origen</label>
+          {{ form.from_location }}
+          {% if form.from_location.errors %}<div class="text-danger small">{{ form.from_location.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Warehouse destino</label>
+          {{ form.to_warehouse }}
+          {% if form.to_warehouse.errors %}<div class="text-danger small">{{ form.to_warehouse.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Ubicación destino</label>
+          {{ form.to_location }}
+          {% if form.to_location.errors %}<div class="text-danger small">{{ form.to_location.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Referencia</label>
+          {{ form.reference }}
+          {% if form.reference.errors %}<div class="text-danger small">{{ form.reference.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-12">
+          <label class="form-label">Notas</label>
+          {{ form.notes }}
+          {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <button class="btn btn-primary" type="submit">Transferir</button>
+      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Bootstrap classes
+  const inputs = document.querySelectorAll("input, select, textarea");
+  inputs.forEach(el => {
+    if (el.type === "checkbox") return;
+    if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
+    else el.classList.add("form-control");
+  });
+
+  // Dependent selects
+  const fromWh = document.getElementById("id_from_warehouse");
+  const fromLoc = document.getElementById("id_from_location");
+  const toWh = document.getElementById("id_to_warehouse");
+  const toLoc = document.getElementById("id_to_location");
+
+  function reset(select) {
+    const keep = select.value; // por si ya traía un valor
+    select.innerHTML = "";
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "---------";
+    select.appendChild(opt);
+    select.disabled = true;
+    // no restauramos aquí, se hará al cargar opciones si existe.
+    return keep;
+  }
+
+  async function load(whSelect, locSelect) {
+    const wid = whSelect.value;
+
+    const wanted = reset(locSelect); // valor que queremos re-seleccionar si existe
+    if (!wid) return;
+
+    const res = await fetch("{% url 'locations_by_warehouse' %}?warehouse_id=" + wid);
+    const data = await res.json();
+
+    for (const x of data) {
+      const opt = document.createElement("option");
+      opt.value = x.id;
+      opt.textContent = x.code ? `${x.code} - ${x.name}` : x.name;
+      locSelect.appendChild(opt);
+    }
+
+    locSelect.disabled = false;
+
+    // Re-selección del valor prefijado (prefill)
+    if (wanted && [...locSelect.options].some(o => o.value === wanted)) {
+      locSelect.value = wanted;
+      locSelect.dispatchEvent(new Event("change"));
+    }
+  }
+
+  fromWh?.addEventListener("change", () => load(fromWh, fromLoc));
+  toWh?.addEventListener("change", () => load(toWh, toLoc));
+
+  if (fromWh?.value) load(fromWh, fromLoc);
+  if (toWh?.value) load(toWh, toLoc);
+})();
+</script>
+
+<script>
+(function(){
+  const item = document.getElementById("id_item");
+  const fromLoc = document.getElementById("id_from_location");
+  const toLoc = document.getElementById("id_to_location");
+  const qty = document.getElementById("id_quantity");
+
+  // etiqueta stock origen
+  const info = document.createElement("div");
+  info.className = "form-text";
+  qty.parentElement.appendChild(info);
+
+  let lastStock = 0;
+
+  async function refresh(){
+    if(!item?.value || !fromLoc?.value){
+      info.innerText = "";
+      lastStock = 0;
+      validate();
+      return;
+    }
+    const url = "{% url 'stock_by_item_location' %}" + `?item_id=${item.value}&location_id=${fromLoc.value}`;
+    const r = await fetch(url);
+    const d = await r.json();
+
+    const onHandStr = (d.on_hand ?? "0.000");
+    info.innerText = `Stock origen: ${onHandStr}`;
+
+    const parsed = parseFloat(onHandStr);
+    lastStock = Number.isFinite(parsed) ? parsed : 0;
+
+    validate();
+  }
+
+  function validate(){
+    const q = parseFloat(qty?.value || "0");
+    const fromId = fromLoc?.value || "";
+    const toId = toLoc?.value || "";
+
+    // regla: no transferir a la misma ubicación
+    if(fromId && toId && fromId === toId){
+      toLoc.setCustomValidity("El destino no puede ser igual al origen.");
+    }else{
+      toLoc.setCustomValidity("");
+    }
+
+    // regla: cantidad <= stock origen
+    if(q > lastStock){
+      qty.setCustomValidity("Cantidad mayor al stock disponible en origen.");
+    }else{
+      qty.setCustomValidity("");
+    }
+  }
+
+  item?.addEventListener("change", refresh);
+  fromLoc?.addEventListener("change", refresh);
+  toLoc?.addEventListener("change", validate);
+  qty?.addEventListener("input", validate);
+
+  refresh();
+})();
+</script>
+
+{% endblock %}

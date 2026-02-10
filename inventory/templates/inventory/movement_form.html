@@ -25,6 +25,15 @@
                     {% if form.item.errors %}<div class="text-danger small">{{ form.item.errors }}</div>{% endif %}
                 </div>
 
+                <div class="col-md-6">
+                    <label class="form-label">Ubicación</label>
+                    {{ form.location }}
+                    {% if form.location.errors %}<div class="text-danger small">{{ form.location.errors }}</div>{% endif %}
+                    {% if form.location.help_text %}
+                        <div class="form-text">{{ form.location.help_text }}</div>
+                    {% endif %}
+                </div>
+
                 <div class="col-md-3">
                     <label class="form-label">Tipo</label>
                     {{ form.movement_type }}
@@ -74,4 +83,52 @@
     });
 })();
 </script>
+<script>
+(function () {
+    const itemSel = document.getElementById("id_item");
+    const locSel  = document.getElementById("id_location");
+    const qtyInp  = document.getElementById("id_quantity");
+    const typeSel = document.getElementById("id_movement_type");
+
+    const info = document.createElement("div");
+    info.className = "form-text";
+    qtyInp.parentElement.appendChild(info);
+
+    async function refreshStock() {
+        if (!itemSel.value || !locSel.value) {
+            info.innerText = "";
+            return;
+        }
+
+        const url = "{% url 'stock_by_item_location' %}"
+            + `?item_id=${itemSel.value}&location_id=${locSel.value}`;
+
+        const r = await fetch(url);
+        const d = await r.json();
+
+        if (d.on_hand !== null) {
+            info.innerText = `Stock actual: ${d.on_hand}`;
+        }
+    }
+
+    function validateQty() {
+        if (typeSel.value !== "OUT") return;
+
+        const stock = parseFloat(info.innerText.replace(/[^\d.]/g, ""));
+        const qty = parseFloat(qtyInp.value);
+
+        if (!isNaN(stock) && qty > stock) {
+            qtyInp.setCustomValidity("Cantidad mayor al stock disponible.");
+        } else {
+            qtyInp.setCustomValidity("");
+        }
+    }
+
+    itemSel?.addEventListener("change", refreshStock);
+    locSel?.addEventListener("change", refreshStock);
+    qtyInp?.addEventListener("input", validateQty);
+    typeSel?.addEventListener("change", validateQty);
+})();
+</script>
+
 {% endblock %}

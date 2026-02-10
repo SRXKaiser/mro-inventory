@@ -1,0 +1,7 @@
+asgiref==3.11.1
+Django==5.2.11
+psycopg==3.3.2
+psycopg-binary==3.3.2
+python-dotenv==1.2.1
+sqlparse==0.5.5
+tzdata==2025.3

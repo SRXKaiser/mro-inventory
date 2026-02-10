@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Nueva Work Order{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Nueva Work Order</h3>
+  <a class="btn btn-outline-secondary" href="{% url 'workorders:list' %}">Volver</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Código (opcional)</label>
+          {{ form.code }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Prioridad</label>
+          {{ form.priority }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Asignado a (opcional)</label>
+          {{ form.assigned_to }}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Notas</label>
+          {{ form.notes }}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary" type="submit">Crear</button>
+        <a class="btn btn-outline-secondary" href="{% url 'workorders:list' %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
