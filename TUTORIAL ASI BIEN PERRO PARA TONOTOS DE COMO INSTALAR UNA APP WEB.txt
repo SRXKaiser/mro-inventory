@@ -1,0 +1,191 @@
+TUTORIAL PARA PENDEJOS DE COMO EJECUTAR EL PROYECTO MRO INVENTORY
+=================================================================
+
+EN el presente documento explico paso a paso cómo descargar el proyecto desde GitHub,
+configurar el entorno virtual e iniciar la aplicación web.
+
+Requisitos previos
+-----------------------------------------------------------------
+Tener instalado todo lo que le sigue:
+
+- Git
+- Python 3.14.2 o superior (no me hago responsable de si no jala con otra versión)
+- PostgreSQL (si el proyecto usa esta base de datos)
+- Un editor de código (Visual Studio Code recomendado)
+
+Puedes ver la versión de Python escribiendo en terminal (igual sirve para verificar si instalaron Python bien):
+python --version
+
+-----------------------------------------------------------------
+1. CLONAR EL PROYECTO DESDE GITHUB
+-----------------------------------------------------------------
+1. Abrir una terminal (CMD, PowerShell o Terminal).
+2. Ir a la carpeta donde se va a guardar el proyecto.
+
+Ejemplo:
+cd Documentos
+
+3. Clonar el repositorio con Git:
+
+git clone https://github.com/SRXKaiser/mro-inventory.git
+(literalmente este es el proyecto)
+
+o descarga el proyecto como .zip y lo descomprimen donde quieran
+
+4. Entrar a la carpeta del proyecto:
+
+cd mro-inventory
+
+o clic derecho abrir una terminal en la carpeta, o escribir cmd donde viene la ruta de la carpeta (parte superior ejemplo: documentos/mro-inventory)
+
+-----------------------------------------------------------------
+2. CREAR Y ACTIVAR EL ENTORNO VIRTUAL
+-----------------------------------------------------------------
+
+El entorno virtual sirve para aislar las librerías del proyecto.
+
+1. Crear el entorno virtual:
+
+python -m venv venv
+
+2. Activar el entorno virtual:
+
+En Windows:
+venv\Scripts\activate
+
+En Mac/Linux:
+source venv/bin/activate
+
+Si todo salió bien, saldrá algo como:
+(venv)
+
+-----------------------------------------------------------------
+3. INSTALAR DEPENDENCIAS DEL PROYECTO
+-----------------------------------------------------------------
+
+1. Asegurarse de que el archivo requirements.txt exista.
+2. Ejecutar el siguiente comando:
+
+pip install -r requirements.txt
+
+Esto instalará Django y todas las librerías necesarias.
+
+-----------------------------------------------------------------
+4. CONFIGURAR VARIABLES DE ENTORNO (.env)
+-----------------------------------------------------------------
+
+1. Crea un archivo llamado .env en la raíz del proyecto.
+2. Agrega un contenido similar al siguiente:
+
+DJANGO_DEBUG=True
+DJANGO_SECRET_KEY=clave_super_secreta
+DATABASE_NAME=mro_db
+DATABASE_USER=postgres
+DATABASE_PASSWORD=tu_password
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+
+(Ajusta los valores segun la base de datos, por ejemplo en mi caso son estos)
+DJANGO_SECRET_KEY=)#jhnx)ypp4(0%s$mtnx%t2pw^qdn&i_7bso^9dem746$(1cqz
+DJANGO_DEBUG=True
+DB_NAME=mro_db
+DB_USER=postgres
+DB_PASSWORD=12345678
+DB_HOST=127.0.0.1
+DB_PORT=5432
+
+
+NOTAS DEL AUTOR:
+DB_USER es el usuario estándar de postgre porque no lo cambie y la DB_PASSWORD por obvias razones es asi de sencilla
+
+A veces no detecta la base de datos en la parte DB_NAME, si salta ese error, crean una base de datos vacia en pgAdmin o en PSQL con ese nombre: mro_db
+
+La secret key fue generada, no importa del todo esa contraseña pero se recomienda que sea en un formato parecido
+
+-----------------------------------------------------------------
+5. APLICAR MIGRACIONES DE LA BASE DE DATOS
+-----------------------------------------------------------------
+
+1. Ejecutar:
+
+python manage.py makemigrations
+
+luego:
+
+python manage.py migrate
+
+Esto crea las tablas necesarias en la base de datos.
+
+-----------------------------------------------------------------
+6. CREAR UN USUARIO ADMINISTRADOR
+-----------------------------------------------------------------
+
+Para acceder al panel de administración:
+
+python manage.py createsuperuser
+
+Sigan las instrucciones y guardan usuario y contraseña.
+
+-----------------------------------------------------------------
+7. INICIAR EL SERVIDOR DEL PROYECTO
+-----------------------------------------------------------------
+
+Ejecuta:
+
+python manage.py runserver
+
+Si siguieron al pie de la letra todo lo anterior se verá un mensaje similar a:
+
+Starting development server at http://127.0.0.1:8000/
+
+-----------------------------------------------------------------
+8. ACCEDER AL SISTEMA
+-----------------------------------------------------------------
+
+- Aplicación principal:
+http://127.0.0.1:8000/
+
+- Panel de administración:
+http://127.0.0.1:8000/admin
+
+-----------------------------------------------------------------
+9. DETENER EL SERVIDOR
+-----------------------------------------------------------------
+
+Para detener el servidor presionar:
+
+CTRL + C
+
+-----------------------------------------------------------------
+NOTAS FINALES
+-----------------------------------------------------------------
+
+- Siempre activar el entorno virtual antes de trabajar.
+- Si algo falla, primero revisar:
+  - El entorno virtual activo
+  - El archivo .env
+  - Que PostgreSQL esté encendido (de normal esta encendido pero por algo se creo este tutorial)
+- Este proyecto y este documento fueron diseñado para uso académico y demostrativo.
+- Si no saben que es un MRO o un ERP búsquenlo.
+
+"No existen preguntas tontas, solo tontos que preguntan"
+	- Victor Manuel Landeros Ramirez AKA MaidoInHeaven/DesgasteFatal
+		ig de la minita @desgastefatal 
+
+FIN DEL TUTORIAL
+
+———————————No bitches?———————————
+⠀⣞⢽⢪⢣⢣⢣⢫⡺⡵⣝⡮⣗⢷⢽⢽⢽⣮⡷⡽⣜⣜⢮⢺⣜⢷⢽⢝⡽⣝
+⠸⡸⠜⠕⠕⠁⢁⢇⢏⢽⢺⣪⡳⡝⣎⣏⢯⢞⡿⣟⣷⣳⢯⡷⣽⢽⢯⣳⣫⠇
+⠀⠀⢀⢀⢄⢬⢪⡪⡎⣆⡈⠚⠜⠕⠇⠗⠝⢕⢯⢫⣞⣯⣿⣻⡽⣏⢗⣗⠏⠀
+⠀⠪⡪⡪⣪⢪⢺⢸⢢⢓⢆⢤⢀⠀⠀⠀⠀⠈⢊⢞⡾⣿⡯⣏⢮⠷⠁⠀⠀
+⠀⠀⠀⠈⠊⠆⡃⠕⢕⢇⢇⢇⢇⢇⢏⢎⢎⢆⢄⠀⢑⣽⣿⢝⠲⠉⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⡿⠂⠠⠀⡇⢇⠕⢈⣀⠀⠁⠡⠣⡣⡫⣂⣿⠯⢪⠰⠂⠀⠀⠀⠀
+⠀⠀⠀⠀⡦⡙⡂⢀⢤⢣⠣⡈⣾⡃⠠⠄⠀⡄⢱⣌⣶⢏⢊⠂⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢝⡲⣜⡮⡏⢎⢌⢂⠙⠢⠐⢀⢘⢵⣽⣿⡿⠁⠁⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠨⣺⡺⡕⡕⡱⡑⡆⡕⡅⡕⡜⡼⢽⡻⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣼⣳⣫⣾⣵⣗⡵⡱⡡⢣⢑⢕⢜⢕⡝⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⣴⣿⣾⣿⣿⣿⡿⡽⡑⢌⠪⡢⡣⣣⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⡟⡾⣿⢿⢿⢵⣽⣾⣼⣘⢸⢸⣞⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠁⠇⠡⠩⡫⢿⣝⡻⡮⣒⢽⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+—————————————————————————————
