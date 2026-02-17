@@ -1,4 +1,3 @@
-# inventory/forms.py
 from decimal import Decimal
 
 from django import forms
@@ -30,6 +29,7 @@ class MovementForm(forms.ModelForm):
         queryset=Warehouse.objects.all().order_by("code"),
         required=True,
         label="Warehouse",
+        empty_label="---------",
     )
 
     class Meta:
@@ -40,24 +40,38 @@ class MovementForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """
+        Regla:
+        - location depende de warehouse.
+        - En GET (sin data), precargamos el primer warehouse y sus locations.
+        - En POST, filtramos locations por el warehouse enviado.
+        - Si existe instance.location, precargamos warehouse y locations coherentes.
+        """
         super().__init__(*args, **kwargs)
 
-        # Por defecto, no muestres locations hasta que haya warehouse
+        # Base: no mostrar locations hasta decidir warehouse
         self.fields["location"].queryset = Location.objects.none()
 
-        # Si editas un movimiento (o vienes con instance) precarga warehouse y locations
+        # 1) Si es edición (instance con location), precarga su warehouse y locations
         if self.instance and getattr(self.instance, "location_id", None):
             wh_id = self.instance.location.warehouse_id
             self.fields["warehouse"].initial = wh_id
             self.fields["location"].queryset = Location.objects.filter(warehouse_id=wh_id).order_by("code")
 
-        # Si viene desde POST, filtra locations por warehouse seleccionado
+        # 2) Si viene desde POST, filtra locations por warehouse seleccionado
         if "warehouse" in self.data:
             try:
                 wh_id = int(self.data.get("warehouse"))
                 self.fields["location"].queryset = Location.objects.filter(warehouse_id=wh_id).order_by("code")
             except (TypeError, ValueError):
                 self.fields["location"].queryset = Location.objects.none()
+
+        # 3) Si es GET (sin POST) y no hay instance.location, precarga primer warehouse
+        if not self.data and not (self.instance and getattr(self.instance, "location_id", None)):
+            first_wh = Warehouse.objects.order_by("code").first()
+            if first_wh:
+                self.fields["warehouse"].initial = first_wh.id
+                self.fields["location"].queryset = Location.objects.filter(warehouse_id=first_wh.id).order_by("code")
 
     def clean_quantity(self):
         qty = self.cleaned_data.get("quantity")

@@ -1,3 +1,4 @@
+{# templates/inventory/movement_form.html #}
 {% extends "base.html" %}
 {% block title %}Registrar movimiento{% endblock %}
 
@@ -12,9 +13,17 @@
         <form method="post" novalidate>
             {% csrf_token %}
 
+            {# Errores globales #}
             {% if form.non_field_errors %}
                 <div class="alert alert-danger">
                     {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {# Errores completos (útil para debug rápido) #}
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    {{ form.errors }}
                 </div>
             {% endif %}
 
@@ -26,6 +35,18 @@
                 </div>
 
                 <div class="col-md-6">
+                    <label class="form-label">Tipo</label>
+                    {{ form.movement_type }}
+                    {% if form.movement_type.errors %}<div class="text-danger small">{{ form.movement_type.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Warehouse</label>
+                    {{ form.warehouse }}
+                    {% if form.warehouse.errors %}<div class="text-danger small">{{ form.warehouse.errors }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4">
                     <label class="form-label">Ubicación</label>
                     {{ form.location }}
                     {% if form.location.errors %}<div class="text-danger small">{{ form.location.errors }}</div>{% endif %}
@@ -34,17 +55,11 @@
                     {% endif %}
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Tipo</label>
-                    {{ form.movement_type }}
-                    {% if form.movement_type.errors %}<div class="text-danger small">{{ form.movement_type.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">Cantidad</label>
                     {{ form.quantity }}
                     {% if form.quantity.errors %}<div class="text-danger small">{{ form.quantity.errors }}</div>{% endif %}
-                    <div class="form-text">{{ form.quantity.help_text }}</div>
+                    <div class="form-text" id="stockInfo"></div>
                 </div>
 
                 <div class="col-md-6">
@@ -53,7 +68,7 @@
                     {% if form.reference.errors %}<div class="text-danger small">{{ form.reference.errors }}</div>{% endif %}
                 </div>
 
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <label class="form-label">Notas</label>
                     {{ form.notes }}
                     {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors }}</div>{% endif %}
@@ -75,28 +90,65 @@
     const inputs = document.querySelectorAll("input, select, textarea");
     inputs.forEach(el => {
         if (el.type === "checkbox") return;
-        if (el.tagName.toLowerCase() === "select") {
-            el.classList.add("form-select");
-        } else {
-            el.classList.add("form-control");
-        }
+        if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
+        else el.classList.add("form-control");
     });
 })();
 </script>
+
+<script>
+(function () {
+    const whSel  = document.getElementById("id_warehouse");
+    const locSel = document.getElementById("id_location");
+
+    async function loadLocations(warehouseId, keepSelected=false) {
+        if (!warehouseId) {
+            locSel.innerHTML = `<option value="">---------</option>`;
+            return;
+        }
+
+        const url = "{% url 'locations_by_warehouse' %}?warehouse_id=" + warehouseId;
+        const r = await fetch(url);
+        const data = await r.json();
+
+        const current = locSel.value;
+
+        locSel.innerHTML = `<option value="">---------</option>`;
+        data.forEach(x => {
+            const opt = document.createElement("option");
+            opt.value = x.id;
+            opt.textContent = `${x.code} - ${x.name}`;
+            locSel.appendChild(opt);
+        });
+
+        if (keepSelected && current) locSel.value = current;
+    }
+
+    whSel?.addEventListener("change", () => loadLocations(whSel.value, false));
+
+    // Carga inicial al abrir (si ya hay warehouse precargado)
+    if (whSel?.value) {
+        loadLocations(whSel.value, true);
+    }
+})();
+</script>
+
 <script>
 (function () {
     const itemSel = document.getElementById("id_item");
     const locSel  = document.getElementById("id_location");
     const qtyInp  = document.getElementById("id_quantity");
     const typeSel = document.getElementById("id_movement_type");
+    const infoEl  = document.getElementById("stockInfo");
 
-    const info = document.createElement("div");
-    info.className = "form-text";
-    qtyInp.parentElement.appendChild(info);
+    let lastAvailable = null;
 
     async function refreshStock() {
-        if (!itemSel.value || !locSel.value) {
-            info.innerText = "";
+        lastAvailable = null;
+
+        if (!itemSel?.value || !locSel?.value) {
+            infoEl.innerText = "";
+            qtyInp?.setCustomValidity("");
             return;
         }
 
@@ -106,19 +158,32 @@
         const r = await fetch(url);
         const d = await r.json();
 
-        if (d.on_hand !== null) {
-            info.innerText = `Stock actual: ${d.on_hand}`;
+        // Preferimos available si viene, si no, fallback a on_hand
+        const onHand = d.on_hand !== null ? parseFloat(d.on_hand) : null;
+        const reserved = d.reserved !== null ? parseFloat(d.reserved) : 0;
+        const available = d.available !== null ? parseFloat(d.available) : (onHand !== null ? (onHand - reserved) : null);
+
+        if (available !== null && !Number.isNaN(available)) {
+            lastAvailable = available;
+            infoEl.innerText = `Disponible: ${d.available} | En mano: ${d.on_hand} | Reservado: ${d.reserved}`;
+        } else {
+            infoEl.innerText = "";
         }
+
+        validateQty();
     }
 
     function validateQty() {
-        if (typeSel.value !== "OUT") return;
+        if (!qtyInp) return;
 
-        const stock = parseFloat(info.innerText.replace(/[^\d.]/g, ""));
+        if (typeSel?.value !== "OUT") {
+            qtyInp.setCustomValidity("");
+            return;
+        }
+
         const qty = parseFloat(qtyInp.value);
-
-        if (!isNaN(stock) && qty > stock) {
-            qtyInp.setCustomValidity("Cantidad mayor al stock disponible.");
+        if (lastAvailable !== null && !Number.isNaN(qty) && qty > lastAvailable) {
+            qtyInp.setCustomValidity("Cantidad mayor al stock disponible (considera reservas).");
         } else {
             qtyInp.setCustomValidity("");
         }
@@ -128,6 +193,9 @@
     locSel?.addEventListener("change", refreshStock);
     qtyInp?.addEventListener("input", validateQty);
     typeSel?.addEventListener("change", validateQty);
+
+    // Si ya viene precargado item/location, intenta cargar
+    setTimeout(refreshStock, 150);
 })();
 </script>
 

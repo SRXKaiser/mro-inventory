@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Reporte Movimientos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Reporte: Movimientos</h2>
+  <a class="btn btn-outline-dark" href="{% url 'reports_home' %}">Volver</a>
+</div>
+
+<form method="get" class="card shadow-sm mb-3">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-2">
+        <label class="form-label">Item ID</label>
+        <input class="form-control" name="item_id" value="{{ filter_item_id }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Location ID</label>
+        <input class="form-control" name="location_id" value="{{ filter_location_id }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" name="type">
+          <option value="">Todos</option>
+          <option value="IN"  {% if filter_type == "IN" %}selected{% endif %}>IN</option>
+          <option value="OUT" {% if filter_type == "OUT" %}selected{% endif %}>OUT</option>
+          <option value="ADJ" {% if filter_type == "ADJ" %}selected{% endif %}>ADJ</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Desde</label>
+        <input type="date" class="form-control" name="from" value="{{ filter_from }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Hasta</label>
+        <input type="date" class="form-control" name="to" value="{{ filter_to }}">
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="void" value="1" id="id_void"
+                 {% if filter_void == "1" %}checked{% endif %}>
+          <label class="form-check-label" for="id_void">Incluir anulados</label>
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-3">
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+
+      <a class="btn btn-outline-success"
+         href="?item_id={{ filter_item_id }}&location_id={{ filter_location_id }}&type={{ filter_type }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}&download=1">
+        Descargar CSV
+      </a>
+    </div>
+  </div>
+</form>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm mb-0 align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th class="text-end">Qty</th>
+            <th>Item</th>
+            <th>WH</th>
+            <th>Loc</th>
+            <th>Usuario</th>
+            <th>Ref</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in movements %}
+          <tr>
+            <td>{{ m.id }}</td>
+            <td>{{ m.occurred_at }}</td>
+            <td>{{ m.movement_type }}{% if m.is_void %} <span class="badge bg-warning text-dark">VOID</span>{% endif %}</td>
+            <td class="text-end">{{ m.quantity }}</td>
+            <td>{{ m.item.sku }}</td>
+            <td>{% if m.location %}{{ m.location.warehouse.code }}{% endif %}</td>
+            <td>{% if m.location %}{{ m.location.code }}{% endif %}</td>
+            <td>{{ m.registered_by }}</td>
+            <td class="text-truncate" style="max-width: 240px;">{{ m.reference }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="9" class="text-muted p-3">Sin registros con esos filtros.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if movements.paginator.num_pages > 1 %}
+<nav class="mt-3">
+  <ul class="pagination">
+    {% if movements.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ movements.previous_page_number }}&item_id={{ filter_item_id }}&location_id={{ filter_location_id }}&type={{ filter_type }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}">Anterior</a>
+      </li>
+    {% endif %}
+    <li class="page-item disabled"><span class="page-link">Página {{ movements.number }} de {{ movements.paginator.num_pages }}</span></li>
+    {% if movements.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ movements.next_page_number }}&item_id={{ filter_item_id }}&location_id={{ filter_location_id }}&type={{ filter_type }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}">Siguiente</a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -16,14 +16,17 @@ urlpatterns = [
     path("exports/movements.csv", views.export_movements_csv, name="export_movements_csv"),
     path("exports/snapshots.csv", views.export_snapshots_csv, name="export_snapshots_csv"),
     path("movements/<int:movement_id>/void/", views.movement_void, name="movement_void"),
-    path("ajax/stock/", views.stock_by_item_location, name="stock_by_item_location"),
     path("cycle-count/", views.cycle_count, name="cycle_count"),
     path("reservations/new/", views.reservation_manage, name="reservation_manage"),
     path("reserves/new/", views.reserve_create, name="reserve_create"),
-path("releases/new/", views.release_create, name="release_create"),
-path("ajax/stock/", views.stock_by_item_location, name="stock_by_item_location"),
+    path("releases/new/", views.release_create, name="release_create"),
+    path("ajax/stock/", views.stock_by_item_location, name="stock_by_item_location"),
 
     
+    path("reports/", views.reports_home, name="reports_home"),
+    path("reports/movements/", views.report_movements, name="report_movements"),
+    path("reports/snapshots/", views.report_snapshots, name="report_snapshots"),
+
 
 
 ]

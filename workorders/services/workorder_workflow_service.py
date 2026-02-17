@@ -1,3 +1,4 @@
+# workorders/services/workorder_workflow_service.py
 from __future__ import annotations
 
 from django.core.exceptions import ValidationError
@@ -5,18 +6,19 @@ from django.db import transaction
 from django.utils import timezone
 
 from inventory.services.stock_service import StockService
-from workorders.models import WorkOrder, Reservation, WorkOrderIssueLine
 from workorders.services.workorder_stock_service import WorkOrderStockService
+from workorders.models import WorkOrder, Reservation, WorkOrderIssueLine
 
 
 class WorkOrderWorkflowService:
     """
-    Gobernanza de estados (según tus choices reales):
-    - APPROVE: DRAFT -> APPROVED
-    - PAUSE:   IN_PROGRESS -> PAUSED
-    - RESUME:  PAUSED -> IN_PROGRESS
-    - COMPLETE: IN_PROGRESS/PAUSED -> COMPLETED
-    - CANCEL:  DRAFT/APPROVED/PAUSED -> CANCELLED (libera reservas; no si hubo consumos)
+    Gobernanza de estados:
+    - APPROVE:  DRAFT -> APPROVED
+    - COMPLETE: IN_PROGRESS -> COMPLETED
+    - CLOSE:    COMPLETED -> CLOSED
+    - CANCEL:   DRAFT/APPROVED -> CANCELLED (libera reservas; PROHIBIDO si hubo consumos)
+    - PAUSE:    IN_PROGRESS -> PAUSED
+    - RESUME:   PAUSED -> IN_PROGRESS
     """
 
     def __init__(self, wo_stock: WorkOrderStockService | None = None):
@@ -43,12 +45,8 @@ class WorkOrderWorkflowService:
         if wo.status != WorkOrder.Status.IN_PROGRESS:
             raise ValidationError(f"Solo se puede pausar una OT en IN_PROGRESS. Estado actual: {wo.status}")
 
-        # opcional: guardar razón si tienes campos
-        if hasattr(wo, "pause_reason"):
-            wo.pause_reason = (reason or "").strip()
-
         wo.status = WorkOrder.Status.PAUSED
-        wo.save(update_fields=["status", "updated_at"] + (["pause_reason"] if hasattr(wo, "pause_reason") else []))
+        wo.save(update_fields=["status", "updated_at"])
         return wo
 
     @transaction.atomic
@@ -66,8 +64,8 @@ class WorkOrderWorkflowService:
     def complete(self, *, work_order_id: int, user) -> WorkOrder:
         wo = WorkOrder.objects.select_for_update().get(id=work_order_id)
 
-        if wo.status not in (WorkOrder.Status.IN_PROGRESS, WorkOrder.Status.PAUSED):
-            raise ValidationError(f"Solo se puede completar una OT en IN_PROGRESS/PAUSED. Estado actual: {wo.status}")
+        if wo.status != WorkOrder.Status.IN_PROGRESS:
+            raise ValidationError(f"Solo se puede completar una OT en IN_PROGRESS. Estado actual: {wo.status}")
 
         total_consumed = (
             WorkOrderIssueLine.objects
@@ -82,26 +80,42 @@ class WorkOrderWorkflowService:
         return wo
 
     @transaction.atomic
+    def close(self, *, work_order_id: int, user) -> WorkOrder:
+        wo = WorkOrder.objects.select_for_update().get(id=work_order_id)
+
+        if wo.status != WorkOrder.Status.COMPLETED:
+            raise ValidationError(f"Solo se puede cerrar una OT en COMPLETED. Estado actual: {wo.status}")
+
+        wo.status = WorkOrder.Status.CLOSED
+        wo.save(update_fields=["status", "updated_at"])
+        return wo
+
+    @transaction.atomic
     def cancel(self, *, work_order_id: int, user, reason: str = "") -> WorkOrder:
         wo = WorkOrder.objects.select_for_update().get(id=work_order_id)
 
         if wo.status == WorkOrder.Status.CANCELLED:
             return wo
 
-        if wo.status not in (WorkOrder.Status.DRAFT, WorkOrder.Status.APPROVED, WorkOrder.Status.PAUSED):
-            raise ValidationError(f"No puedes cancelar una OT en estado: {wo.status}")
+        if wo.status not in (WorkOrder.Status.DRAFT, WorkOrder.Status.APPROVED):
+            raise ValidationError(f"Solo se puede cancelar una OT en DRAFT/APPROVED. Estado actual: {wo.status}")
 
-        # Regla: no cancelar si ya hubo consumos
-        has_consumption = WorkOrderIssueLine.objects.filter(issue__work_order_id=wo.id).exists()
-        if has_consumption:
-            raise ValidationError("No puedes cancelar una OT con consumos. Usa devolución/ajuste y completa.")
+        # VALIDACIÓN INDUSTRIAL: si hubo consumos, NO se cancela (se completa o se cierra con devolución)
+        total_consumed = (
+            WorkOrderIssueLine.objects
+            .filter(issue__work_order_id=wo.id)
+            .count()
+        )
+        if total_consumed > 0:
+            raise ValidationError("No puedes cancelar una OT que ya tiene consumos. Completa o gestiona devoluciones.")
 
-        # 1) liberar reservas activas
+        # Liberar reservas activas
         active_res = (
             Reservation.objects
             .select_for_update()
             .filter(work_order_id=wo.id, status=Reservation.Status.ACTIVE)
         )
+
         for r in active_res:
             self._wo_stock.release_reservation(
                 reservation_id=r.id,
@@ -110,9 +124,9 @@ class WorkOrderWorkflowService:
                 reason=(reason or "Cancelación de Work Order").strip(),
             )
 
-        # 2) cambiar estado
         wo.status = WorkOrder.Status.CANCELLED
 
+        # solo si existen campos
         if hasattr(wo, "cancelled_at"):
             wo.cancelled_at = timezone.now()
         if hasattr(wo, "cancel_reason"):

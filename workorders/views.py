@@ -17,12 +17,14 @@ from django.views.decorators.http import require_POST
 from workorders.permissions import can_manage_workorders, can_operate_inventory
 from workorders.services.workorder_workflow_service import WorkOrderWorkflowService
 
-from django.shortcuts import get_object_or_404, render
-from django.contrib.auth.decorators import login_required
-
-from workorders.permissions import can_manage_workorders, can_operate_inventory
 from workorders.models import WorkOrder
 from workorders.forms import ReserveForm, ConsumeForm, ReturnForm
+
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.shortcuts import redirect
+
+from inventory.services.stock_service import StockService
 
 from workorders.services.workorder_stock_service import (
     WorkOrderStockService,
@@ -372,63 +374,115 @@ def workorder_line_create(request, pk: int):
 
     return render(request, "workorders/workorder_line_create.html", {"wo": wo, "form": form})
 
-@require_POST
-@login_required
-def workorder_approve(request, pk: int):
-    if not can_manage_workorders(request.user):
-        messages.error(request, "No tienes permisos para aprobar Work Orders.")
-        return redirect("workorders:detail", pk=pk)
+# -------------------------
+# Helpers
+# -------------------------
+def _format_validation_error(ex: ValidationError) -> str:
+    """
+    Django ValidationError puede venir como:
+    - mensaje string
+    - lista ex.messages
+    - dict ex.message_dict
+    """
+    if hasattr(ex, "message_dict") and ex.message_dict:
+        parts = []
+        for k, msgs in ex.message_dict.items():
+            if isinstance(msgs, (list, tuple)):
+                for m in msgs:
+                    parts.append(f"{k}: {m}")
+            else:
+                parts.append(f"{k}: {msgs}")
+        return " | ".join(parts)
 
-    try:
-        WorkOrderWorkflowService().approve(work_order_id=pk, user=request.user)
-        messages.success(request, "Work Order aprobada.")
-    except ValidationError as ex:
-        messages.error(request, f"No se pudo aprobar: {ex}")
-    return redirect("workorders:detail", pk=pk)
+    if hasattr(ex, "messages") and ex.messages:
+        return " | ".join(ex.messages)
 
-
-@require_POST
-@login_required
-def workorder_complete(request, pk: int):
-    if not can_manage_workorders(request.user):
-        messages.error(request, "No tienes permisos para completar Work Orders.")
-        return redirect("workorders:detail", pk=pk)
-
-    try:
-        WorkOrderWorkflowService().complete(work_order_id=pk, user=request.user)
-        messages.success(request, "Work Order completada.")
-    except ValidationError as ex:
-        messages.error(request, f"No se pudo completar: {ex}")
-    return redirect("workorders:detail", pk=pk)
-
-
-@require_POST
-@login_required
-def workorder_close(request, pk: int):
-    if not can_manage_workorders(request.user):
-        messages.error(request, "No tienes permisos para cerrar Work Orders.")
-        return redirect("workorders:detail", pk=pk)
-
-    try:
-        WorkOrderWorkflowService().close(work_order_id=pk, user=request.user)
-        messages.success(request, "Work Order cerrada.")
-    except ValidationError as ex:
-        messages.error(request, f"No se pudo cerrar: {ex}")
-    return redirect("workorders:detail", pk=pk)
+    return str(ex)
 
 
 def _wf() -> WorkOrderWorkflowService:
+    """
+    Importante: el workflow debe usar el servicio de stock de WO,
+    porque cancel() libera reservas, etc.
+    """
     stock = StockService()
     wo_stock = WorkOrderStockService(stock)
     return WorkOrderWorkflowService(wo_stock)
 
 
+def _deny(request, msg: str, pk: int):
+    messages.error(request, msg)
+    return redirect("workorders:detail", pk=pk)
+
+
+# -------------------------
+# APPROVE: DRAFT -> APPROVED
+# -------------------------
+@require_POST
+@login_required
+def workorder_approve(request, pk: int):
+    if not can_manage_workorders(request.user):
+        return _deny(request, "No tienes permisos para aprobar Work Orders.", pk)
+
+    try:
+        _wf().approve(work_order_id=pk, user=request.user)
+        messages.success(request, "Work Order aprobada.")
+    except ValidationError as ex:
+        messages.error(request, f"No se pudo aprobar: {_format_validation_error(ex)}")
+    except Exception as ex:
+        messages.error(request, f"Error inesperado al aprobar: {ex}")
+
+    return redirect("workorders:detail", pk=pk)
+
+
+# -------------------------
+# COMPLETE: IN_PROGRESS -> COMPLETED
+# -------------------------
+@require_POST
+@login_required
+def workorder_complete(request, pk: int):
+    if not can_manage_workorders(request.user):
+        return _deny(request, "No tienes permisos para completar Work Orders.", pk)
+
+    try:
+        _wf().complete(work_order_id=pk, user=request.user)
+        messages.success(request, "Work Order completada.")
+    except ValidationError as ex:
+        messages.error(request, f"No se pudo completar: {_format_validation_error(ex)}")
+    except Exception as ex:
+        messages.error(request, f"Error inesperado al completar: {ex}")
+
+    return redirect("workorders:detail", pk=pk)
+
+
+# -------------------------
+# CLOSE: COMPLETED -> CLOSED
+# -------------------------
+@require_POST
+@login_required
+def workorder_close(request, pk: int):
+    if not can_manage_workorders(request.user):
+        return _deny(request, "No tienes permisos para cerrar Work Orders.", pk)
+
+    try:
+        _wf().close(work_order_id=pk, user=request.user)
+        messages.success(request, "Work Order cerrada.")
+    except ValidationError as ex:
+        messages.error(request, f"No se pudo cerrar: {_format_validation_error(ex)}")
+    except Exception as ex:
+        messages.error(request, f"Error inesperado al cerrar: {ex}")
+
+    return redirect("workorders:detail", pk=pk)
+
+
+# -------------------------
+# CANCEL: DRAFT/APPROVED -> CANCELLED (libera reservas)
+# -------------------------
 @require_POST
 @login_required
 def workorder_cancel(request, pk: int):
     if not can_manage_workorders(request.user):
-        messages.error(request, "No tienes permisos para cancelar Work Orders.")
-        return redirect("workorders:detail", pk=pk)
+        return _deny(request, "No tienes permisos para cancelar Work Orders.", pk)
 
     reason = (request.POST.get("reason") or "").strip()
 
@@ -436,47 +490,51 @@ def workorder_cancel(request, pk: int):
         _wf().cancel(work_order_id=pk, user=request.user, reason=reason)
         messages.success(request, "Work Order cancelada. Reservas liberadas.")
     except ValidationError as ex:
-        # ex puede venir como lista, por eso str(ex) a veces se ve feo, pero sirve
-        messages.error(request, f"No se pudo cancelar: {ex}")
+        messages.error(request, f"No se pudo cancelar: {_format_validation_error(ex)}")
     except Exception as ex:
         messages.error(request, f"Error inesperado al cancelar: {ex}")
 
     return redirect("workorders:detail", pk=pk)
 
 
+# -------------------------
+# PAUSE: IN_PROGRESS -> PAUSED (o APPROVED -> PAUSED, según tu regla)
+# -------------------------
 @require_POST
 @login_required
 def workorder_pause(request, pk: int):
     if not can_manage_workorders(request.user):
-        messages.error(request, "No tienes permisos para pausar Work Orders.")
-        return redirect("workorders:detail", pk=pk)
+        return _deny(request, "No tienes permisos para pausar Work Orders.", pk)
 
     reason = (request.POST.get("reason") or "").strip()
 
     try:
-        WorkOrderWorkflowService().pause(work_order_id=pk, user=request.user, reason=reason)
+        _wf().pause(work_order_id=pk, user=request.user, reason=reason)
         messages.success(request, "Work Order pausada.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo pausar: {ex}")
+        messages.error(request, f"No se pudo pausar: {_format_validation_error(ex)}")
     except Exception as ex:
         messages.error(request, f"Error inesperado al pausar: {ex}")
 
     return redirect("workorders:detail", pk=pk)
 
 
+# -------------------------
+# RESUME: PAUSED -> IN_PROGRESS
+# -------------------------
 @require_POST
 @login_required
 def workorder_resume(request, pk: int):
     if not can_manage_workorders(request.user):
-        messages.error(request, "No tienes permisos para reanudar Work Orders.")
-        return redirect("workorders:detail", pk=pk)
+        return _deny(request, "No tienes permisos para reanudar Work Orders.", pk)
 
     try:
-        WorkOrderWorkflowService().resume(work_order_id=pk, user=request.user)
+        _wf().resume(work_order_id=pk, user=request.user)
         messages.success(request, "Work Order reanudada.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo reanudar: {ex}")
+        messages.error(request, f"No se pudo reanudar: {_format_validation_error(ex)}")
     except Exception as ex:
         messages.error(request, f"Error inesperado al reanudar: {ex}")
 
     return redirect("workorders:detail", pk=pk)
+

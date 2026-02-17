@@ -233,7 +233,7 @@ class StockService:
         *,
         item,
         location,
-        delta: Decimal,  # puede ser + o -
+        delta: Decimal,
         registered_by,
         reason: str,
         reference: str = "",
@@ -258,7 +258,6 @@ class StockService:
 
         snapshot = StockService._get_snapshot_for_update(item=item, location=location)
 
-        # Regla: no se permite dejar on_hand por debajo de reserved
         new_on_hand = snapshot.on_hand + delta
         if new_on_hand < snapshot.reserved:
             raise ValidationError(
@@ -266,8 +265,8 @@ class StockService:
             )
         if new_on_hand < Decimal("0.000"):
             raise ValidationError("No se puede aplicar ajuste: dejaría el stock negativo.")
-
-        InventoryMovement.objects.create(
+    
+        m = InventoryMovement.objects.create(
             item=item,
             location=location,
             movement_type=InventoryMovement.MovementType.ADJ,
@@ -282,7 +281,8 @@ class StockService:
         snapshot.last_movement_at = occurred_at
         snapshot.save(update_fields=["on_hand", "last_movement_at", "updated_at"])
 
-        return StockResult(item_id=item.id, location_id=location.id, new_on_hand=new_on_hand)
+        return StockResult(movement_id=m.id, item_id=item.id, location_id=location.id, new_on_hand=new_on_hand)
+    
 
     @staticmethod
     @transaction.atomic
@@ -317,14 +317,11 @@ class StockService:
 
         snapshot = StockService._get_snapshot_for_update(item=item, location=location)
 
-        # Regla: no se permite set por debajo de reserved
         if new_on_hand < snapshot.reserved:
             raise ValidationError(
                 f"No se puede aplicar ajuste: new_on_hand({new_on_hand}) < reserved({snapshot.reserved})."
             )
-
-        # Log ADJ como evento formal
-        InventoryMovement.objects.create(
+        m = InventoryMovement.objects.create(
             item=item,
             location=location,
             movement_type=InventoryMovement.MovementType.ADJ,
@@ -339,7 +336,7 @@ class StockService:
         snapshot.last_movement_at = occurred_at
         snapshot.save(update_fields=["on_hand", "last_movement_at", "updated_at"])
 
-        return StockResult(item_id=item.id, location_id=location.id, new_on_hand=new_on_hand)
+        return StockResult(movement_id=m.id, item_id=item.id, location_id=location.id, new_on_hand=new_on_hand)
 
     # ------------------------
     # E2) Reservas (Commit / Release)

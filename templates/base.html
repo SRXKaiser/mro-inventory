@@ -13,7 +13,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'dashboard' %}">MRO Inventory</a>
+        <a class="navbar-brand" href="{% url 'dashboard' %}">MRO</a>
 
         <!-- Toggler responsive -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
@@ -51,23 +51,8 @@
                 {% endif %}
 
                 {% if can_export %}
-                <!-- Export dropdown (solo admin) -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        Exportaciones
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a class="dropdown-item" href="{% url 'export_movements_csv' %}">
-                                Movimientos (CSV)
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'export_snapshots_csv' %}">
-                                Existencias (CSV)
-                            </a>
-                        </li>
-                    </ul>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'reports_home' %}">Reportes</a>
                 </li>
                 {% endif %}
 

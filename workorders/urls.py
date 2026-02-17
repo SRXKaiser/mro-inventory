@@ -27,7 +27,7 @@ urlpatterns = [
     path("<int:pk>/pause/", views.workorder_pause, name="pause"),
     path("<int:pk>/resume/", views.workorder_resume, name="resume"),
 
-
     path("<int:pk>/cancel/", views.workorder_cancel, name="cancel"),
+    
 
 ]
