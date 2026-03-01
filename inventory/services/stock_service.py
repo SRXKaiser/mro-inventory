@@ -6,9 +6,16 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import F, Value, DecimalField
+from django.db.models.functions import Coalesce
+from django.db.models import ExpressionWrapper
 from django.utils import timezone
 
 from inventory.models import InventoryMovement, StockSnapshot
+from inventory.services.notifications import InventoryNotifier
+
+
+DEC_QTY = DecimalField(max_digits=18, decimal_places=3)
 
 
 @dataclass(frozen=True)
@@ -79,13 +86,31 @@ class StockService:
         )
         return snap
 
+    @staticmethod
+    def _snapshot_with_available(snapshot_id: int) -> StockSnapshot:
+        return (
+            StockSnapshot.objects
+            .select_related("item", "location", "location__warehouse")
+            .annotate(reserved0=Coalesce("reserved", Value(Decimal("0.000")), output_field=DEC_QTY))
+            .annotate(available_qty=ExpressionWrapper(F("on_hand") - F("reserved0"), output_field=DEC_QTY))
+            .get(id=snapshot_id)
+        )
+
+    @staticmethod
+    def _notify_if_needed(snapshot_id: int, reason: str):
+        """
+        Hook único: cada vez que cambie stock/reserved, reevaluamos severidad y notificamos con throttle.
+        """
+        snap = StockService._snapshot_with_available(snapshot_id)
+        InventoryNotifier.on_snapshot_changed(snapshot=snap, reason=reason)
+
     # ------------------------
     # A0) Movimientos simples IN/OUT
     # ------------------------
     @staticmethod
     @transaction.atomic
     def register_movement(
-        *,
+        * ,
         item,
         location,
         movement_type,
@@ -137,6 +162,8 @@ class StockService:
         snapshot.last_movement_at = occurred_at
         snapshot.save(update_fields=["on_hand", "last_movement_at", "updated_at"])
 
+        StockService._notify_if_needed(snapshot.id, reason=f"MOV {movement_type} #{mv.id}")
+
         return StockResult(item_id=item.id, location_id=location.id, new_on_hand=new_value, movement_id=mv.id)
 
     # ------------------------
@@ -145,7 +172,7 @@ class StockService:
     @staticmethod
     @transaction.atomic
     def transfer(
-        *,
+        * ,
         item,
         from_location,
         to_location,
@@ -213,6 +240,9 @@ class StockService:
         snap_to.last_movement_at = occurred_at
         snap_to.save(update_fields=["on_hand", "last_movement_at", "updated_at"])
 
+        StockService._notify_if_needed(snap_from.id, reason=f"TRANSFER OUT #{out_mv.id}")
+        StockService._notify_if_needed(snap_to.id, reason=f"TRANSFER IN #{in_mv.id}")
+
         return TransferResult(
             item_id=item.id,
             from_location_id=from_location.id,
@@ -230,7 +260,7 @@ class StockService:
     @staticmethod
     @transaction.atomic
     def adjust_delta(
-        *,
+        * ,
         item,
         location,
         delta: Decimal,
@@ -265,7 +295,7 @@ class StockService:
             )
         if new_on_hand < Decimal("0.000"):
             raise ValidationError("No se puede aplicar ajuste: dejaría el stock negativo.")
-    
+
         m = InventoryMovement.objects.create(
             item=item,
             location=location,
@@ -281,13 +311,14 @@ class StockService:
         snapshot.last_movement_at = occurred_at
         snapshot.save(update_fields=["on_hand", "last_movement_at", "updated_at"])
 
+        StockService._notify_if_needed(snapshot.id, reason=f"ADJ DELTA #{m.id}: {reason}")
+
         return StockResult(movement_id=m.id, item_id=item.id, location_id=location.id, new_on_hand=new_on_hand)
-    
 
     @staticmethod
     @transaction.atomic
     def adjust_set(
-        *,
+        * ,
         item,
         location,
         new_on_hand: Decimal,
@@ -321,6 +352,7 @@ class StockService:
             raise ValidationError(
                 f"No se puede aplicar ajuste: new_on_hand({new_on_hand}) < reserved({snapshot.reserved})."
             )
+
         m = InventoryMovement.objects.create(
             item=item,
             location=location,
@@ -336,6 +368,8 @@ class StockService:
         snapshot.last_movement_at = occurred_at
         snapshot.save(update_fields=["on_hand", "last_movement_at", "updated_at"])
 
+        StockService._notify_if_needed(snapshot.id, reason=f"ADJ SET #{m.id}: {reason}")
+
         return StockResult(movement_id=m.id, item_id=item.id, location_id=location.id, new_on_hand=new_on_hand)
 
     # ------------------------
@@ -344,7 +378,7 @@ class StockService:
     @staticmethod
     @transaction.atomic
     def reserve(
-        *,
+        * ,
         item,
         location,
         quantity: Decimal,
@@ -377,6 +411,8 @@ class StockService:
         snapshot.last_movement_at = occurred_at
         snapshot.save(update_fields=["reserved", "last_movement_at", "updated_at"])
 
+        StockService._notify_if_needed(snapshot.id, reason="RESERVE")
+
         return ReserveResult(
             item_id=item.id,
             location_id=location.id,
@@ -387,7 +423,7 @@ class StockService:
     @staticmethod
     @transaction.atomic
     def release(
-        *,
+        * ,
         item,
         location,
         quantity: Decimal,
@@ -419,6 +455,8 @@ class StockService:
         snapshot.last_movement_at = occurred_at
         snapshot.save(update_fields=["reserved", "last_movement_at", "updated_at"])
 
+        StockService._notify_if_needed(snapshot.id, reason="RELEASE")
+
         return ReserveResult(
             item_id=item.id,
             location_id=location.id,
@@ -426,10 +464,13 @@ class StockService:
             new_available=(snapshot.on_hand - snapshot.reserved),
         )
 
+    # ------------------------
+    # VOID
+    # ------------------------
     @staticmethod
     @transaction.atomic
     def void_movement(
-        *,
+        * ,
         movement: InventoryMovement,
         voided_by,
         reason: str,
@@ -456,16 +497,16 @@ class StockService:
 
         snapshot = StockService._get_snapshot_for_update(item=movement.item, location=movement.location)
 
-    # Determina el movimiento inverso (y valida contra reserved cuando corresponde)
+        # Determina el movimiento inverso (y valida contra reserved cuando corresponde)
         if movement.movement_type == InventoryMovement.MovementType.IN_:
             inverse_type = InventoryMovement.MovementType.OUT
 
             available = snapshot.on_hand - snapshot.reserved
             if movement.quantity > available:
                 raise ValidationError(
-                    f"No se puede anular este IN: parte del stock ya está reservado. "
-                f"Disponible: {available}. Reservado: {snapshot.reserved}."
-            )
+                    "No se puede anular este IN: parte del stock ya está reservado. "
+                    f"Disponible: {available}. Reservado: {snapshot.reserved}."
+                )
 
             new_value = snapshot.on_hand - movement.quantity
 
@@ -478,7 +519,7 @@ class StockService:
         else:
             raise ValidationError("Tipo de movimiento inválido.")
 
-    # Crea el movimiento inverso (reverso)
+        # Crea el movimiento inverso (reverso)
         void_m = InventoryMovement.objects.create(
             item=movement.item,
             location=movement.location,
@@ -488,26 +529,26 @@ class StockService:
             registered_by=voided_by,
             reference=reference or f"VOID:{movement.id}",
             notes=notes,
-
             is_void=True,
             voided_at=occurred_at,
             voided_by=voided_by,
             void_reason=reason.strip(),
-
             void_of=movement,
         )
 
-    # Marca original como void (soft)
+        # Marca original como void (soft)
         movement.is_void = True
         movement.voided_at = occurred_at
         movement.voided_by = voided_by
         movement.void_reason = reason.strip()
         movement.save(update_fields=["is_void", "voided_at", "voided_by", "void_reason", "updated_at"])
 
-    # Aplica snapshot
+        # Aplica snapshot
         snapshot.on_hand = new_value
         snapshot.last_movement_at = occurred_at
         snapshot.save(update_fields=["on_hand", "last_movement_at", "updated_at"])
+
+        StockService._notify_if_needed(snapshot.id, reason=f"VOID #{movement.id} -> #{void_m.id}")
 
         return VoidResult(
             original_id=movement.id,
@@ -516,4 +557,3 @@ class StockService:
             location_id=movement.location_id,
             new_on_hand=new_value,
         )
-

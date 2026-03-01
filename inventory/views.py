@@ -120,6 +120,11 @@ def dashboard(request):
         .order_by("-severity", "item__sku", "location__warehouse__code", "location__code")
     )
 
+    # KPIs por severidad (opcionales, por si luego haces tarjetas separadas)
+    kpi_critical_count = low_stock.filter(severity=3).count()
+    kpi_high_count = low_stock.filter(severity=2).count()
+    kpi_medium_count = low_stock.filter(severity=1).count()
+
     # =========================
     # KPIs Inventario
     # =========================
@@ -158,7 +163,6 @@ def dashboard(request):
     )["total"]
 
     # KPI: Riesgo (bajo mínimo + reservado)
-    # (usa snap_qs para respetar el filtro por warehouse)
     kpi_stockout_risk = snap_qs.filter(
         on_hand__lte=F("item__min_stock"),
         reserved__gt=0
@@ -167,8 +171,6 @@ def dashboard(request):
     # =========================
     # GRÁFICAS
     # =========================
-
-    # 1) Movimientos por día (últimos 14 días) - 3 series IN/OUT/ADJ (conteo)
     days = 14
     start_date = today - timedelta(days=days - 1)
 
@@ -220,7 +222,7 @@ def dashboard(request):
     mv_out = [mv_map.get(d, {}).get("OUT", 0) for d in mv_labels]
     mv_adj = [mv_map.get(d, {}).get("ADJ", 0) for d in mv_labels]
 
-    # 2) Top 10 consumo OUT últimos 30 días por SKU (suma quantity)
+    # Top 10 OUT 30 días
     since_30d = timezone.now() - timedelta(days=30)
     top_out = (
         mv_qs
@@ -232,9 +234,7 @@ def dashboard(request):
     top_out_labels = [r["item__sku"] for r in top_out]
     top_out_values = [float(r["total"]) for r in top_out]
 
-    # 3) Stock (On Hand) por Warehouse
-    # Si estás filtrando por warehouse, este gráfico se vuelve 1 barra.
-    # Igual lo dejamos para que no truene el template.
+    # Stock por WH
     wh_raw = (
         snap_qs
         .filter(location__isnull=False)
@@ -281,6 +281,11 @@ def dashboard(request):
         "kpi_out_7d": kpi_out_7d,
         "kpi_stockout_risk": kpi_stockout_risk,
 
+        # KPIs severidad (opcionales)
+        "kpi_critical_count": kpi_critical_count,
+        "kpi_high_count": kpi_high_count,
+        "kpi_medium_count": kpi_medium_count,
+
         # WorkOrders
         "kpi_wo_open": wo_open,
         "kpi_wo_paused": wo_paused,
@@ -305,6 +310,7 @@ def dashboard(request):
 
     ctx.update(_perm_flags(request.user))
     return render(request, "dashboard.html", ctx)
+
 
 
 

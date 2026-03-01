@@ -318,6 +318,7 @@
       <table class="table table-striped table-bordered mb-0 align-middle">
         <thead class="table-dark">
           <tr>
+            <th>Severidad</th>
             <th>SKU</th>
             <th>Artículo</th>
             <th>Almacén</th>
@@ -336,20 +337,20 @@
           {% elif snap.severity == 2 %}
             <tr class="table-warning">
           {% else %}
-            <tr>
+            <tr class="table-secondary">
           {% endif %}
 
             <td>
-              {{ snap.item.sku }}
               {% if snap.severity == 3 %}
-                <span class="badge bg-danger ms-2">CRÍTICO</span>
+                <span class="badge bg-danger">CRÍTICO</span>
               {% elif snap.severity == 2 %}
-                <span class="badge bg-warning text-dark ms-2">ALTO</span>
+                <span class="badge bg-warning text-dark">ALTO</span>
               {% else %}
-                <span class="badge bg-secondary ms-2">MEDIO</span>
+                <span class="badge bg-secondary">MEDIO</span>
               {% endif %}
             </td>
 
+            <td class="fw-semibold">{{ snap.item.sku }}</td>
             <td>{{ snap.item.name }}</td>
 
             <td>
