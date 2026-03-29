@@ -1,106 +1,409 @@
 {% extends "base.html" %}
 {% block title %}Transferir stock{% endblock %}
 
+{% block extra_css %}
+<style>
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .page-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.4rem 1.45rem;
+    border: 1px solid #dbe3ee;
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(8, 145, 178, 0.04)),
+      #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.95rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .page-subtitle {
+    margin: 0.35rem 0 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .transfer-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 1rem;
+  }
+
+  .form-card,
+  .aside-card {
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+  }
+
+  .form-card .card-header,
+  .aside-card .card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #dbe3ee;
+    padding: 1rem 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .form-card .card-body,
+  .aside-card .card-body {
+    padding: 1.25rem;
+  }
+
+  .section-label {
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 0.95rem;
+  }
+
+  .field-card {
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    background: #fbfdff;
+    padding: 1rem;
+    height: 100%;
+  }
+
+  .field-card--soft {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 0.5rem;
+  }
+
+  .field-help {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+
+  .field-error {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .error-summary {
+    border-radius: 16px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.95rem 1rem;
+  }
+
+  .stock-info-box {
+    display: none;
+    margin-top: 0.55rem;
+    align-items: center;
+    padding: 0.38rem 0.7rem;
+    border-radius: 999px;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    color: #1d4ed8;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .form-divider {
+    margin: 1.25rem 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .sticky-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 0.25rem;
+  }
+
+  .aside-intro {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  .aside-guide-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .aside-guide-row {
+    position: relative;
+    padding: 0.9rem 0.95rem 0.9rem 1rem;
+    border-radius: 14px;
+    border: 1px solid #e7edf5;
+    background: #fbfdff;
+    overflow: hidden;
+  }
+
+  .aside-guide-row::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: #cbd5e1;
+  }
+
+  .aside-guide-blue::before { background: #2563eb; }
+  .aside-guide-green::before { background: #16a34a; }
+  .aside-guide-amber::before { background: #f59e0b; }
+  .aside-guide-red::before { background: #dc2626; }
+
+  .aside-guide-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+  }
+
+  .aside-guide-text {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 1199.98px) {
+    .transfer-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .page-hero {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+    }
+
+    .page-hero .btn,
+    .sticky-actions .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="mb-0">Transferir stock</h2>
-  <a class="btn btn-outline-dark" href="{% url 'dashboard' %}">Volver</a>
-</div>
+<div class="page-shell">
 
-<div class="card shadow-sm">
-  <div class="card-body">
-    <form method="post" novalidate>
-      {% csrf_token %}
-      {% if form.non_field_errors %}
-        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-      {% endif %}
+  <section class="page-hero">
+    <div>
+      <h1 class="page-title">Transferir stock</h1>
+      <p class="page-subtitle">
+        Mueve inventario entre ubicaciones manteniendo trazabilidad operativa y validación de stock en origen.
+      </p>
+    </div>
 
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">Artículo</label>
-          {{ form.item }}
-          {% if form.item.errors %}<div class="text-danger small">{{ form.item.errors }}</div>{% endif %}
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Volver</a>
+    </div>
+  </section>
+
+  <section class="transfer-layout">
+    <div class="card shadow-sm form-card">
+      <div class="card-header">Captura de transferencia</div>
+
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors or form.errors %}
+            <div class="error-summary mb-4">
+              {% if form.non_field_errors %}
+                <div>{{ form.non_field_errors }}</div>
+              {% endif %}
+              {% if form.errors %}
+                <div class="mt-1">{{ form.errors }}</div>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <div class="section-label">Artículo y cantidad</div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="field-card">
+                <label class="field-label">Artículo</label>
+                {{ form.item }}
+                {% if form.item.errors %}<div class="field-error">{{ form.item.errors }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="field-card">
+                <label class="field-label">Cantidad</label>
+                {{ form.quantity }}
+                {% if form.quantity.errors %}<div class="field-error">{{ form.quantity.errors }}</div>{% endif %}
+                <div class="stock-info-box" id="stockInfo"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-label">Origen</div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="field-card field-card--soft">
+                <label class="field-label">Warehouse origen</label>
+                {{ form.from_warehouse }}
+                {% if form.from_warehouse.errors %}<div class="field-error">{{ form.from_warehouse.errors }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="field-card field-card--soft">
+                <label class="field-label">Ubicación origen</label>
+                {{ form.from_location }}
+                {% if form.from_location.errors %}<div class="field-error">{{ form.from_location.errors }}</div>{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="section-label">Destino</div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="field-card field-card--soft">
+                <label class="field-label">Warehouse destino</label>
+                {{ form.to_warehouse }}
+                {% if form.to_warehouse.errors %}<div class="field-error">{{ form.to_warehouse.errors }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="field-card field-card--soft">
+                <label class="field-label">Ubicación destino</label>
+                {{ form.to_location }}
+                {% if form.to_location.errors %}<div class="field-error">{{ form.to_location.errors }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="field-card">
+                <label class="field-label">Referencia</label>
+                {{ form.reference }}
+                {% if form.reference.errors %}<div class="field-error">{{ form.reference.errors }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <div class="field-card">
+                <label class="field-label">Notas</label>
+                {{ form.notes }}
+                {% if form.notes.errors %}<div class="field-error">{{ form.notes.errors }}</div>{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <div class="sticky-actions">
+            <button class="btn btn-primary" type="submit">Transferir</button>
+            <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <aside class="card shadow-sm aside-card">
+      <div class="card-header">Guía rápida</div>
+      <div class="card-body">
+        <div class="aside-intro">
+          Validaciones y reglas operativas para evitar inconsistencias entre origen y destino.
         </div>
 
-        <div class="col-md-6">
-          <label class="form-label">Cantidad</label>
-          {{ form.quantity }}
-          {% if form.quantity.errors %}<div class="text-danger small">{{ form.quantity.errors }}</div>{% endif %}
-        </div>
+        <div class="aside-guide-list">
+          <div class="aside-guide-row aside-guide-blue">
+            <div class="aside-guide-title">Origen</div>
+            <div class="aside-guide-text">La ubicación origen debe tener stock suficiente para cubrir la transferencia.</div>
+          </div>
 
-        <div class="col-md-6">
-          <label class="form-label">Warehouse origen</label>
-          {{ form.from_warehouse }}
-          {% if form.from_warehouse.errors %}<div class="text-danger small">{{ form.from_warehouse.errors }}</div>{% endif %}
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Ubicación origen</label>
-          {{ form.from_location }}
-          {% if form.from_location.errors %}<div class="text-danger small">{{ form.from_location.errors }}</div>{% endif %}
-        </div>
+          <div class="aside-guide-row aside-guide-green">
+            <div class="aside-guide-title">Destino</div>
+            <div class="aside-guide-text">El destino debe ser una ubicación válida distinta a la ubicación origen.</div>
+          </div>
 
-        <div class="col-md-6">
-          <label class="form-label">Warehouse destino</label>
-          {{ form.to_warehouse }}
-          {% if form.to_warehouse.errors %}<div class="text-danger small">{{ form.to_warehouse.errors }}</div>{% endif %}
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Ubicación destino</label>
-          {{ form.to_location }}
-          {% if form.to_location.errors %}<div class="text-danger small">{{ form.to_location.errors }}</div>{% endif %}
-        </div>
+          <div class="aside-guide-row aside-guide-amber">
+            <div class="aside-guide-title">Ubicaciones</div>
+            <div class="aside-guide-text">Las ubicaciones se cargan dinámicamente según cada warehouse seleccionado.</div>
+          </div>
 
-        <div class="col-md-6">
-          <label class="form-label">Referencia</label>
-          {{ form.reference }}
-          {% if form.reference.errors %}<div class="text-danger small">{{ form.reference.errors }}</div>{% endif %}
-        </div>
-        <div class="col-md-12">
-          <label class="form-label">Notas</label>
-          {{ form.notes }}
-          {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors }}</div>{% endif %}
+          <div class="aside-guide-row aside-guide-red">
+            <div class="aside-guide-title">Control</div>
+            <div class="aside-guide-text">No transfieras a la misma ubicación ni captures una cantidad mayor al stock disponible.</div>
+          </div>
         </div>
       </div>
+    </aside>
+  </section>
 
-      <hr class="my-4">
-      <button class="btn btn-primary" type="submit">Transferir</button>
-      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
-    </form>
-  </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
 (function () {
-  // Bootstrap classes
   const inputs = document.querySelectorAll("input, select, textarea");
   inputs.forEach(el => {
     if (el.type === "checkbox") return;
     if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
     else el.classList.add("form-control");
   });
+})();
+</script>
 
-  // Dependent selects
+<script>
+(function () {
   const fromWh = document.getElementById("id_from_warehouse");
   const fromLoc = document.getElementById("id_from_location");
   const toWh = document.getElementById("id_to_warehouse");
   const toLoc = document.getElementById("id_to_location");
 
   function reset(select) {
-    const keep = select.value; // por si ya traía un valor
+    const keep = select.value;
     select.innerHTML = "";
     const opt = document.createElement("option");
     opt.value = "";
     opt.textContent = "---------";
     select.appendChild(opt);
     select.disabled = true;
-    // no restauramos aquí, se hará al cargar opciones si existe.
     return keep;
   }
 
   async function load(whSelect, locSelect) {
     const wid = whSelect.value;
-
-    const wanted = reset(locSelect); // valor que queremos re-seleccionar si existe
+    const wanted = reset(locSelect);
     if (!wid) return;
 
     const res = await fetch("{% url 'locations_by_warehouse' %}?warehouse_id=" + wid);
@@ -115,7 +418,6 @@
 
     locSelect.disabled = false;
 
-    // Re-selección del valor prefijado (prefill)
     if (wanted && [...locSelect.options].some(o => o.value === wanted)) {
       locSelect.value = wanted;
       locSelect.dispatchEvent(new Event("change"));
@@ -136,27 +438,26 @@
   const fromLoc = document.getElementById("id_from_location");
   const toLoc = document.getElementById("id_to_location");
   const qty = document.getElementById("id_quantity");
-
-  // etiqueta stock origen
-  const info = document.createElement("div");
-  info.className = "form-text";
-  qty.parentElement.appendChild(info);
+  const info = document.getElementById("stockInfo");
 
   let lastStock = 0;
 
   async function refresh(){
     if(!item?.value || !fromLoc?.value){
       info.innerText = "";
+      info.style.display = "none";
       lastStock = 0;
       validate();
       return;
     }
+
     const url = "{% url 'stock_by_item_location' %}" + `?item_id=${item.value}&location_id=${fromLoc.value}`;
     const r = await fetch(url);
     const d = await r.json();
 
     const onHandStr = (d.on_hand ?? "0.000");
     info.innerText = `Stock origen: ${onHandStr}`;
+    info.style.display = "inline-flex";
 
     const parsed = parseFloat(onHandStr);
     lastStock = Number.isFinite(parsed) ? parsed : 0;
@@ -169,14 +470,12 @@
     const fromId = fromLoc?.value || "";
     const toId = toLoc?.value || "";
 
-    // regla: no transferir a la misma ubicación
     if(fromId && toId && fromId === toId){
       toLoc.setCustomValidity("El destino no puede ser igual al origen.");
     }else{
       toLoc.setCustomValidity("");
     }
 
-    // regla: cantidad <= stock origen
     if(q > lastStock){
       qty.setCustomValidity("Cantidad mayor al stock disponible en origen.");
     }else{
@@ -189,8 +488,7 @@
   toLoc?.addEventListener("change", validate);
   qty?.addEventListener("input", validate);
 
-  refresh();
+  setTimeout(refresh, 150);
 })();
 </script>
-
 {% endblock %}

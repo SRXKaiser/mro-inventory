@@ -1,26 +1,149 @@
 {% extends "base.html" %}
 {% block title %}Reportes{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="mb-0">Centro de reportes</h2>
-  <a class="btn btn-outline-dark" href="{% url 'dashboard' %}">Volver al dashboard</a>
-</div>
+{% block extra_css %}
+<style>
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
 
-<div class="row g-3 mb-3">
-  <div class="col-md-6">
-    <div class="card shadow-sm h-100">
+  .page-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.4rem 1.45rem;
+    border: 1px solid #dbe3ee;
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(22, 163, 74, 0.08), rgba(37, 99, 235, 0.05)),
+      #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.95rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .page-subtitle {
+    margin: 0.35rem 0 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .report-card,
+  .export-card {
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+  }
+
+  .report-card .card-body,
+  .export-card .card-body {
+    padding: 1.25rem;
+  }
+
+  .report-card {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  }
+
+  .report-title {
+    margin: 0 0 0.45rem 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .report-text {
+    color: #64748b;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .report-divider {
+    margin: 1rem 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .preset-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    font-weight: 800;
+    margin-bottom: 0.6rem;
+  }
+
+  .export-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+
+  @media (max-width: 991.98px) {
+    .report-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .page-hero {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+    }
+
+    .page-hero .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+
+  <section class="page-hero">
+    <div>
+      <h1 class="page-title">Centro de reportes</h1>
+      <p class="page-subtitle">
+        Consulta movimientos, stock por ubicación y exportaciones para seguimiento operativo y análisis.
+      </p>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-dark" href="{% url 'dashboard' %}">Volver al dashboard</a>
+    </div>
+  </section>
+
+  <section class="report-grid">
+    <div class="card shadow-sm report-card">
       <div class="card-body">
-        <h5 class="card-title">Kardex (Movimientos)</h5>
-        <p class="text-muted mb-3">Consulta movimientos con filtros y descarga CSV.</p>
+        <h2 class="report-title">Kardex (Movimientos)</h2>
+        <p class="report-text">Consulta movimientos con filtros operativos, soporte para anulados y exportación a CSV.</p>
+
         <div class="d-flex flex-wrap gap-2">
           <a class="btn btn-primary" href="{% url 'report_movements' %}">Abrir</a>
           <a class="btn btn-outline-success" href="{% url 'report_movements' %}?download=1">CSV (sin filtros)</a>
         </div>
 
-        <hr class="my-3">
+        <div class="report-divider"></div>
 
-        <div class="text-muted small mb-2">Presets rápidos</div>
+        <div class="preset-title">Presets rápidos</div>
         <div class="d-flex flex-wrap gap-2">
           <a class="btn btn-outline-secondary btn-sm" href="{% url 'report_movements' %}?from={{ today }}&to={{ today }}">Hoy</a>
           <a class="btn btn-outline-secondary btn-sm" href="{% url 'report_movements' %}?type=IN">Solo IN</a>
@@ -30,40 +153,40 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-6">
-    <div class="card shadow-sm h-100">
+    <div class="card shadow-sm report-card">
       <div class="card-body">
-        <h5 class="card-title">Stock por ubicación</h5>
-        <p class="text-muted mb-3">Vista previa del stock, reservado y disponible.</p>
+        <h2 class="report-title">Stock por ubicación</h2>
+        <p class="report-text">Vista de on hand, reservado y disponible con filtros por warehouse, ubicación y bajo mínimo.</p>
+
         <div class="d-flex flex-wrap gap-2">
           <a class="btn btn-primary" href="{% url 'report_snapshots' %}">Abrir</a>
           <a class="btn btn-outline-success" href="{% url 'report_snapshots' %}?download=1">CSV (sin filtros)</a>
         </div>
 
-        <hr class="my-3">
+        <div class="report-divider"></div>
 
-        <div class="text-muted small mb-2">Presets rápidos</div>
+        <div class="preset-title">Presets rápidos</div>
         <div class="d-flex flex-wrap gap-2">
           <a class="btn btn-outline-danger btn-sm" href="{% url 'report_snapshots' %}?low=1">Bajo mínimo</a>
           <a class="btn btn-outline-secondary btn-sm" href="{% url 'report_snapshots' %}?q=">Todos</a>
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </section>
 
-<div class="card shadow-sm">
-  <div class="card-body">
-    <h5 class="card-title mb-2">Atajos de exportación</h5>
-    <p class="text-muted mb-3">Descargas directas sin entrar a cada reporte.</p>
+  <section class="card shadow-sm export-card">
+    <div class="card-body">
+      <h2 class="report-title">Atajos de exportación</h2>
+      <p class="report-text">Descargas directas sin entrar a cada reporte.</p>
 
-    <div class="d-flex flex-wrap gap-2">
-      <a class="btn btn-outline-success" href="{% url 'report_movements' %}?download=1">Movimientos CSV</a>
-      <a class="btn btn-outline-success" href="{% url 'report_snapshots' %}?download=1">Stock CSV</a>
-      <a class="btn btn-outline-danger" href="{% url 'report_snapshots' %}?low=1&download=1">Stock bajo mínimo CSV</a>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-success" href="{% url 'report_movements' %}?download=1">Movimientos CSV</a>
+        <a class="btn btn-outline-success" href="{% url 'report_snapshots' %}?download=1">Stock CSV</a>
+        <a class="btn btn-outline-danger" href="{% url 'report_snapshots' %}?low=1&download=1">Stock bajo mínimo CSV</a>
+      </div>
     </div>
-  </div>
+  </section>
+
 </div>
 {% endblock %}

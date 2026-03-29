@@ -1,392 +1,729 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+  .dash-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+  }
+
+  .dash-hero {
+    background:
+      linear-gradient(135deg, rgba(37, 99, 235, 0.10), rgba(8, 145, 178, 0.06)),
+      #ffffff;
+    border: 1px solid #dbe3ee;
+    border-radius: 24px;
+    padding: 1.5rem;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  }
+
+  .dash-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .dash-subtitle {
+    margin: 0.35rem 0 0 0;
+    color: #64748b;
+    font-size: 0.96rem;
+  }
+
+  .dash-filter-card,
+  .dash-panel,
+  .dash-table-card,
+  .dash-alert-card {
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .dash-filter-card {
+    border: 1px solid #dbe3ee;
+  }
+
+  .dash-filter-card .card-body {
+    padding: 1rem 1.15rem;
+  }
+
+  .dash-kpi-main {
+    position: relative;
+    border-radius: 20px;
+    border: 1px solid #dbe3ee;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .dash-kpi-main::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 6px;
+    background: #cbd5e1;
+  }
+
+  .dash-kpi-main.kpi-blue::before { background: #2563eb; }
+  .dash-kpi-main.kpi-green::before { background: #16a34a; }
+  .dash-kpi-main.kpi-amber::before { background: #f59e0b; }
+  .dash-kpi-main.kpi-red::before { background: #dc2626; }
+
+  .dash-kpi-main-body {
+    padding: 1.2rem 1.2rem 1.1rem 1.25rem;
+  }
+
+  .dash-kpi-label {
+    color: #64748b;
+    font-size: 0.80rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.7rem;
+  }
+
+  .dash-kpi-value {
+    font-size: 2.15rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+  }
+
+  .dash-kpi-foot {
+    color: #64748b;
+    font-size: 0.88rem;
+  }
+
+  .dash-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .dash-mini-kpi {
+    background: #ffffff;
+    border: 1px solid #dbe3ee;
+    border-radius: 16px;
+    padding: 1rem 1rem 0.95rem 1rem;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+    height: 100%;
+  }
+
+  .dash-mini-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.45rem;
+  }
+
+  .dash-mini-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+  }
+
+  .dash-mini-foot {
+    margin-top: 0.35rem;
+    font-size: 0.83rem;
+    color: #64748b;
+  }
+
+  .dash-panel,
+  .dash-table-card,
+  .dash-alert-card {
+    border: 1px solid #dbe3ee;
+  }
+
+  .dash-panel .card-header,
+  .dash-table-card .card-header,
+  .dash-alert-card .card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #dbe3ee;
+    font-weight: 700;
+    color: #0f172a;
+    padding: 0.95rem 1.1rem;
+  }
+
+  .dash-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.9rem;
+  }
+
+  .dash-quick-actions .btn {
+    min-width: 180px;
+  }
+
+  .dash-soft-note {
+    color: #64748b;
+    font-size: 0.88rem;
+  }
+
+  .dash-chart-box {
+    position: relative;
+    min-height: 290px;
+  }
+
+  .dash-chart-box-sm {
+    position: relative;
+    min-height: 240px;
+  }
+
+  .dash-stat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .dash-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #e7edf5;
+  }
+
+  .dash-stat-row .label {
+    color: #475569;
+    font-weight: 600;
+  }
+
+  .dash-stat-row .value {
+    color: #0f172a;
+    font-weight: 800;
+  }
+
+  .dash-alert-card .table th,
+  .dash-alert-card .table td,
+  .dash-table-card .table th,
+  .dash-table-card .table td {
+    white-space: nowrap;
+  }
+
+  .dash-link {
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .dash-link:hover {
+    text-decoration: underline;
+  }
+
+  .severity-critical {
+    background-color: #fef2f2 !important;
+  }
+
+  .severity-high {
+    background-color: #fffbeb !important;
+  }
+
+  .severity-medium {
+    background-color: #f8fafc !important;
+  }
+
+  .pill-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    color: #1d4ed8;
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+
+  .dash-section-block {
+    background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(248,250,252,0.96) 100%);
+    border: 1px solid #dbe3ee;
+    border-radius: 22px;
+    padding: 1rem;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  }
+
+  .dash-section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.95rem;
+    padding: 0 0.2rem;
+  }
+
+  .dash-section-heading h3 {
+    margin: 0;
+    font-size: 1.03rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .dash-section-heading span {
+    color: #64748b;
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 1199.98px) {
+    .dash-mini-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .dash-title {
+      font-size: 1.6rem;
+    }
+
+    .dash-kpi-value {
+      font-size: 1.75rem;
+    }
+
+    .dash-mini-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dash-chart-box,
+    .dash-chart-box-sm {
+      min-height: 220px;
+    }
+
+    .dash-quick-actions .btn {
+      min-width: auto;
+      width: 100%;
+    }
+
+    .dash-section-heading {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="mb-0">Dashboard</h2>
+<div class="dash-shell">
 
-  <div class="d-flex gap-2">
-    {% if can_export %}
-      <a class="btn btn-outline-success" href="{% url 'reports_home' %}">
-        Centro de reportes
-      </a>
-    {% endif %}
-  </div>
-</div>
-
-<form method="get" class="card shadow-sm mb-3">
-  <div class="card-body d-flex flex-wrap gap-2 align-items-end">
-    <div>
-      <label class="form-label mb-1">Warehouse</label>
-      <select class="form-select" name="warehouse_id">
-        <option value="">Todos</option>
-        {% for wh in warehouses %}
-          <option value="{{ wh.id }}" {% if filter_warehouse_id|stringformat:"s" == wh.id|stringformat:"s" %}selected{% endif %}>
-            {{ wh.code }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="d-flex gap-2">
-      <button class="btn btn-primary" type="submit">Aplicar</button>
-      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Limpiar</a>
-    </div>
-
-    {% if filter_warehouse_id %}
-      <div class="ms-auto text-muted small">
-        Filtrando por warehouse ID: <span class="fw-semibold">{{ filter_warehouse_id }}</span>
+  <!-- HERO -->
+  <section class="dash-hero">
+    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3">
+      <div>
+        <h1 class="dash-title">Dashboard MRO</h1>
+        <p class="dash-subtitle">
+          Panorama ejecutivo del inventario, disponibilidad operativa, riesgo de quiebre y actividad reciente.
+        </p>
       </div>
-    {% endif %}
-  </div>
-</form>
 
-
-<!-- ===================== -->
-<!-- KPIs -->
-<!-- ===================== -->
-<div class="row g-3 mb-4">
-  <div class="col-md-3">
-    <div class="card shadow-sm border-danger">
-      <div class="card-body">
-        <div class="text-muted small">Items bajo mínimo</div>
-        <div class="fs-3 fw-semibold">{{ kpi_low_count }}</div>
-        <div class="text-muted small">Por ubicación</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card shadow-sm border-primary">
-      <div class="card-body">
-        <div class="text-muted small">Movimientos hoy</div>
-        <div class="fs-3 fw-semibold">{{ kpi_movements_today }}</div>
-        <div class="text-muted small">Sin contar anulados</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card shadow-sm border-success">
-      <div class="card-body">
-        <div class="text-muted small">Stock total (On Hand)</div>
-        <div class="fs-3 fw-semibold">{{ kpi_total_on_hand }}</div>
-        <div class="text-muted small">Suma de snapshots</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card shadow-sm border-warning">
-      <div class="card-body">
-        <div class="text-muted small">Reservado total</div>
-        <div class="fs-3 fw-semibold">{{ kpi_total_reserved }}</div>
-        <div class="text-muted small">Comprometido (reserved)</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row g-3 mb-4">
-  <div class="col-md-4">
-    <div class="card shadow-sm border-info">
-      <div class="card-body">
-        <div class="text-muted small">Disponible total</div>
-        <div class="fs-3 fw-semibold">{{ kpi_total_available }}</div>
-        <div class="text-muted small">On Hand - Reserved</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-4">
-    <div class="card shadow-sm border-secondary">
-      <div class="card-body">
-        <div class="text-muted small">Consumo (OUT) 7 días</div>
-        <div class="fs-3 fw-semibold">{{ kpi_out_7d }}</div>
-        <div class="text-muted small">Sin anulados</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-4">
-    <div class="card shadow-sm border-danger">
-      <div class="card-body">
-        <div class="text-muted small">Riesgo de quiebre</div>
-        <div class="fs-3 fw-semibold">{{ kpi_stockout_risk }}</div>
-        <div class="text-muted small">Bajo mínimo + reservado</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% if has_wo %}
-<div class="row g-3 mb-4">
-  <div class="col-md-3">
-    <div class="card shadow-sm border-dark">
-      <div class="card-body">
-        <div class="text-muted small">Work Orders abiertas</div>
-        <div class="fs-3 fw-semibold">{{ kpi_wo_open }}</div>
-        <div class="text-muted small">No completadas/canceladas</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card shadow-sm border-secondary">
-      <div class="card-body">
-        <div class="text-muted small">Work Orders pausadas</div>
-        <div class="fs-3 fw-semibold">{{ kpi_wo_paused }}</div>
-        <div class="text-muted small">En estado PAUSED</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <div class="text-muted small">Acceso rápido</div>
-        <div class="d-flex flex-wrap gap-2 mt-2">
-          <a class="btn btn-outline-dark" href="{% url 'workorders:list' %}">Work Orders</a>
-          <a class="btn btn-outline-primary" href="{% url 'workorders:create' %}">Crear Work Order</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-{% endif %}
-
-<!-- ===================== -->
-<!-- Gráficas -->
-<!-- ===================== -->
-<div class="row g-3 mb-4">
-  <div class="col-md-7">
-    <div class="card shadow-sm">
-      <div class="card-header">Movimientos por día (últimos 14 días)</div>
-      <div class="card-body">
-        <canvas id="chartMovementsDaily" height="110"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-5">
-    <div class="card shadow-sm">
-      <div class="card-header">Top 10 consumo (OUT) últimos 30 días</div>
-      <div class="card-body">
-        <canvas id="chartTopOut" height="110"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="card shadow-sm mb-4">
-  <div class="card-header">Stock (On Hand) por Warehouse</div>
-  <div class="card-body">
-    <canvas id="chartStockByWh" height="90"></canvas>
-  </div>
-</div>
-
-<!-- ===================== -->
-<!-- Acciones -->
-<!-- ===================== -->
-<div class="card shadow-sm mb-4">
-  <div class="card-body">
-    <h5 class="card-title mb-2">Acciones</h5>
-
-    <div class="d-flex flex-wrap gap-2">
-      <a class="btn btn-primary" href="{% url 'movement_create' %}">
-        Registrar entrada / salida
-      </a>
-
-      {% if can_transfer %}
-        <a class="btn btn-outline-primary" href="{% url 'transfer_create' %}">
-          Transferir
-        </a>
-      {% endif %}
-
-      {% if can_adjust %}
-        <a class="btn btn-outline-warning" href="{% url 'adjustment_create' %}">
-          Ajuste (ADJ)
-        </a>
-        <a class="btn btn-outline-warning" href="{% url 'cycle_count' %}">
-          Conteo cíclico
-        </a>
-      {% endif %}
-
-      {% if can_export %}
-        <a class="btn btn-outline-success" href="{% url 'reports_home' %}">
-          Reportes
-        </a>
-      {% endif %}
-    </div>
-
-    <div class="text-muted small mt-2">
-      Los accesos dependen del grupo del usuario (operator/supervisor/admin).
-    </div>
-  </div>
-</div>
-
-<!-- ===================== -->
-<!-- Tablas recientes -->
-<!-- ===================== -->
-<div class="row g-3 mb-4">
-  <div class="col-md-7">
-    <div class="card shadow-sm">
-      <div class="card-header">Movimientos recientes</div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-sm mb-0 align-middle">
-            <thead class="table-dark">
-              <tr>
-                <th>Fecha</th>
-                <th>Tipo</th>
-                <th class="text-end">Qty</th>
-                <th>SKU</th>
-                <th>WH/Loc</th>
-                <th>Usuario</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for m in recent_movements %}
-              <tr>
-                <td>{{ m.occurred_at }}</td>
-                <td>{{ m.movement_type }}{% if m.is_void %} <span class="badge bg-warning text-dark">VOID</span>{% endif %}</td>
-                <td class="text-end">{{ m.quantity }}</td>
-                <td>{{ m.item.sku }}</td>
-                <td>
-                  {% if m.location %}
-                    {{ m.location.warehouse.code }} / {{ m.location.code }}
-                  {% else %}
-                    <span class="text-muted">N/A</span>
-                  {% endif %}
-                </td>
-                <td>{{ m.registered_by }}</td>
-              </tr>
-              {% empty %}
-              <tr><td colspan="6" class="text-muted p-3">Sin movimientos recientes.</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-5">
-    <div class="card shadow-sm">
-      <div class="card-header">Work Orders recientes</div>
-      <div class="card-body p-0">
-        {% if has_wo %}
-        <div class="table-responsive">
-          <table class="table table-sm mb-0 align-middle">
-            <thead class="table-dark">
-              <tr>
-                <th>Código</th>
-                <th>Status</th>
-                <th>Asignado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for wo in recent_wos %}
-              <tr>
-                <td><a href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a></td>
-                <td>{{ wo.status }}</td>
-                <td>{{ wo.assigned_to|default:"-" }}</td>
-              </tr>
-              {% empty %}
-              <tr><td colspan="3" class="text-muted p-3">Sin Work Orders.</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-          <div class="p-3 text-muted">Work Orders no disponible.</div>
+      <div class="d-flex flex-wrap gap-2">
+        {% if can_export %}
+          <a class="btn btn-outline-success" href="{% url 'reports_home' %}">
+            Centro de reportes
+          </a>
         {% endif %}
       </div>
     </div>
-  </div>
-</div>
+  </section>
 
-<!-- ===================== -->
-<!-- Alertas con severidad -->
-<!-- ===================== -->
-<h4 class="mb-3">Alertas de stock bajo (por ubicación)</h4>
-
-{% if low_stock %}
-<div class="card shadow-sm">
-  <div class="card-body p-0">
-    <div class="table-responsive">
-      <table class="table table-striped table-bordered mb-0 align-middle">
-        <thead class="table-dark">
-          <tr>
-            <th>Severidad</th>
-            <th>SKU</th>
-            <th>Artículo</th>
-            <th>Almacén</th>
-            <th>Ubicación</th>
-            <th class="text-end">On Hand</th>
-            <th class="text-end">Reserved</th>
-            <th class="text-end">Available</th>
-            <th class="text-end">Min</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for snap in low_stock %}
-
-          {% if snap.severity == 3 %}
-            <tr class="table-danger">
-          {% elif snap.severity == 2 %}
-            <tr class="table-warning">
-          {% else %}
-            <tr class="table-secondary">
-          {% endif %}
-
-            <td>
-              {% if snap.severity == 3 %}
-                <span class="badge bg-danger">CRÍTICO</span>
-              {% elif snap.severity == 2 %}
-                <span class="badge bg-warning text-dark">ALTO</span>
-              {% else %}
-                <span class="badge bg-secondary">MEDIO</span>
-              {% endif %}
-            </td>
-
-            <td class="fw-semibold">{{ snap.item.sku }}</td>
-            <td>{{ snap.item.name }}</td>
-
-            <td>
-              {% if snap.location %}
-                {{ snap.location.warehouse.code }}
-              {% else %}
-                <span class="text-muted">N/A</span>
-              {% endif %}
-            </td>
-
-            <td>
-              {% if snap.location %}
-                {{ snap.location.code }}
-              {% else %}
-                <span class="text-muted">N/A</span>
-              {% endif %}
-            </td>
-
-            <td class="text-end fw-semibold">{{ snap.on_hand }}</td>
-            <td class="text-end">{{ snap.reserved0 }}</td>
-            <td class="text-end fw-semibold">{{ snap.available }}</td>
-            <td class="text-end">{{ snap.item.min_stock }}</td>
-
-          </tr>
+  <!-- FILTRO -->
+  <form method="get" class="card shadow-sm dash-filter-card">
+    <div class="card-body d-flex flex-wrap gap-3 align-items-end">
+      <div>
+        <label class="form-label mb-2">Warehouse</label>
+        <select class="form-select" name="warehouse_id">
+          <option value="">Todos</option>
+          {% for wh in warehouses %}
+            <option value="{{ wh.id }}" {% if filter_warehouse_id|stringformat:"s" == wh.id|stringformat:"s" %}selected{% endif %}>
+              {{ wh.code }}
+            </option>
           {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-{% else %}
-<div class="alert alert-success">
-  No hay artículos con stock bajo.
-</div>
-{% endif %}
+        </select>
+      </div>
 
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Aplicar</button>
+        <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Limpiar</a>
+      </div>
+
+      {% if filter_warehouse_id %}
+        <div class="ms-auto">
+          <span class="pill-filter">
+            Warehouse activo:
+            <span>{{ filter_warehouse_id }}</span>
+          </span>
+        </div>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- KPIS PRINCIPALES -->
+  <section>
+    <div class="row g-3">
+      <div class="col-md-6 col-xl-3">
+        <div class="dash-kpi-main kpi-red">
+          <div class="dash-kpi-main-body">
+            <div class="dash-kpi-label">Items bajo mínimo</div>
+            <div class="dash-kpi-value">{{ kpi_low_count }}</div>
+            <div class="dash-kpi-foot">Alertas por ubicación</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-xl-3">
+        <div class="dash-kpi-main kpi-green">
+          <div class="dash-kpi-main-body">
+            <div class="dash-kpi-label">Disponible total</div>
+            <div class="dash-kpi-value">{{ kpi_total_available }}</div>
+            <div class="dash-kpi-foot">On Hand - Reserved</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-xl-3">
+        <div class="dash-kpi-main kpi-blue">
+          <div class="dash-kpi-main-body">
+            <div class="dash-kpi-label">Movimientos hoy</div>
+            <div class="dash-kpi-value">{{ kpi_movements_today }}</div>
+            <div class="dash-kpi-foot">Sin anulados</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-xl-3">
+        <div class="dash-kpi-main kpi-amber">
+          <div class="dash-kpi-main-body">
+            <div class="dash-kpi-label">Reservado total</div>
+            <div class="dash-kpi-value">{{ kpi_total_reserved }}</div>
+            <div class="dash-kpi-foot">Stock comprometido</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESUMEN SECUNDARIO -->
+  <section class="dash-mini-grid">
+    <div class="dash-mini-kpi">
+      <div class="dash-mini-label">Stock total</div>
+      <div class="dash-mini-value">{{ kpi_total_on_hand }}</div>
+      <div class="dash-mini-foot">Suma de snapshots</div>
+    </div>
+
+    <div class="dash-mini-kpi">
+      <div class="dash-mini-label">Consumo OUT 7 días</div>
+      <div class="dash-mini-value">{{ kpi_out_7d }}</div>
+      <div class="dash-mini-foot">Sin anulados</div>
+    </div>
+
+    <div class="dash-mini-kpi">
+      <div class="dash-mini-label">Riesgo de quiebre</div>
+      <div class="dash-mini-value">{{ kpi_stockout_risk }}</div>
+      <div class="dash-mini-foot">Bajo mínimo + reservado</div>
+    </div>
+
+    {% if has_wo %}
+    <div class="dash-mini-kpi">
+      <div class="dash-mini-label">Work Orders abiertas</div>
+      <div class="dash-mini-value">{{ kpi_wo_open }}</div>
+      <div class="dash-mini-foot">No completadas / canceladas</div>
+    </div>
+    {% else %}
+    <div class="dash-mini-kpi">
+      <div class="dash-mini-label">Work Orders</div>
+      <div class="dash-mini-value">N/D</div>
+      <div class="dash-mini-foot">Módulo no disponible</div>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ALERTAS + ACCIONES -->
+  <section class="row g-3">
+    <div class="col-xl-8">
+      <div class="card shadow-sm dash-alert-card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Alertas de stock bajo</span>
+          <span class="text-muted small">Prioridad operativa</span>
+        </div>
+
+        <div class="card-body p-0">
+          {% if low_stock %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover mb-0 align-middle">
+              <thead class="table-dark">
+                <tr>
+                  <th>Severidad</th>
+                  <th>SKU</th>
+                  <th>Artículo</th>
+                  <th>WH</th>
+                  <th>Loc</th>
+                  <th class="text-end">On Hand</th>
+                  <th class="text-end">Reserved</th>
+                  <th class="text-end">Available</th>
+                  <th class="text-end">Min</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for snap in low_stock|slice:":8" %}
+                  {% if snap.severity == 3 %}
+                    <tr class="severity-critical">
+                  {% elif snap.severity == 2 %}
+                    <tr class="severity-high">
+                  {% else %}
+                    <tr class="severity-medium">
+                  {% endif %}
+                    <td>
+                      {% if snap.severity == 3 %}
+                        <span class="badge bg-danger">CRÍTICO</span>
+                      {% elif snap.severity == 2 %}
+                        <span class="badge bg-warning text-dark">ALTO</span>
+                      {% else %}
+                        <span class="badge bg-secondary">MEDIO</span>
+                      {% endif %}
+                    </td>
+                    <td class="fw-semibold">{{ snap.item.sku }}</td>
+                    <td>{{ snap.item.name }}</td>
+                    <td>
+                      {% if snap.location %}
+                        {{ snap.location.warehouse.code }}
+                      {% else %}
+                        <span class="text-muted">N/A</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if snap.location %}
+                        {{ snap.location.code }}
+                      {% else %}
+                        <span class="text-muted">N/A</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-end fw-semibold">{{ snap.on_hand }}</td>
+                    <td class="text-end">{{ snap.reserved0 }}</td>
+                    <td class="text-end fw-semibold">{{ snap.available }}</td>
+                    <td class="text-end">{{ snap.item.min_stock }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+            <div class="p-4">
+              <div class="alert alert-success mb-0">
+                No hay artículos con stock bajo.
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4">
+      <div class="card shadow-sm dash-panel h-100">
+        <div class="card-header">Resumen operacional</div>
+        <div class="card-body d-flex flex-column justify-content-between gap-3">
+          <div class="dash-stat-list">
+            <div class="dash-stat-row">
+              <span class="label">Reservado total</span>
+              <span class="value">{{ kpi_total_reserved }}</span>
+            </div>
+            <div class="dash-stat-row">
+              <span class="label">Disponible total</span>
+              <span class="value">{{ kpi_total_available }}</span>
+            </div>
+            <div class="dash-stat-row">
+              <span class="label">Movimientos hoy</span>
+              <span class="value">{{ kpi_movements_today }}</span>
+            </div>
+            {% if has_wo %}
+            <div class="dash-stat-row">
+              <span class="label">WO pausadas</span>
+              <span class="value">{{ kpi_wo_paused }}</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <div>
+            <div class="dash-section-title">Acciones rápidas</div>
+            <div class="d-flex flex-column gap-2 dash-quick-actions">
+              <a class="btn btn-primary" href="{% url 'movement_create' %}">
+                Registrar entrada / salida
+              </a>
+
+              {% if can_transfer %}
+                <a class="btn btn-outline-primary" href="{% url 'transfer_create' %}">
+                  Transferir stock
+                </a>
+              {% endif %}
+
+              {% if can_adjust %}
+                <a class="btn btn-outline-warning" href="{% url 'adjustment_create' %}">
+                  Ajuste de inventario
+                </a>
+                <a class="btn btn-outline-warning" href="{% url 'cycle_count' %}">
+                  Conteo cíclico
+                </a>
+              {% endif %}
+
+              {% if has_wo %}
+                <a class="btn btn-outline-dark" href="{% url 'workorders:list' %}">
+                  Ir a Work Orders
+                </a>
+              {% endif %}
+            </div>
+
+            <div class="dash-soft-note mt-3">
+              Los accesos dependen del rol operativo del usuario.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRAFICAS -->
+  <section class="dash-section-block">
+    <div class="dash-section-heading">
+      <h3>Analítica visual</h3>
+      <span>Tendencias y distribución de inventario</span>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-xl-8">
+        <div class="card shadow-sm dash-panel h-100">
+          <div class="card-header">Tendencia de movimientos (últimos 14 días)</div>
+          <div class="card-body">
+            <div class="dash-chart-box">
+              <canvas id="chartMovementsDaily"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-4">
+        <div class="card shadow-sm dash-panel h-100">
+          <div class="card-header">Top 10 consumo OUT</div>
+          <div class="card-body">
+            <div class="dash-chart-box">
+              <canvas id="chartTopOut"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="card shadow-sm dash-panel">
+          <div class="card-header">Stock On Hand por Warehouse</div>
+          <div class="card-body">
+            <div class="dash-chart-box-sm">
+              <canvas id="chartStockByWh"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLAS RECIENTES -->
+  <section class="row g-3">
+    <div class="col-xl-7">
+      <div class="card shadow-sm dash-table-card h-100">
+        <div class="card-header">Movimientos recientes</div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm mb-0 align-middle">
+              <thead class="table-dark">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th class="text-end">Qty</th>
+                  <th>SKU</th>
+                  <th>WH / Loc</th>
+                  <th>Usuario</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for m in recent_movements %}
+                <tr>
+                  <td>{{ m.occurred_at }}</td>
+                  <td>
+                    {{ m.movement_type }}
+                    {% if m.is_void %}
+                      <span class="badge bg-warning text-dark">VOID</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end fw-semibold">{{ m.quantity }}</td>
+                  <td class="fw-semibold">{{ m.item.sku }}</td>
+                  <td>
+                    {% if m.location %}
+                      {{ m.location.warehouse.code }} / {{ m.location.code }}
+                    {% else %}
+                      <span class="text-muted">N/A</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ m.registered_by }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="p-3 text-muted">Sin movimientos recientes.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-5">
+      <div class="card shadow-sm dash-table-card h-100">
+        <div class="card-header">Work Orders recientes</div>
+        <div class="card-body p-0">
+          {% if has_wo %}
+          <div class="table-responsive">
+            <table class="table table-sm mb-0 align-middle">
+              <thead class="table-dark">
+                <tr>
+                  <th>Código</th>
+                  <th>Status</th>
+                  <th>Asignado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for wo in recent_wos %}
+                <tr>
+                  <td>
+                    <a class="dash-link" href="{% url 'workorders:detail' wo.id %}">
+                      {{ wo.code }}
+                    </a>
+                  </td>
+                  <td>{{ wo.status }}</td>
+                  <td>{{ wo.assigned_to|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="p-3 text-muted">Sin Work Orders.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+            <div class="p-3 text-muted">Work Orders no disponible.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -420,15 +757,51 @@
     data: {
       labels: mvLabels,
       datasets: [
-        { label: "IN",  data: mvIn,  tension: 0.25 },
-        { label: "OUT", data: mvOut, tension: 0.25 },
-        { label: "ADJ", data: mvAdj, tension: 0.25 }
+        {
+          label: "IN",
+          data: mvIn,
+          tension: 0.35,
+          borderWidth: 2
+        },
+        {
+          label: "OUT",
+          data: mvOut,
+          tension: 0.35,
+          borderWidth: 2
+        },
+        {
+          label: "ADJ",
+          data: mvAdj,
+          tension: 0.35,
+          borderWidth: 2
+        }
       ]
     },
     options: {
+      maintainAspectRatio: false,
       responsive: true,
-      plugins: { legend: { display: true } },
-      scales: { y: { beginAtZero: true } }
+      interaction: {
+        mode: "index",
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            usePointStyle: true,
+            boxWidth: 10
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 }
+        }
+      }
     }
   });
 
@@ -436,12 +809,34 @@
     type: "bar",
     data: {
       labels: topOutLabels,
-      datasets: [{ label: "Qty OUT", data: topOutValues }]
+      datasets: [{
+        label: "Qty OUT",
+        data: topOutValues,
+        borderWidth: 1,
+        borderRadius: 10
+      }]
     },
     options: {
+      maintainAspectRatio: false,
       responsive: true,
-      plugins: { legend: { display: true } },
-      scales: { y: { beginAtZero: true } }
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            usePointStyle: true,
+            boxWidth: 10
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 }
+        }
+      }
     }
   });
 
@@ -449,12 +844,33 @@
     type: "bar",
     data: {
       labels: whLabels,
-      datasets: [{ label: "On Hand", data: whValues }]
+      datasets: [{
+        label: "On Hand",
+        data: whValues,
+        borderWidth: 1,
+        borderRadius: 10
+      }]
     },
     options: {
+      maintainAspectRatio: false,
       responsive: true,
-      plugins: { legend: { display: true } },
-      scales: { y: { beginAtZero: true } }
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            usePointStyle: true,
+            boxWidth: 10
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false }
+        },
+        y: {
+          beginAtZero: true
+        }
+      }
     }
   });
 </script>

@@ -1,35 +1,90 @@
 {% extends "base.html" %}
 {% block title %}Agregar línea{% endblock %}
 
+{% block extra_css %}
+<style>
+  .page-shell { display:flex; flex-direction:column; gap:1.1rem; }
+  .page-hero{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
+    padding:1.4rem 1.45rem; border:1px solid #dbe3ee; border-radius:22px;
+    background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(99,102,241,.05)), #fff;
+    box-shadow:0 12px 28px rgba(15,23,42,.05);
+  }
+  .page-title{ margin:0; font-size:1.95rem; font-weight:800; letter-spacing:-.03em; color:#0f172a; }
+  .page-subtitle{ margin:.35rem 0 0; color:#64748b; font-size:.95rem; }
+
+  .form-card{ border-radius:22px; overflow:hidden; border:1px solid #dbe3ee; }
+  .form-card .card-header{
+    background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+    border-bottom:1px solid #dbe3ee; padding:1rem 1.15rem; font-weight:800; color:#0f172a;
+  }
+  .form-card .card-body{ padding:1.25rem; }
+
+  .wo-link{ font-weight:700; text-decoration:none; }
+  .wo-link:hover{ text-decoration:underline; }
+
+  .section-label{
+    font-size:.86rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
+    color:#64748b; margin-bottom:.95rem;
+  }
+  .field-card{
+    border:1px solid #e7edf5; border-radius:16px; background:#fbfdff; padding:1rem; height:100%;
+  }
+  .field-label{ display:block; font-size:.9rem; font-weight:700; color:#334155; margin-bottom:.5rem; }
+  .sticky-actions{ display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; }
+  .form-divider{ margin:1.25rem 0; border-top:1px solid #e5e7eb; }
+
+  @media (max-width:767.98px){
+    .page-hero{ flex-direction:column; align-items:stretch; }
+    .page-title{ font-size:1.6rem; }
+    .page-hero .btn, .sticky-actions .btn{ width:100%; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <div>
-    <h3 class="mb-0">Agregar línea</h3>
-    <div class="text-muted">OT: <a href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a></div>
-  </div>
-  <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Volver</a>
-</div>
+<div class="page-shell">
+  <section class="page-hero">
+    <div>
+      <h1 class="page-title">Agregar línea</h1>
+      <p class="page-subtitle">OT: <a class="wo-link" href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a></p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Volver</a>
+    </div>
+  </section>
 
-<div class="card shadow-sm">
-  <div class="card-body">
-    <form method="post">
-      {% csrf_token %}
-      <div class="row g-3">
-        <div class="col-md-8">
-          <label class="form-label">Item</label>
-          {{ form.item }}
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Cantidad requerida</label>
-          {{ form.qty_required }}
-        </div>
-      </div>
+  <section class="card shadow-sm form-card">
+    <div class="card-header">Nueva línea de trabajo</div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
 
-      <div class="d-flex gap-2 mt-3">
-        <button class="btn btn-primary" type="submit">Agregar</button>
-        <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
-      </div>
-    </form>
-  </div>
+        <div class="section-label">Item requerido</div>
+        <div class="row g-3">
+          <div class="col-md-8">
+            <div class="field-card">
+              <label class="field-label">Item</label>
+              {{ form.item }}
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="field-card">
+              <label class="field-label">Cantidad requerida</label>
+              {{ form.qty_required }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="sticky-actions">
+          <button class="btn btn-primary" type="submit">Agregar</button>
+          <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
 </div>
 {% endblock %}

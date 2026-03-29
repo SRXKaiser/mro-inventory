@@ -1,40 +1,215 @@
 {% extends "base.html" %}
 {% block title %}Iniciar sesión{% endblock %}
 
+{% block extra_css %}
+<style>
+  .login-page {
+    min-height: calc(100vh - 180px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0 2rem;
+  }
+
+  .login-wrapper {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .login-card {
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+    background: #ffffff;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+  }
+
+  .login-card-top {
+    padding: 1.25rem 1.4rem 1rem;
+    background:
+      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(8, 145, 178, 0.04)),
+      #ffffff;
+    border-bottom: 1px solid #e7edf5;
+  }
+
+  .login-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.75rem;
+    border-radius: 999px;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    color: #1d4ed8;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .login-title {
+    margin: 0.95rem 0 0.3rem 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .login-subtitle {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .login-card-body {
+    padding: 1.4rem;
+  }
+
+  .login-field {
+    margin-bottom: 1rem;
+  }
+
+  .login-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .login-input {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid #d7dee7;
+    background: #ffffff;
+    padding: 0.82rem 0.95rem;
+    font-size: 0.97rem;
+    color: #0f172a;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .login-input:focus {
+    outline: none;
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12);
+  }
+
+  .login-error {
+    border-radius: 14px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    font-weight: 600;
+    padding: 0.85rem 0.95rem;
+    margin-bottom: 1rem;
+  }
+
+  .login-submit {
+    width: 100%;
+    border-radius: 14px;
+    padding-top: 0.82rem;
+    padding-bottom: 0.82rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+  }
+
+  .login-footer {
+    margin-top: 1rem;
+    text-align: center;
+    color: #64748b;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .login-system-note {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e7edf5;
+    color: #64748b;
+    font-size: 0.83rem;
+    text-align: center;
+  }
+
+  @media (max-width: 575.98px) {
+    .login-page {
+      align-items: flex-start;
+      padding-top: 1.25rem;
+    }
+
+    .login-title {
+      font-size: 1.7rem;
+    }
+
+    .login-card-top,
+    .login-card-body {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h4 class="card-title mb-4 text-center">Iniciar sesión</h4>
+<div class="login-page">
+  <div class="login-wrapper">
+    <section class="login-card">
+      <div class="login-card-top">
+        <span class="login-badge">MRO Inventory</span>
+        <h1 class="login-title">Iniciar sesión</h1>
+        <p class="login-subtitle">
+          Accede al entorno operativo para gestionar inventario, movimientos, ubicaciones y work orders.
+        </p>
+      </div>
 
-                <form method="post">
-                    {% csrf_token %}
+      <div class="login-card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
 
-                    <div class="mb-3">
-                        <label class="form-label">Usuario</label>
-                        <input type="text" name="username" class="form-control" required autofocus>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Contraseña</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-
-                    {% if form.errors %}
-                        <div class="alert alert-danger">
-                            Usuario o contraseña incorrectos.
-                        </div>
-                    {% endif %}
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
-                            Entrar
-                        </button>
-                    </div>
-                </form>
+          {% if form.errors %}
+            <div class="login-error">
+              Usuario o contraseña incorrectos.
             </div>
+          {% endif %}
+
+          <div class="login-field">
+            <label class="login-label" for="id_username">Usuario</label>
+            <input
+              id="id_username"
+              type="text"
+              name="username"
+              class="login-input"
+              required
+              autofocus
+              autocomplete="username"
+            >
+          </div>
+
+          <div class="login-field">
+            <label class="login-label" for="id_password">Contraseña</label>
+            <input
+              id="id_password"
+              type="password"
+              name="password"
+              class="login-input"
+              required
+              autocomplete="current-password"
+            >
+          </div>
+
+          <button type="submit" class="btn btn-primary login-submit">
+            Entrar al sistema
+          </button>
+        </form>
+
+        <div class="login-footer">
+          Si no cuentas con acceso, solicita tus credenciales al administrador del sistema.
         </div>
-    </div>
+
+        <div class="login-system-note">
+          Plataforma interna para operación MRO y trazabilidad de inventario.
+        </div>
+      </div>
+    </section>
+  </div>
 </div>
 {% endblock %}

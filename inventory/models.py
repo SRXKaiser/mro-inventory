@@ -104,7 +104,7 @@ class StockSnapshot(TimeStampedModel):
 
     @property
     def available(self) -> Decimal:
-        # disponible = físico - reservado
+        # disponible = fisico - reservado
         return self.on_hand - self.reserved
 
     def __str__(self) -> str:
@@ -153,8 +153,8 @@ class InventoryMovement(TimeStampedModel):
     void_reason = models.CharField(max_length=180, blank=True)
 
     # Liga al movimiento que anula/revierte (y viceversa)
-    # - Si ESTE movimiento es el reverso, aquí apuntas al ORIGINAL
-    # - En el ORIGINAL, lo puedes consultar con: original.voided_by_movement
+    # Si ESTE movimiento es el reverso, aquí apunta al ORIGINAL (de la sierra...)
+    # En el ORIGINAL, se puede consultar con: original.voided_by_movement
     void_of = models.OneToOneField(
         "self",
         on_delete=models.PROTECT,

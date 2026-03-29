@@ -1,15 +1,245 @@
 {% extends "base.html" %}
+{% block title %}Issue - {{ wo.code }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .page-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.4rem 1.45rem;
+    border: 1px solid #dbe3ee;
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(220, 38, 38, 0.08), rgba(37, 99, 235, 0.04)),
+      #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.95rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .page-subtitle {
+    margin: 0.35rem 0 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .wo-link {
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .wo-link:hover {
+    text-decoration: underline;
+  }
+
+  .section-card {
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+  }
+
+  .section-card .card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #dbe3ee;
+    font-weight: 800;
+    color: #0f172a;
+    padding: 0.95rem 1.1rem;
+  }
+
+  .line-table thead th {
+    white-space: nowrap;
+  }
+
+  .layout-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 1rem;
+  }
+
+  .field-card {
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    background: #fbfdff;
+    padding: 1rem;
+    height: 100%;
+  }
+
+  .field-card--soft {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 0.5rem;
+  }
+
+  .field-error {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .field-help {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+
+  .error-summary {
+    border-radius: 16px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.95rem 1rem;
+  }
+
+  .section-label {
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 0.95rem;
+  }
+
+  .form-divider {
+    margin: 1.25rem 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .sticky-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .aside-card {
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+  }
+
+  .aside-card .card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #dbe3ee;
+    padding: 1rem 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .aside-card .card-body {
+    padding: 1.25rem;
+  }
+
+  .aside-intro {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  .aside-guide-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .aside-guide-row {
+    position: relative;
+    padding: 0.9rem 0.95rem 0.9rem 1rem;
+    border-radius: 14px;
+    border: 1px solid #e7edf5;
+    background: #fbfdff;
+    overflow: hidden;
+  }
+
+  .aside-guide-row::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: #cbd5e1;
+  }
+
+  .aside-guide-red::before { background: #dc2626; }
+  .aside-guide-blue::before { background: #2563eb; }
+  .aside-guide-amber::before { background: #f59e0b; }
+  .aside-guide-green::before { background: #16a34a; }
+
+  .aside-guide-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+  }
+
+  .aside-guide-text {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 1199.98px) {
+    .layout-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .page-hero {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+    }
+
+    .page-hero .btn,
+    .sticky-actions .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-3">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+<div class="page-shell">
+
+  <section class="page-hero">
     <div>
-      <h3 class="mb-0">Issue (Consumo)</h3>
-      <div class="text-muted">
-        OT: <a href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a>
-      </div>
+      <h1 class="page-title">Issue (Consumo)</h1>
+      <p class="page-subtitle">
+        OT: <a class="wo-link" href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a>
+      </p>
     </div>
-    <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Volver</a>
-  </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Volver</a>
+    </div>
+  </section>
 
   {% if messages %}
     {% for m in messages %}
@@ -17,101 +247,163 @@
     {% endfor %}
   {% endif %}
 
-  <div class="card mb-3">
+  <section class="card shadow-sm section-card">
     <div class="card-header">Líneas de la OT</div>
     <div class="card-body p-0">
-      <table class="table table-sm mb-0 align-middle">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th class="text-end">Req</th>
-            <th class="text-end">Res</th>
-            <th class="text-end">Cons</th>
-            <th class="text-end">Dev</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for ln in wo.lines.all %}
-          <tr>
-            <td>{{ ln.item.sku }} - {{ ln.item.name }}</td>
-            <td class="text-end">{{ ln.qty_required }}</td>
-            <td class="text-end">{{ ln.qty_reserved }}</td>
-            <td class="text-end">{{ ln.qty_consumed }}</td>
-            <td class="text-end">{{ ln.qty_returned }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table line-table table-sm mb-0 align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>Item</th>
+              <th class="text-end">Req</th>
+              <th class="text-end">Res</th>
+              <th class="text-end">Cons</th>
+              <th class="text-end">Dev</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ln in wo.lines.all %}
+            <tr>
+              <td>{{ ln.item.sku }} - {{ ln.item.name }}</td>
+              <td class="text-end">{{ ln.qty_required }}</td>
+              <td class="text-end">{{ ln.qty_reserved }}</td>
+              <td class="text-end">{{ ln.qty_consumed }}</td>
+              <td class="text-end">{{ ln.qty_returned }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-muted p-3">Esta OT aún no tiene líneas registradas.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="card">
-    <div class="card-header">Registrar consumo (OUT)</div>
-    <div class="card-body">
-      <form method="post" action="{% url 'workorders:issue' wo.id %}">
-        {% csrf_token %}
+  <section class="layout-grid">
+    <div class="card shadow-sm section-card">
+      <div class="card-header">Registrar consumo (OUT)</div>
+      <div class="card-body">
+        <form method="post" action="{% url 'workorders:issue' wo.id %}" novalidate>
+          {% csrf_token %}
 
-        {% if consume_form.non_field_errors %}
-          <div class="alert alert-danger">
-            {{ consume_form.non_field_errors }}
-          </div>
-        {% endif %}
+          {% if consume_form.non_field_errors %}
+            <div class="error-summary mb-4">
+              {{ consume_form.non_field_errors }}
+            </div>
+          {% endif %}
 
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Item</label>
-            {{ consume_form.item }}
-            {% if consume_form.item.errors %}
-              <div class="text-danger small">{{ consume_form.item.errors }}</div>
-            {% endif %}
-          </div>
+          <div class="section-label">Datos del consumo</div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="field-card field-card--soft">
+                <label class="field-label">Item</label>
+                {{ consume_form.item }}
+                {% if consume_form.item.errors %}
+                  <div class="field-error">{{ consume_form.item.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
 
-          <div class="col-md-6">
-            <label class="form-label">Ubicación</label>
-            {{ consume_form.location }}
-            {% if consume_form.location.errors %}
-              <div class="text-danger small">{{ consume_form.location.errors }}</div>
-            {% endif %}
-          </div>
+            <div class="col-md-6">
+              <div class="field-card field-card--soft">
+                <label class="field-label">Ubicación</label>
+                {{ consume_form.location }}
+                {% if consume_form.location.errors %}
+                  <div class="field-error">{{ consume_form.location.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
 
-          <div class="col-md-4">
-            <label class="form-label">Cantidad</label>
-            {{ consume_form.qty }}
-            {% if consume_form.qty.errors %}
-              <div class="text-danger small">{{ consume_form.qty.errors }}</div>
-            {% endif %}
-          </div>
+            <div class="col-md-4">
+              <div class="field-card">
+                <label class="field-label">Cantidad</label>
+                {{ consume_form.qty }}
+                {% if consume_form.qty.errors %}
+                  <div class="field-error">{{ consume_form.qty.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
 
-          <div class="col-md-8">
-            <label class="form-label">Reserva (opcional)</label>
-            {{ consume_form.reservation }}
-            {% if consume_form.reservation.errors %}
-              <div class="text-danger small">{{ consume_form.reservation.errors }}</div>
-            {% endif %}
-            <div class="form-text">
-              Si eliges una reserva, se descuenta primero de <code>reserved</code> y luego se hace el OUT real.
+            <div class="col-md-8">
+              <div class="field-card">
+                <label class="field-label">Reserva (opcional)</label>
+                {{ consume_form.reservation }}
+                {% if consume_form.reservation.errors %}
+                  <div class="field-error">{{ consume_form.reservation.errors }}</div>
+                {% endif %}
+                <div class="field-help">
+                  Si eliges una reserva, se descuenta primero de <code>reserved</code> y luego se realiza el OUT real.
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="field-card">
+                <label class="field-label">Notas (opcional)</label>
+                {{ consume_form.notes }}
+                {% if consume_form.notes.errors %}
+                  <div class="field-error">{{ consume_form.notes.errors }}</div>
+                {% endif %}
+              </div>
             </div>
           </div>
 
-          <div class="col-12">
-            <label class="form-label">Notas (opcional)</label>
-            {{ consume_form.notes }}
-            {% if consume_form.notes.errors %}
-              <div class="text-danger small">{{ consume_form.notes.errors }}</div>
-            {% endif %}
+          <div class="form-divider"></div>
+
+          <div class="sticky-actions">
+            <button class="btn btn-danger" type="submit">Registrar Issue</button>
+            <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <aside class="card shadow-sm aside-card">
+      <div class="card-header">Guía rápida</div>
+      <div class="card-body">
+        <div class="aside-intro">
+          El issue registra una salida real de inventario asociada a la ejecución de la work order.
+        </div>
+
+        <div class="aside-guide-list">
+          <div class="aside-guide-row aside-guide-red">
+            <div class="aside-guide-title">Consumo</div>
+            <div class="aside-guide-text">Genera un <code>InventoryMovement OUT</code> y afecta el stock físico.</div>
+          </div>
+
+          <div class="aside-guide-row aside-guide-blue">
+            <div class="aside-guide-title">Referencia</div>
+            <div class="aside-guide-text">Queda trazado en Kardex con referencia <code>WO:{{ wo.code }}</code>.</div>
+          </div>
+
+          <div class="aside-guide-row aside-guide-amber">
+            <div class="aside-guide-title">Reserva</div>
+            <div class="aside-guide-text">Si existe una reserva asociada, se descuenta primero del reservado antes del OUT.</div>
+          </div>
+
+          <div class="aside-guide-row aside-guide-green">
+            <div class="aside-guide-title">Control</div>
+            <div class="aside-guide-text">Usa notas para documentar condiciones especiales, técnico o contexto operativo.</div>
           </div>
         </div>
+      </div>
+    </aside>
+  </section>
 
-        <div class="d-flex gap-2 mt-3">
-          <button class="btn btn-danger" type="submit">Registrar Issue</button>
-          <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
-        </div>
-
-        <div class="text-muted small mt-3">
-          Nota: Esto genera un <code>InventoryMovement OUT</code> y queda trazado en Kardex con referencia <code>WO:&lt;code&gt;</code>.
-        </div>
-      </form>
-    </div>
-  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const inputs = document.querySelectorAll("input, select, textarea");
+    inputs.forEach(el => {
+        if (el.type === "checkbox") return;
+        if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
+        else el.classList.add("form-control");
+    });
+})();
+</script>
 {% endblock %}

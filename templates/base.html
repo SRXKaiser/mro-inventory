@@ -2,66 +2,300 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}MRO Inventory{% endblock %}</title>
 
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --mro-bg: #f4f7fb;
+            --mro-surface: #ffffff;
+            --mro-surface-soft: #f8fafc;
+            --mro-border: #e5e7eb;
+            --mro-border-strong: #d6dde8;
+            --mro-text: #0f172a;
+            --mro-text-muted: #64748b;
+            --mro-primary: #2563eb;
+            --mro-primary-dark: #1d4ed8;
+            --mro-shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.05);
+            --mro-shadow-md: 0 10px 30px rgba(15, 23, 42, 0.08);
+            --mro-radius: 16px;
+            --mro-radius-sm: 12px;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.06), transparent 28%),
+                radial-gradient(circle at top right, rgba(8, 145, 178, 0.05), transparent 22%),
+                var(--mro-bg);
+            color: var(--mro-text);
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(90deg, #0f172a 0%, #111827 45%, #1e293b 100%) !important;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            font-size: 1.2rem;
+        }
+
+        .navbar .nav-link {
+            color: rgba(255,255,255,0.84) !important;
+            transition: all 0.2s ease;
+            border-radius: 10px;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+        }
+
+        .navbar .nav-link:hover,
+        .navbar .nav-link:focus {
+            color: #fff !important;
+            background-color: rgba(255,255,255,0.08);
+        }
+
+        .navbar .dropdown-menu {
+            border: 1px solid var(--mro-border);
+            border-radius: 14px;
+            box-shadow: var(--mro-shadow-md);
+            padding: 0.55rem;
+            min-width: 260px;
+        }
+
+        .navbar .dropdown-header {
+            color: var(--mro-text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.5rem 0.75rem 0.35rem;
+        }
+
+        .navbar .dropdown-item {
+            border-radius: 10px;
+            padding: 0.65rem 0.8rem;
+            font-weight: 500;
+        }
+
+        .navbar .dropdown-item:hover {
+            background-color: #eff6ff;
+            color: var(--mro-primary-dark);
+        }
+
+        .dropdown-divider {
+            border-top: 1px solid var(--mro-border);
+            margin: 0.4rem 0;
+        }
+
+        .container {
+            max-width: 1440px;
+        }
+
+        .page-container {
+            padding-bottom: 2rem;
+        }
+
+        .card {
+            border: 1px solid var(--mro-border);
+            border-radius: var(--mro-radius);
+            box-shadow: var(--mro-shadow-sm);
+            background: var(--mro-surface);
+        }
+
+        .card-header {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border-bottom: 1px solid var(--mro-border);
+            font-weight: 600;
+            color: var(--mro-text);
+            border-top-left-radius: var(--mro-radius) !important;
+            border-top-right-radius: var(--mro-radius) !important;
+            padding: 0.95rem 1.1rem;
+        }
+
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.6rem 1rem;
+            transition: all 0.18s ease-in-out;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #2563eb;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            border-color: #1d4ed8;
+        }
+
+        .form-control,
+        .form-select,
+        textarea {
+            border-radius: 12px !important;
+            border: 1px solid #d7dee7 !important;
+            padding-top: 0.65rem;
+            padding-bottom: 0.65rem;
+            box-shadow: none !important;
+            background-color: #fff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus,
+        textarea:focus {
+            border-color: #93c5fd !important;
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12) !important;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .table thead.table-dark th {
+            background: #0f172a !important;
+            border-color: #1e293b !important;
+            color: #f8fafc;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding-top: 0.9rem;
+            padding-bottom: 0.9rem;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.15s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8fbff;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+            padding: 0.85rem 0.9rem;
+        }
+
+        .badge {
+            border-radius: 999px;
+            padding: 0.45em 0.7em;
+            font-weight: 700;
+        }
+
+        .alert {
+            border-radius: 14px;
+            box-shadow: var(--mro-shadow-sm);
+        }
+
+        .modal-content {
+            border-radius: 18px;
+            border: 1px solid var(--mro-border);
+            box-shadow: var(--mro-shadow-md);
+        }
+
+        .modal-header,
+        .modal-footer {
+            border-color: var(--mro-border);
+        }
+
+        .text-muted {
+            color: var(--mro-text-muted) !important;
+        }
+
+        @media (max-width: 991.98px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+    </style>
 
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-light">
+<body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'dashboard' %}">MRO</a>
+<nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <div class="container-fluid px-lg-4">
+        <a class="navbar-brand" href="{% url 'dashboard' %}">MRO Inventory</a>
 
-        <!-- Toggler responsive -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
                 aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="mainNavbar">
+            {% if user.is_authenticated %}
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'item_list' %}">Artículos</a>
+
+                <!-- INVENTARIO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        Inventario
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-header">Gestión</li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'item_list' %}">
+                                Gestionar artículos
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'movement_create' %}">
+                                Registrar movimiento
+                            </a>
+                        </li>
+
+                        {% if can_transfer %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'transfer_create' %}">
+                                Transferencias
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% if can_adjust %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'adjustment_create' %}">
+                                Ajustes (ADJ)
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'cycle_count' %}">
+                                Conteo cíclico
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
                 </li>
 
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'movement_create' %}">Registrar movimiento</a>
-                </li>
-
-                {% if can_transfer %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'transfer_create' %}">Transferir</a>
-                </li>
-                {% endif %}
-
-                {% if can_adjust %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'adjustment_create' %}">Ajuste (ADJ)</a>
-                </li>
-                {% endif %}
-
+                <!-- WORK ORDERS -->
                 {% if can_adjust %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'workorders:list' %}">Work Orders</a>
                 </li>
                 {% endif %}
 
-                {% if can_export %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'reports_home' %}">Reportes</a>
-                </li>
-                {% endif %}
-
-                <!-- LOCATIONS -->
+                <!-- UBICACIONES -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         Ubicaciones
                     </a>
                     <ul class="dropdown-menu">
+                        <li class="dropdown-header">Estructura física</li>
                         <li>
                             <a class="dropdown-item" href="{% url 'warehouse_list' %}">
                                 Almacenes
@@ -74,13 +308,20 @@
                         </li>
                     </ul>
                 </li>
+
+                <!-- REPORTES -->
+                {% if can_export %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'reports_home' %}">Reportes</a>
+                </li>
                 {% endif %}
             </ul>
+            {% endif %}
 
-            <ul class="navbar-nav">
+            <ul class="navbar-nav align-items-lg-center">
                 {% if user.is_authenticated %}
-                <li class="nav-item d-flex align-items-center">
-                    <span class="navbar-text text-white me-2">
+                <li class="nav-item d-flex align-items-center flex-wrap">
+                    <span class="navbar-text text-white me-2 fw-semibold">
                         {{ user.username }}
                     </span>
 
@@ -101,8 +342,7 @@
                     {% endif %}
                 </li>
 
-                <li class="nav-item ms-2">
-                    <!-- Botón que abre el modal -->
+                <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
                     <button class="btn btn-outline-light btn-sm"
                             data-bs-toggle="modal"
                             data-bs-target="#logoutModal">
@@ -110,21 +350,23 @@
                     </button>
                 </li>
                 {% else %}
-                <li class="nav-item">
-                    <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">
-                        Iniciar sesión
-                    </a>
-                </li>
-                {% endif %}
+    {% if request.resolver_match.url_name != 'login' %}
+    <li class="nav-item">
+        <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">
+            Iniciar sesión
+        </a>
+    </li>
+    {% endif %}
+{% endif %}
             </ul>
         </div>
     </div>
 </nav>
 
-<div class="container">
+<main class="container page-container">
     {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -132,17 +374,14 @@
     {% endif %}
 
     {% block content %}{% endblock %}
-</div>
+</main>
 
-<!-- ========================= -->
-<!-- MODAL CONFIRMAR LOGOUT -->
-<!-- ========================= -->
 {% if user.is_authenticated %}
 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="logoutModalLabel">Cerrar sesión</h5>
+                <h5 class="modal-title fw-semibold" id="logoutModalLabel">Cerrar sesión</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
@@ -151,11 +390,10 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                     Cancelar
                 </button>
 
-                <!-- LOGOUT POST -->
                 <form method="post" action="{% url 'logout' %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">

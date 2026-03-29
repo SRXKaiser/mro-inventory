@@ -1,97 +1,392 @@
-{# templates/inventory/movement_form.html #}
 {% extends "base.html" %}
 {% block title %}Registrar movimiento{% endblock %}
 
+{% block extra_css %}
+<style>
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .page-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.4rem 1.45rem;
+    border: 1px solid #dbe3ee;
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(8, 145, 178, 0.04)),
+      #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.95rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .page-subtitle {
+    margin: 0.35rem 0 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .movement-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 1rem;
+  }
+
+  .form-card,
+  .aside-card {
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+  }
+
+  .form-card .card-header,
+  .aside-card .card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #dbe3ee;
+    padding: 1rem 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .form-card .card-body,
+  .aside-card .card-body {
+    padding: 1.25rem;
+  }
+
+  .section-label {
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 0.95rem;
+  }
+
+  .field-card {
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    background: #fbfdff;
+    padding: 1rem;
+    height: 100%;
+  }
+
+  .field-card--accent {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 0.5rem;
+  }
+
+  .field-help {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+
+  .field-error {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .error-summary {
+    border-radius: 16px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.95rem 1rem;
+  }
+
+  .stock-info-box {
+    display: none;
+    margin-top: 0.55rem;
+    align-items: center;
+    padding: 0.38rem 0.7rem;
+    border-radius: 999px;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    color: #1d4ed8;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .sticky-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 0.25rem;
+  }
+
+  .form-divider {
+    margin: 1.25rem 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .movement-type-note {
+    font-size: 0.84rem;
+    color: #64748b;
+    margin-top: 0.45rem;
+    line-height: 1.5;
+  }
+
+  .aside-intro {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  .aside-guide-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .aside-guide-row {
+    position: relative;
+    padding: 0.9rem 0.95rem 0.9rem 1rem;
+    border-radius: 14px;
+    border: 1px solid #e7edf5;
+    background: #fbfdff;
+    overflow: hidden;
+  }
+
+  .aside-guide-row::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: #cbd5e1;
+  }
+
+  .aside-guide-blue::before { background: #2563eb; }
+  .aside-guide-red::before { background: #dc2626; }
+  .aside-guide-amber::before { background: #f59e0b; }
+  .aside-guide-slate::before { background: #64748b; }
+
+  .aside-guide-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+  }
+
+  .aside-guide-text {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 1199.98px) {
+    .movement-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .page-hero {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+    }
+
+    .page-hero .btn,
+    .sticky-actions .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">Registrar movimiento</h2>
-    <a class="btn btn-outline-dark" href="{% url 'item_list' %}">Volver</a>
-</div>
+<div class="page-shell">
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <form method="post" novalidate>
-            {% csrf_token %}
-
-            {# Errores globales #}
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {{ form.non_field_errors }}
-                </div>
-            {% endif %}
-
-            {# Errores completos (útil para debug rápido) #}
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                    {{ form.errors }}
-                </div>
-            {% endif %}
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Artículo</label>
-                    {{ form.item }}
-                    {% if form.item.errors %}<div class="text-danger small">{{ form.item.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Tipo</label>
-                    {{ form.movement_type }}
-                    {% if form.movement_type.errors %}<div class="text-danger small">{{ form.movement_type.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Warehouse</label>
-                    {{ form.warehouse }}
-                    {% if form.warehouse.errors %}<div class="text-danger small">{{ form.warehouse.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Ubicación</label>
-                    {{ form.location }}
-                    {% if form.location.errors %}<div class="text-danger small">{{ form.location.errors }}</div>{% endif %}
-                    {% if form.location.help_text %}
-                        <div class="form-text">{{ form.location.help_text }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Cantidad</label>
-                    {{ form.quantity }}
-                    {% if form.quantity.errors %}<div class="text-danger small">{{ form.quantity.errors }}</div>{% endif %}
-                    <div class="form-text" id="stockInfo"></div>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Referencia</label>
-                    {{ form.reference }}
-                    {% if form.reference.errors %}<div class="text-danger small">{{ form.reference.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Notas</label>
-                    {{ form.notes }}
-                    {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors }}</div>{% endif %}
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Guardar</button>
-                <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
-            </div>
-        </form>
+  <section class="page-hero">
+    <div>
+      <h1 class="page-title">Registrar movimiento</h1>
+      <p class="page-subtitle">
+        Captura entradas, salidas y movimientos operativos con validación por ubicación y control de disponibilidad.
+      </p>
     </div>
-</div>
 
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Volver</a>
+    </div>
+  </section>
+
+  <section class="movement-layout">
+    <div class="card shadow-sm form-card">
+      <div class="card-header">Captura de movimiento</div>
+
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors or form.errors %}
+            <div class="error-summary mb-4">
+              {% if form.non_field_errors %}
+                <div>{{ form.non_field_errors }}</div>
+              {% endif %}
+              {% if form.errors %}
+                <div class="mt-1">{{ form.errors }}</div>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <div class="section-label">Contexto del movimiento</div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="field-card">
+                <label class="field-label">Artículo</label>
+                {{ form.item }}
+                {% if form.item.errors %}<div class="field-error">{{ form.item.errors }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="field-card">
+                <label class="field-label">Tipo</label>
+                {{ form.movement_type }}
+                {% if form.movement_type.errors %}<div class="field-error">{{ form.movement_type.errors }}</div>{% endif %}
+                <div class="movement-type-note">
+                  OUT valida contra stock disponible; IN incrementa stock en la ubicación seleccionada.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-label">Ubicación y cantidad</div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="field-card field-card--accent">
+                <label class="field-label">Warehouse</label>
+                {{ form.warehouse }}
+                {% if form.warehouse.errors %}<div class="field-error">{{ form.warehouse.errors }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-card field-card--accent">
+                <label class="field-label">Ubicación</label>
+                {{ form.location }}
+                {% if form.location.errors %}<div class="field-error">{{ form.location.errors }}</div>{% endif %}
+                {% if form.location.help_text %}
+                  <div class="field-help">{{ form.location.help_text }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-card field-card--accent">
+                <label class="field-label">Cantidad</label>
+                {{ form.quantity }}
+                {% if form.quantity.errors %}<div class="field-error">{{ form.quantity.errors }}</div>{% endif %}
+                <div class="stock-info-box" id="stockInfo"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-label">Trazabilidad</div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="field-card">
+                <label class="field-label">Referencia</label>
+                {{ form.reference }}
+                {% if form.reference.errors %}<div class="field-error">{{ form.reference.errors }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="field-card">
+                <label class="field-label">Notas</label>
+                {{ form.notes }}
+                {% if form.notes.errors %}<div class="field-error">{{ form.notes.errors }}</div>{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <div class="sticky-actions">
+            <button type="submit" class="btn btn-primary">Guardar movimiento</button>
+            <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <aside class="card shadow-sm aside-card">
+      <div class="card-header">Guía rápida</div>
+      <div class="card-body">
+        <div class="aside-intro">
+          Reglas operativas para capturar movimientos de inventario correctamente.
+        </div>
+
+        <div class="aside-guide-list">
+          <div class="aside-guide-row aside-guide-blue">
+            <div class="aside-guide-title">Entradas</div>
+            <div class="aside-guide-text">Incrementan el stock disponible en la ubicación elegida.</div>
+          </div>
+
+          <div class="aside-guide-row aside-guide-red">
+            <div class="aside-guide-title">Salidas</div>
+            <div class="aside-guide-text">Se validan contra disponibilidad real considerando reservas.</div>
+          </div>
+
+          <div class="aside-guide-row aside-guide-amber">
+            <div class="aside-guide-title">Ubicaciones</div>
+            <div class="aside-guide-text">Se cargan dinámicamente según el warehouse seleccionado.</div>
+          </div>
+
+          <div class="aside-guide-row aside-guide-slate">
+            <div class="aside-guide-title">Trazabilidad</div>
+            <div class="aside-guide-text">Usa referencia y notas para facilitar auditoría y Kardex.</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
 (function () {
     const inputs = document.querySelectorAll("input, select, textarea");
     inputs.forEach(el => {
         if (el.type === "checkbox") return;
-        if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
-        else el.classList.add("form-control");
+        if (el.tagName.toLowerCase() === "select") {
+            el.classList.add("form-select");
+        } else {
+            el.classList.add("form-control");
+        }
     });
 })();
 </script>
@@ -121,12 +416,13 @@
             locSel.appendChild(opt);
         });
 
-        if (keepSelected && current) locSel.value = current;
+        if (keepSelected && current) {
+            locSel.value = current;
+        }
     }
 
     whSel?.addEventListener("change", () => loadLocations(whSel.value, false));
 
-    // Carga inicial al abrir (si ya hay warehouse precargado)
     if (whSel?.value) {
         loadLocations(whSel.value, true);
     }
@@ -148,6 +444,7 @@
 
         if (!itemSel?.value || !locSel?.value) {
             infoEl.innerText = "";
+            infoEl.style.display = "none";
             qtyInp?.setCustomValidity("");
             return;
         }
@@ -158,7 +455,6 @@
         const r = await fetch(url);
         const d = await r.json();
 
-        // Preferimos available si viene, si no, fallback a on_hand
         const onHand = d.on_hand !== null ? parseFloat(d.on_hand) : null;
         const reserved = d.reserved !== null ? parseFloat(d.reserved) : 0;
         const available = d.available !== null ? parseFloat(d.available) : (onHand !== null ? (onHand - reserved) : null);
@@ -166,8 +462,10 @@
         if (available !== null && !Number.isNaN(available)) {
             lastAvailable = available;
             infoEl.innerText = `Disponible: ${d.available} | En mano: ${d.on_hand} | Reservado: ${d.reserved}`;
+            infoEl.style.display = "inline-flex";
         } else {
             infoEl.innerText = "";
+            infoEl.style.display = "none";
         }
 
         validateQty();
@@ -194,9 +492,7 @@
     qtyInp?.addEventListener("input", validateQty);
     typeSel?.addEventListener("change", validateQty);
 
-    // Si ya viene precargado item/location, intenta cargar
     setTimeout(refreshStock, 150);
 })();
 </script>
-
 {% endblock %}

@@ -1,107 +1,163 @@
 {% extends "base.html" %}
-{% block content %}
-<div class="container py-3">
+{% block title %}{{ wo.code }}{% endblock %}
 
-  <div class="d-flex justify-content-between align-items-center mb-2">
+{% block extra_css %}
+<style>
+  .page-shell { display:flex; flex-direction:column; gap:1.1rem; }
+
+  .page-hero{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
+    padding:1.4rem 1.45rem; border:1px solid #dbe3ee; border-radius:22px;
+    background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(99,102,241,.05)), #fff;
+    box-shadow:0 12px 28px rgba(15,23,42,.05);
+  }
+
+  .page-title{ margin:0; font-size:1.95rem; font-weight:800; letter-spacing:-.03em; color:#0f172a; }
+  .page-subtitle{ margin:.35rem 0 0; color:#64748b; font-size:.95rem; }
+
+  .meta-pills{ display:flex; flex-wrap:wrap; gap:.55rem; margin-top:.75rem; }
+  .meta-pill{
+    display:inline-flex; align-items:center; gap:.35rem; padding:.42rem .72rem;
+    border-radius:999px; background:#f8fafc; border:1px solid #e2e8f0;
+    color:#334155; font-size:.84rem; font-weight:700;
+  }
+
+  .status-pill,.priority-pill{
+    display:inline-flex; align-items:center; justify-content:center; min-width:92px;
+    padding:.4rem .65rem; border-radius:999px; font-size:.78rem; font-weight:800;
+    border:1px solid transparent;
+  }
+
+  .status-DRAFT{ background:#f1f5f9; color:#475569; border-color:#e2e8f0; }
+  .status-APPROVED{ background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe; }
+  .status-IN_PROGRESS{ background:#dcfce7; color:#166534; border-color:#bbf7d0; }
+  .status-PAUSED{ background:#fffbeb; color:#b45309; border-color:#fde68a; }
+  .status-COMPLETED{ background:#ecfdf5; color:#047857; border-color:#a7f3d0; }
+  .status-CANCELLED{ background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+
+  .priority-LOW,.priority-BAJA{ background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+  .priority-MED,.priority-MEDIUM,.priority-MEDIA{ background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+  .priority-HIGH,.priority-ALTA{ background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+  .priority-URG,.priority-URGENT,.priority-URGENTE{ background:#111827; color:#fff; border:1px solid #111827; }
+
+  .section-card{
+    border-radius:20px; overflow:hidden; border:1px solid #dbe3ee;
+  }
+  .section-card .card-header{
+    background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+    border-bottom:1px solid #dbe3ee; font-weight:800; color:#0f172a; padding:.95rem 1.1rem;
+  }
+
+  .quick-actions{ display:flex; flex-wrap:wrap; gap:.65rem; }
+
+  .operation-grid{
+    display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:1rem;
+  }
+
+  .trace-grid{
+    display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:1rem;
+  }
+
+  .info-note{ color:#64748b; font-size:.84rem; margin-top:.75rem; line-height:1.6; }
+
+  .list-group-item small, .list-group-item .text-muted{ line-height:1.5; }
+
+  @media (max-width:1199.98px){
+    .operation-grid, .trace-grid{ grid-template-columns:1fr; }
+  }
+
+  @media (max-width:767.98px){
+    .page-hero{ flex-direction:column; align-items:stretch; }
+    .page-title{ font-size:1.6rem; }
+    .page-hero .btn{ width:100%; }
+    .quick-actions form, .quick-actions a, .quick-actions button{ width:100%; }
+    .quick-actions .btn{ width:100%; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+
+  <section class="page-hero">
     <div>
-      <h3 class="mb-0">{{ wo.code }}</h3>
-      <div class="text-muted">
-        Status: {{ wo.status }} | Prioridad: {{ wo.priority }}
-        {% if wo.assigned_to %} | Asignado: {{ wo.assigned_to }}{% endif %}
+      <h1 class="page-title">{{ wo.code }}</h1>
+      <p class="page-subtitle">Detalle operativo, líneas, reservas, consumos y devoluciones de la orden de trabajo.</p>
+
+      <div class="meta-pills">
+        <span class="meta-pill">Status: <span class="status-pill status-{{ wo.status }}">{{ wo.status }}</span></span>
+        <span class="meta-pill">Prioridad: <span class="priority-pill priority-{{ wo.priority }}">{{ wo.priority }}</span></span>
+        {% if wo.assigned_to %}
+          <span class="meta-pill">Asignado: {{ wo.assigned_to }}</span>
+        {% endif %}
       </div>
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-
-      {# ======= WORKFLOW (solo supervisor/admin) ======= #}
-      {% if can_manage_wo %}
-
-        {# DRAFT -> APPROVED / CANCELLED #}
-        {% if wo.status == "DRAFT" %}
-          <form method="post" action="{% url 'workorders:approve' wo.id %}">
-            {% csrf_token %}
-            <button class="btn btn-success" type="submit"
-                    onclick="return confirm('¿Aprobar esta Work Order?');">
-              Aprobar
-            </button>
-          </form>
-
-          <form method="post" action="{% url 'workorders:cancel' wo.id %}">
-            {% csrf_token %}
-            <input type="hidden" name="reason" value="Cancelación desde UI">
-            <button class="btn btn-outline-danger" type="submit"
-                    onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">
-              Cancelar
-            </button>
-          </form>
-        {% endif %}
-
-        {# APPROVED -> CANCELLED #}
-        {% if wo.status == "APPROVED" %}
-          <form method="post" action="{% url 'workorders:cancel' wo.id %}">
-            {% csrf_token %}
-            <input type="hidden" name="reason" value="Cancelación desde UI">
-            <button class="btn btn-outline-danger" type="submit"
-                    onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">
-              Cancelar
-            </button>
-          </form>
-        {% endif %}
-
-        {# IN_PROGRESS -> PAUSED / COMPLETED #}
-        {% if wo.status == "IN_PROGRESS" %}
-          <form method="post" action="{% url 'workorders:pause' wo.id %}">
-            {% csrf_token %}
-            <input type="hidden" name="reason" value="Pausado desde UI">
-            <button class="btn btn-warning" type="submit"
-                    onclick="return confirm('¿Pausar esta Work Order?');">
-              Pausar
-            </button>
-          </form>
-
-          <form method="post" action="{% url 'workorders:complete' wo.id %}">
-            {% csrf_token %}
-            <button class="btn btn-primary" type="submit"
-                    onclick="return confirm('¿Marcar como COMPLETED esta Work Order?');">
-              Completar
-            </button>
-          </form>
-        {% endif %}
-
-        {# PAUSED -> IN_PROGRESS (reanudar) #}
-        {% if wo.status == "PAUSED" %}
-          <form method="post" action="{% url 'workorders:resume' wo.id %}">
-            {% csrf_token %}
-            <button class="btn btn-success" type="submit"
-                    onclick="return confirm('¿Reanudar esta Work Order?');">
-              Reanudar
-            </button>
-          </form>
-
-          <form method="post" action="{% url 'workorders:cancel' wo.id %}">
-            {% csrf_token %}
-            <input type="hidden" name="reason" value="Cancelación desde UI">
-            <button class="btn btn-outline-danger" type="submit"
-                    onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">
-              Cancelar
-            </button>
-          </form>
-        {% endif %}
-
-        {# COMPLETED: aquí podrías poner acciones futuras si agregas "close" real #}
-        {# {% if wo.status == "COMPLETED" %} ... {% endif %} #}
-
-      {% endif %}
-
-      {# ======= Acciones generales ======= #}
-      <a class="btn btn-outline-primary" href="{% url 'workorders:line_create' wo.id %}">
-        Agregar línea
-      </a>
       <a class="btn btn-outline-secondary" href="{% url 'workorders:list' %}">Volver</a>
     </div>
-  </div>
+  </section>
 
-  <div class="card mb-3 shadow-sm">
+  <section class="card shadow-sm section-card">
+    <div class="card-header">Acciones</div>
+    <div class="card-body">
+      <div class="quick-actions">
+
+        {% if can_manage_wo %}
+          {% if wo.status == "DRAFT" %}
+            <form method="post" action="{% url 'workorders:approve' wo.id %}">
+              {% csrf_token %}
+              <button class="btn btn-success" type="submit" onclick="return confirm('¿Aprobar esta Work Order?');">Aprobar</button>
+            </form>
+
+            <form method="post" action="{% url 'workorders:cancel' wo.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="reason" value="Cancelación desde UI">
+              <button class="btn btn-outline-danger" type="submit" onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">Cancelar</button>
+            </form>
+          {% endif %}
+
+          {% if wo.status == "APPROVED" %}
+            <form method="post" action="{% url 'workorders:cancel' wo.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="reason" value="Cancelación desde UI">
+              <button class="btn btn-outline-danger" type="submit" onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">Cancelar</button>
+            </form>
+          {% endif %}
+
+          {% if wo.status == "IN_PROGRESS" %}
+            <form method="post" action="{% url 'workorders:pause' wo.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="reason" value="Pausado desde UI">
+              <button class="btn btn-warning" type="submit" onclick="return confirm('¿Pausar esta Work Order?');">Pausar</button>
+            </form>
+
+            <form method="post" action="{% url 'workorders:complete' wo.id %}">
+              {% csrf_token %}
+              <button class="btn btn-primary" type="submit" onclick="return confirm('¿Marcar como COMPLETED esta Work Order?');">Completar</button>
+            </form>
+          {% endif %}
+
+          {% if wo.status == "PAUSED" %}
+            <form method="post" action="{% url 'workorders:resume' wo.id %}">
+              {% csrf_token %}
+              <button class="btn btn-success" type="submit" onclick="return confirm('¿Reanudar esta Work Order?');">Reanudar</button>
+            </form>
+
+            <form method="post" action="{% url 'workorders:cancel' wo.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="reason" value="Cancelación desde UI">
+              <button class="btn btn-outline-danger" type="submit" onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">Cancelar</button>
+            </form>
+          {% endif %}
+        {% endif %}
+
+        <a class="btn btn-outline-primary" href="{% url 'workorders:line_create' wo.id %}">Agregar línea</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="card shadow-sm section-card">
     <div class="card-header">Líneas</div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -126,94 +182,71 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="5" class="text-muted p-3">
-                Aún no hay líneas. Agrega una línea para poder reservar/consumir.
-              </td>
+              <td colspan="5" class="text-muted p-3">Aún no hay líneas. Agrega una línea para poder reservar o consumir.</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     </div>
-  </div>
+  </section>
 
-  {# ======= Panel de operaciones (usa banderas ya calculadas en la view) ======= #}
-  <div class="row g-3">
-
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-header">Reservar</div>
-        <div class="card-body">
-          {% if can_reserve %}
-            <form method="post" action="{% url 'workorders:reserve' wo.id %}">
-              {% csrf_token %}
-              {{ reserve_form.as_p }}
-              <button class="btn btn-primary w-100" type="submit">Reservar</button>
-            </form>
-            <div class="text-muted small mt-2">
-              Incrementa <code>StockSnapshot.reserved</code> y no genera Kardex.
-            </div>
-          {% else %}
-            <div class="alert alert-light text-muted mb-0">
-              Reserva no disponible (estado {{ wo.status }} o sin permisos).
-            </div>
-          {% endif %}
-        </div>
+  <section class="operation-grid">
+    <div class="card shadow-sm section-card">
+      <div class="card-header">Reservar</div>
+      <div class="card-body">
+        {% if can_reserve %}
+          <form method="post" action="{% url 'workorders:reserve' wo.id %}">
+            {% csrf_token %}
+            {{ reserve_form.as_p }}
+            <button class="btn btn-primary w-100" type="submit">Reservar</button>
+          </form>
+          <div class="info-note">Incrementa <code>StockSnapshot.reserved</code> y no genera Kardex.</div>
+        {% else %}
+          <div class="alert alert-light text-muted mb-0">Reserva no disponible para el estado actual o sin permisos.</div>
+        {% endif %}
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-header">Issue (Consumo)</div>
-        <div class="card-body">
-          {% if can_issue %}
-            <form method="post" action="{% url 'workorders:issue' wo.id %}">
-              {% csrf_token %}
-              {{ consume_form.as_p }}
-              <button class="btn btn-danger w-100" type="submit">Registrar Issue</button>
-            </form>
-            <div class="text-muted small mt-2">
-              Genera <code>InventoryMovement OUT</code> con referencia <code>WO:{{ wo.code }}</code>.
-            </div>
-          {% else %}
-            <div class="alert alert-light text-muted mb-0">
-              Issue no disponible en estado {{ wo.status }} o sin permisos.
-            </div>
-          {% endif %}
-        </div>
+    <div class="card shadow-sm section-card">
+      <div class="card-header">Issue (Consumo)</div>
+      <div class="card-body">
+        {% if can_issue %}
+          <form method="post" action="{% url 'workorders:issue' wo.id %}">
+            {% csrf_token %}
+            {{ consume_form.as_p }}
+            <button class="btn btn-danger w-100" type="submit">Registrar Issue</button>
+          </form>
+          <div class="info-note">Genera <code>InventoryMovement OUT</code> con referencia <code>WO:{{ wo.code }}</code>.</div>
+        {% else %}
+          <div class="alert alert-light text-muted mb-0">Issue no disponible para el estado actual o sin permisos.</div>
+        {% endif %}
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-header">Return (Devolución)</div>
-        <div class="card-body">
-          {% if can_return %}
-            <form method="post" action="{% url 'workorders:return_' wo.id %}">
-              {% csrf_token %}
-              {{ return_form.as_p }}
-              <button class="btn btn-success w-100" type="submit">Devolver</button>
-            </form>
-            <div class="text-muted small mt-2">
-              Genera <code>InventoryMovement IN</code> con referencia <code>WO:{{ wo.code }}</code>.
-            </div>
-          {% else %}
-            <div class="alert alert-light text-muted mb-0">
-              Return no disponible en estado {{ wo.status }} o sin permisos.
-            </div>
-          {% endif %}
-        </div>
+    <div class="card shadow-sm section-card">
+      <div class="card-header">Return (Devolución)</div>
+      <div class="card-body">
+        {% if can_return %}
+          <form method="post" action="{% url 'workorders:return_' wo.id %}">
+            {% csrf_token %}
+            {{ return_form.as_p }}
+            <button class="btn btn-success w-100" type="submit">Devolver</button>
+          </form>
+          <div class="info-note">Genera <code>InventoryMovement IN</code> con referencia <code>WO:{{ wo.code }}</code>.</div>
+        {% else %}
+          <div class="alert alert-light text-muted mb-0">Return no disponible para el estado actual o sin permisos.</div>
+        {% endif %}
       </div>
     </div>
+  </section>
 
-  </div>
-
-  <div class="card mt-3 shadow-sm">
+  <section class="card shadow-sm section-card">
     <div class="card-header">Trazabilidad</div>
     <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <h6 class="mb-2">Reservas</h6>
+      <div class="trace-grid">
+        <div>
+          <h6 class="mb-3">Reservas</h6>
           <ul class="list-group list-group-flush">
             {% for r in wo.reservations.all %}
               <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -229,8 +262,8 @@
           </ul>
         </div>
 
-        <div class="col-md-4">
-          <h6 class="mb-2">Issues (Consumos)</h6>
+        <div>
+          <h6 class="mb-3">Issues (Consumos)</h6>
           <ul class="list-group list-group-flush">
             {% for i in wo.issues.all %}
               <li class="list-group-item">
@@ -243,8 +276,8 @@
           </ul>
         </div>
 
-        <div class="col-md-4">
-          <h6 class="mb-2">Returns (Devoluciones)</h6>
+        <div>
+          <h6 class="mb-3">Returns (Devoluciones)</h6>
           <ul class="list-group list-group-flush">
             {% for r in wo.returns.all %}
               <li class="list-group-item">
@@ -258,7 +291,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
 </div>
 {% endblock %}

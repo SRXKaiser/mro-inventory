@@ -1,77 +1,292 @@
 {% extends "base.html" %}
 {% block title %}Anular movimiento{% endblock %}
 
+{% block extra_css %}
+<style>
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .page-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.4rem 1.45rem;
+    border: 1px solid #fecaca;
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(220, 38, 38, 0.08), rgba(245, 158, 11, 0.04)),
+      #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.95rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .page-subtitle {
+    margin: 0.35rem 0 0 0;
+    color: #7f1d1d;
+    font-size: 0.95rem;
+  }
+
+  .warning-card,
+  .form-card {
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+  }
+
+  .warning-card .card-body,
+  .form-card .card-body {
+    padding: 1.25rem;
+  }
+
+  .warning-card {
+    border-color: #fcd34d;
+    background: #fffbeb;
+  }
+
+  .warning-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .warning-item {
+    padding: 0.9rem 0.95rem;
+    border-radius: 14px;
+    border: 1px solid #fde68a;
+    background: rgba(255, 255, 255, 0.65);
+  }
+
+  .warning-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #92400e;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.3rem;
+  }
+
+  .warning-value {
+    color: #451a03;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .form-card {
+    border: 1px solid #dbe3ee;
+  }
+
+  .form-card .card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #dbe3ee;
+    padding: 1rem 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .section-label {
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 0.95rem;
+  }
+
+  .field-card {
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    background: #fbfdff;
+    padding: 1rem;
+    height: 100%;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 0.5rem;
+  }
+
+  .field-error {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .error-summary {
+    border-radius: 16px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.95rem 1rem;
+  }
+
+  .form-divider {
+    margin: 1.25rem 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .sticky-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  @media (max-width: 767.98px) {
+    .page-hero {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+    }
+
+    .warning-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .page-hero .btn,
+    .sticky-actions .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">Anular movimiento</h2>
-    <a class="btn btn-outline-dark" href="{% url 'item_detail' movement.item.id %}">Volver</a>
-</div>
-
-<div class="alert alert-warning">
-    <div><strong>Movimiento:</strong> #{{ movement.id }}</div>
-    <div><strong>Item:</strong> {{ movement.item.sku }} - {{ movement.item.name }}</div>
-    <div><strong>Tipo:</strong> {{ movement.movement_type }} | <strong>Cantidad:</strong> {{ movement.quantity }}</div>
-    <div><strong>Ubicación:</strong>
-        {% if movement.location %}
-            {{ movement.location.warehouse.code }} / {{ movement.location.code }}
-        {% else %}
-            N/A
-        {% endif %}
+<div class="page-shell">
+  <section class="page-hero">
+    <div>
+      <h1 class="page-title">Anular movimiento</h1>
+      <p class="page-subtitle">
+        Esta operación revierte un movimiento existente y debe ejecutarse con una justificación clara.
+      </p>
     </div>
-    <div><strong>Fecha:</strong> {{ movement.occurred_at }}</div>
-</div>
 
-<div class="card shadow-sm">
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary" href="{% url 'item_detail' movement.item.id %}">Volver</a>
+    </div>
+  </section>
+
+  <section class="card shadow-sm warning-card">
     <div class="card-body">
-        <form method="post" novalidate>
-            {% csrf_token %}
+      <div class="warning-grid">
+        <div class="warning-item">
+          <div class="warning-label">Movimiento</div>
+          <div class="warning-value">#{{ movement.id }}</div>
+        </div>
 
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {{ form.non_field_errors }}
-                </div>
+        <div class="warning-item">
+          <div class="warning-label">Item</div>
+          <div class="warning-value">{{ movement.item.sku }} - {{ movement.item.name }}</div>
+        </div>
+
+        <div class="warning-item">
+          <div class="warning-label">Tipo y cantidad</div>
+          <div class="warning-value">{{ movement.movement_type }} | {{ movement.quantity }}</div>
+        </div>
+
+        <div class="warning-item">
+          <div class="warning-label">Ubicación</div>
+          <div class="warning-value">
+            {% if movement.location %}
+              {{ movement.location.warehouse.code }} / {{ movement.location.code }}
+            {% else %}
+              N/A
             {% endif %}
+          </div>
+        </div>
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Motivo</label>
-                    {{ form.reason }}
-                    {% if form.reason.errors %}<div class="text-danger small">{{ form.reason.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Referencia</label>
-                    {{ form.reference }}
-                    {% if form.reference.errors %}<div class="text-danger small">{{ form.reference.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-12">
-                    <label class="form-label">Notas</label>
-                    {{ form.notes }}
-                    {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors }}</div>{% endif %}
-                </div>
-
-            <hr class="my-4">
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-danger">Anular</button>
-                <a class="btn btn-outline-secondary" href="{% url 'item_detail' movement.item.id %}">Cancelar</a>
-            </div>
-        </form>
+        <div class="warning-item">
+          <div class="warning-label">Fecha</div>
+          <div class="warning-value">{{ movement.occurred_at }}</div>
+        </div>
+      </div>
     </div>
-</div>
+  </section>
 
+  <section class="card shadow-sm form-card">
+    <div class="card-header">Justificación de anulación</div>
+
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors or form.errors %}
+          <div class="error-summary mb-4">
+            {% if form.non_field_errors %}
+              <div>{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% if form.errors %}
+              <div class="mt-1">{{ form.errors }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="section-label">Motivo y referencia</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="field-card">
+              <label class="field-label">Motivo</label>
+              {{ form.reason }}
+              {% if form.reason.errors %}<div class="field-error">{{ form.reason.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="field-card">
+              <label class="field-label">Referencia</label>
+              {{ form.reference }}
+              {% if form.reference.errors %}<div class="field-error">{{ form.reference.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-12">
+            <div class="field-card">
+              <label class="field-label">Notas</label>
+              {{ form.notes }}
+              {% if form.notes.errors %}<div class="field-error">{{ form.notes.errors }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="sticky-actions">
+          <button type="submit" class="btn btn-danger">Anular movimiento</button>
+          <a class="btn btn-outline-secondary" href="{% url 'item_detail' movement.item.id %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
 (function () {
-    const inputs = document.querySelectorAll("input, select, textarea");
-    inputs.forEach(el => {
-        if (el.type === "checkbox") return;
-        if (el.tagName.toLowerCase() === "select") {
-            el.classList.add("form-select");
-        } else {
-            el.classList.add("form-control");
-        }
-    });
+  const inputs = document.querySelectorAll("input, select, textarea");
+  inputs.forEach(el => {
+    if (el.type === "checkbox") return;
+    if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
+    else el.classList.add("form-control");
+  });
 })();
 </script>
 {% endblock %}

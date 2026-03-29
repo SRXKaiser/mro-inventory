@@ -1,116 +1,285 @@
 {% extends "base.html" %}
 {% block title %}Reporte Movimientos{% endblock %}
 
+{% block extra_css %}
+<style>
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .page-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.4rem 1.45rem;
+    border: 1px solid #dbe3ee;
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(16, 185, 129, 0.04)),
+      #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.95rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .page-subtitle {
+    margin: 0.35rem 0 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .filter-card,
+  .table-card {
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+  }
+
+  .table-card .card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #dbe3ee;
+    font-weight: 800;
+    color: #0f172a;
+    padding: 0.95rem 1.1rem;
+  }
+
+  .results-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+
+  .type-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    padding: 0.34rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .type-in {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+
+  .type-out {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  .type-adj {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+
+  .type-generic {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+  }
+
+  .void-pill {
+    margin-left: 0.35rem;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    padding: 0.3rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  .pagination-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  @media (max-width: 767.98px) {
+    .page-hero {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+    }
+
+    .page-hero .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="mb-0">Reporte: Movimientos</h2>
-  <a class="btn btn-outline-dark" href="{% url 'reports_home' %}">Volver</a>
-</div>
+<div class="page-shell">
 
-<form method="get" class="card shadow-sm mb-3">
-  <div class="card-body">
-    <div class="row g-3">
-      <div class="col-md-2">
-        <label class="form-label">Item ID</label>
-        <input class="form-control" name="item_id" value="{{ filter_item_id }}">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Location ID</label>
-        <input class="form-control" name="location_id" value="{{ filter_location_id }}">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Tipo</label>
-        <select class="form-select" name="type">
-          <option value="">Todos</option>
-          <option value="IN"  {% if filter_type == "IN" %}selected{% endif %}>IN</option>
-          <option value="OUT" {% if filter_type == "OUT" %}selected{% endif %}>OUT</option>
-          <option value="ADJ" {% if filter_type == "ADJ" %}selected{% endif %}>ADJ</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Desde</label>
-        <input type="date" class="form-control" name="from" value="{{ filter_from }}">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Hasta</label>
-        <input type="date" class="form-control" name="to" value="{{ filter_to }}">
-      </div>
-      <div class="col-md-2 d-flex align-items-end">
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" name="void" value="1" id="id_void"
-                 {% if filter_void == "1" %}checked{% endif %}>
-          <label class="form-check-label" for="id_void">Incluir anulados</label>
+  <section class="page-hero">
+    <div>
+      <h1 class="page-title">Reporte: Movimientos</h1>
+      <p class="page-subtitle">
+        Kardex general con filtros por item, ubicación, tipo de movimiento, fechas y anulaciones.
+      </p>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-dark" href="{% url 'reports_home' %}">Volver</a>
+    </div>
+  </section>
+
+  <section class="card shadow-sm filter-card">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-2">
+          <label class="form-label">Item ID</label>
+          <input class="form-control" name="item_id" value="{{ filter_item_id }}">
         </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Location ID</label>
+          <input class="form-control" name="location_id" value="{{ filter_location_id }}">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" name="type">
+            <option value="">Todos</option>
+            <option value="IN"  {% if filter_type == "IN" %}selected{% endif %}>IN</option>
+            <option value="OUT" {% if filter_type == "OUT" %}selected{% endif %}>OUT</option>
+            <option value="ADJ" {% if filter_type == "ADJ" %}selected{% endif %}>ADJ</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Desde</label>
+          <input type="date" class="form-control" name="from" value="{{ filter_from }}">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Hasta</label>
+          <input type="date" class="form-control" name="to" value="{{ filter_to }}">
+        </div>
+
+        <div class="col-md-2">
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="void" value="1" id="id_void"
+                   {% if filter_void == "1" %}checked{% endif %}>
+            <label class="form-check-label" for="id_void">Incluir anulados</label>
+          </div>
+        </div>
+
+        <div class="col-12 d-flex gap-2 flex-wrap">
+          <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+
+          <a class="btn btn-outline-success"
+             href="?item_id={{ filter_item_id }}&location_id={{ filter_location_id }}&type={{ filter_type }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}&download=1">
+            Descargar CSV
+          </a>
+
+          <a class="btn btn-outline-secondary" href="{% url 'report_movements' %}">Limpiar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="card shadow-sm table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <span>Resultados del kardex</span>
+      <span class="results-pill">Página {{ movements.number }} de {{ movements.paginator.num_pages }}</span>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th class="text-end">Qty</th>
+              <th>Item</th>
+              <th>WH</th>
+              <th>Loc</th>
+              <th>Usuario</th>
+              <th>Ref</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in movements %}
+            <tr>
+              <td>{{ m.id }}</td>
+              <td>{{ m.occurred_at }}</td>
+              <td>
+                {% if m.movement_type == "IN" %}
+                  <span class="type-pill type-in">IN</span>
+                {% elif m.movement_type == "OUT" %}
+                  <span class="type-pill type-out">OUT</span>
+                {% elif m.movement_type == "ADJ" %}
+                  <span class="type-pill type-adj">ADJ</span>
+                {% else %}
+                  <span class="type-pill type-generic">{{ m.movement_type }}</span>
+                {% endif %}
+                {% if m.is_void %}
+                  <span class="void-pill">VOID</span>
+                {% endif %}
+              </td>
+              <td class="text-end fw-semibold">{{ m.quantity }}</td>
+              <td>{{ m.item.sku }}</td>
+              <td>{% if m.location %}{{ m.location.warehouse.code }}{% endif %}</td>
+              <td>{% if m.location %}{{ m.location.code }}{% endif %}</td>
+              <td>{{ m.registered_by }}</td>
+              <td class="text-truncate" style="max-width: 240px;">{{ m.reference|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="text-muted p-3">Sin registros con esos filtros.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
+  </section>
 
-    <hr class="my-3">
+  {% if movements.paginator.num_pages > 1 %}
+  <nav class="pagination-wrap">
+    <ul class="pagination">
+      {% if movements.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ movements.previous_page_number }}&item_id={{ filter_item_id }}&location_id={{ filter_location_id }}&type={{ filter_type }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}">Anterior</a>
+        </li>
+      {% endif %}
+      <li class="page-item disabled">
+        <span class="page-link">Página {{ movements.number }} de {{ movements.paginator.num_pages }}</span>
+      </li>
+      {% if movements.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ movements.next_page_number }}&item_id={{ filter_item_id }}&location_id={{ filter_location_id }}&type={{ filter_type }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}">Siguiente</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
 
-    <div class="d-flex gap-2">
-      <button class="btn btn-primary" type="submit">Aplicar filtros</button>
-
-      <a class="btn btn-outline-success"
-         href="?item_id={{ filter_item_id }}&location_id={{ filter_location_id }}&type={{ filter_type }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}&download=1">
-        Descargar CSV
-      </a>
-    </div>
-  </div>
-</form>
-
-<div class="card shadow-sm">
-  <div class="card-body p-0">
-    <div class="table-responsive">
-      <table class="table table-sm mb-0 align-middle">
-        <thead class="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th class="text-end">Qty</th>
-            <th>Item</th>
-            <th>WH</th>
-            <th>Loc</th>
-            <th>Usuario</th>
-            <th>Ref</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for m in movements %}
-          <tr>
-            <td>{{ m.id }}</td>
-            <td>{{ m.occurred_at }}</td>
-            <td>{{ m.movement_type }}{% if m.is_void %} <span class="badge bg-warning text-dark">VOID</span>{% endif %}</td>
-            <td class="text-end">{{ m.quantity }}</td>
-            <td>{{ m.item.sku }}</td>
-            <td>{% if m.location %}{{ m.location.warehouse.code }}{% endif %}</td>
-            <td>{% if m.location %}{{ m.location.code }}{% endif %}</td>
-            <td>{{ m.registered_by }}</td>
-            <td class="text-truncate" style="max-width: 240px;">{{ m.reference }}</td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="9" class="text-muted p-3">Sin registros con esos filtros.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
 </div>
-
-{% if movements.paginator.num_pages > 1 %}
-<nav class="mt-3">
-  <ul class="pagination">
-    {% if movements.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ movements.previous_page_number }}&item_id={{ filter_item_id }}&location_id={{ filter_location_id }}&type={{ filter_type }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}">Anterior</a>
-      </li>
-    {% endif %}
-    <li class="page-item disabled"><span class="page-link">Página {{ movements.number }} de {{ movements.paginator.num_pages }}</span></li>
-    {% if movements.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ movements.next_page_number }}&item_id={{ filter_item_id }}&location_id={{ filter_location_id }}&type={{ filter_type }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}">Siguiente</a>
-      </li>
-    {% endif %}
-  </ul>
-</nav>
-{% endif %}
 {% endblock %}

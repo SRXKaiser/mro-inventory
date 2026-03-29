@@ -1,53 +1,137 @@
 {% extends "base.html" %}
 {% block title %}{{ title }}{% endblock %}
 
+{% block extra_css %}
+<style>
+  .page-shell { display:flex; flex-direction:column; gap:1.1rem; }
+  .page-hero{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
+    padding:1.4rem 1.45rem; border:1px solid #dbe3ee; border-radius:22px;
+    background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(8,145,178,.04)), #fff;
+    box-shadow:0 12px 28px rgba(15,23,42,.05);
+  }
+  .page-title{ margin:0; font-size:1.95rem; font-weight:800; letter-spacing:-.03em; color:#0f172a; }
+  .page-subtitle{ margin:.35rem 0 0; color:#64748b; font-size:.95rem; }
+
+  .form-card{ border-radius:22px; overflow:hidden; border:1px solid #dbe3ee; }
+  .form-card .card-header{
+    background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+    border-bottom:1px solid #dbe3ee; padding:1rem 1.15rem; font-weight:800; color:#0f172a;
+  }
+  .form-card .card-body{ padding:1.25rem; }
+
+  .section-label{
+    font-size:.86rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
+    color:#64748b; margin-bottom:.95rem;
+  }
+
+  .field-card{
+    border:1px solid #e7edf5; border-radius:16px; background:#fbfdff; padding:1rem; height:100%;
+  }
+  .field-label{
+    display:block; font-size:.9rem; font-weight:700; color:#334155; margin-bottom:.5rem;
+  }
+  .field-error{ margin-top:.4rem; font-size:.82rem; color:#dc2626; font-weight:600; }
+  .field-help{ margin-top:.4rem; font-size:.82rem; color:#64748b; }
+
+  .switch-box{
+    display:flex; align-items:center; gap:.7rem; min-height:46px;
+    padding:.75rem .9rem; border:1px solid #dbe3ee; border-radius:14px; background:#fff;
+  }
+  .switch-box .form-check{ margin:0; display:flex; align-items:center; gap:.6rem; }
+  .switch-box .form-check-input{ margin:0; }
+  .switch-box .form-check-label{ margin:0; font-weight:700; color:#334155; }
+
+  .error-summary{
+    border-radius:16px; border:1px solid #fecaca; background:#fef2f2;
+    color:#991b1b; padding:.95rem 1rem;
+  }
+
+  .form-divider{ margin:1.25rem 0; border-top:1px solid #e5e7eb; }
+  .sticky-actions{ display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; }
+
+  @media (max-width:767.98px){
+    .page-hero{ flex-direction:column; align-items:stretch; }
+    .page-title{ font-size:1.6rem; }
+    .page-hero .btn, .sticky-actions .btn{ width:100%; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">{{ title }}</h2>
-    <a class="btn btn-outline-dark" href="{% url 'warehouse_list' %}">Volver</a>
-</div>
+<div class="page-shell">
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <form method="post" novalidate>
-            {% csrf_token %}
-
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-            {% endif %}
-
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Código</label>
-                    {{ form.code }}
-                    {% if form.code.errors %}<div class="text-danger small">{{ form.code.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-8">
-                    <label class="form-label">Nombre</label>
-                    {{ form.name }}
-                    {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="form-check">
-                        {{ form.is_active }}
-                        <label class="form-check-label">Activo</label>
-                    </div>
-                    {% if form.is_active.errors %}<div class="text-danger small">{{ form.is_active.errors }}</div>{% endif %}
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            <div class="d-flex gap-2">
-                <button class="btn btn-primary" type="submit">Guardar</button>
-                <a class="btn btn-outline-secondary" href="{% url 'warehouse_list' %}">Cancelar</a>
-            </div>
-        </form>
+  <section class="page-hero">
+    <div>
+      <h1 class="page-title">{{ title }}</h1>
+      <p class="page-subtitle">Define la identidad del almacén y su estado de disponibilidad para operación.</p>
     </div>
-</div>
 
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary" href="{% url 'warehouse_list' %}">Volver</a>
+    </div>
+  </section>
+
+  <section class="card shadow-sm form-card">
+    <div class="card-header">Datos del almacén</div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors or form.errors %}
+          <div class="error-summary mb-4">
+            {% if form.non_field_errors %}<div>{{ form.non_field_errors }}</div>{% endif %}
+            {% if form.errors %}<div class="mt-1">{{ form.errors }}</div>{% endif %}
+          </div>
+        {% endif %}
+
+        <div class="section-label">Información general</div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="field-card">
+              <label class="field-label">Código</label>
+              {{ form.code }}
+              {% if form.code.errors %}<div class="field-error">{{ form.code.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-8">
+            <div class="field-card">
+              <label class="field-label">Nombre</label>
+              {{ form.name }}
+              {% if form.name.errors %}<div class="field-error">{{ form.name.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="field-card">
+              <label class="field-label">Estado</label>
+              <div class="switch-box">
+                <div class="form-check">
+                  {{ form.is_active }}
+                  <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Activo</label>
+                </div>
+              </div>
+              {% if form.is_active.errors %}<div class="field-error">{{ form.is_active.errors }}</div>{% endif %}
+              <div class="field-help">Desactívalo si el almacén ya no debe utilizarse en operación.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="sticky-actions">
+          <button class="btn btn-primary" type="submit">Guardar</button>
+          <a class="btn btn-outline-secondary" href="{% url 'warehouse_list' %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
 (function () {
     const inputs = document.querySelectorAll("input, select, textarea");

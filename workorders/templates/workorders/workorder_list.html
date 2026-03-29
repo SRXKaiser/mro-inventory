@@ -1,48 +1,111 @@
 {% extends "base.html" %}
+{% block title %}Work Orders{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-shell { display:flex; flex-direction:column; gap:1.1rem; }
+  .page-hero{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
+    padding:1.4rem 1.45rem; border:1px solid #dbe3ee; border-radius:22px;
+    background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(99,102,241,.05)), #fff;
+    box-shadow:0 12px 28px rgba(15,23,42,.05);
+  }
+  .page-title{ margin:0; font-size:2rem; font-weight:800; letter-spacing:-.03em; color:#0f172a; }
+  .page-subtitle{ margin:.35rem 0 0; color:#64748b; font-size:.95rem; }
+
+  .toolbar-card,.list-card{ border-radius:20px; overflow:hidden; border:1px solid #dbe3ee; }
+  .toolbar-card .card-body{ padding:1rem 1.1rem; }
+  .list-card .card-header{
+    background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+    border-bottom:1px solid #dbe3ee; font-weight:700; color:#0f172a; padding:.95rem 1.1rem;
+  }
+
+  .status-pill,.priority-pill{
+    display:inline-flex; align-items:center; justify-content:center; min-width:92px;
+    padding:.4rem .65rem; border-radius:999px; font-size:.78rem; font-weight:800;
+    border:1px solid transparent;
+  }
+
+  .status-DRAFT{ background:#f1f5f9; color:#475569; border-color:#e2e8f0; }
+  .status-APPROVED{ background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe; }
+  .status-IN_PROGRESS{ background:#dcfce7; color:#166534; border-color:#bbf7d0; }
+  .status-PAUSED{ background:#fffbeb; color:#b45309; border-color:#fde68a; }
+  .status-COMPLETED{ background:#ecfdf5; color:#047857; border-color:#a7f3d0; }
+  .status-CANCELLED{ background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+
+  .priority-LOW,.priority-BAJA{ background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+  .priority-MED,.priority-MEDIUM,.priority-MEDIA{ background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+  .priority-HIGH,.priority-ALTA{ background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+  .priority-URG,.priority-URGENT,.priority-URGENTE{ background:#111827; color:#fff; border:1px solid #111827; }
+
+  .code-link{ font-weight:800; text-decoration:none; }
+  .code-link:hover{ text-decoration:underline; }
+
+  .empty-state{ padding:2.4rem 1rem; text-align:center; }
+  .empty-state-title{ margin:0 0 .35rem; font-size:1.05rem; font-weight:700; color:#0f172a; }
+  .empty-state-text{ margin:0; color:#64748b; font-size:.92rem; }
+
+  @media (max-width:767.98px){
+    .page-hero{ flex-direction:column; align-items:stretch; }
+    .page-title{ font-size:1.6rem; }
+    .page-hero .btn{ width:100%; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-3">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">Work Orders</h3>
+<div class="page-shell">
 
-    <a class="btn btn-primary" href="{% url 'workorders:create' %}">
-      Nueva Work Order
-    </a>
-  </div>
-
-  <form class="row g-2 mb-3" method="get">
-    <div class="col-md-4">
-      <input class="form-control" name="q" value="{{ q }}" placeholder="Buscar por código">
+  <section class="page-hero">
+    <div>
+      <h1 class="page-title">Work Orders</h1>
+      <p class="page-subtitle">Consulta, filtra y administra órdenes de trabajo con trazabilidad de estado y prioridad.</p>
     </div>
 
-    <div class="col-md-4">
-      <select class="form-select" name="status">
-        <option value="">-- Status --</option>
-        {% for v, t in status_choices %}
-          <option value="{{ v }}" {% if status == v %}selected{% endif %}>{{ t }}</option>
-        {% endfor %}
-      </select>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-primary" href="{% url 'workorders:create' %}">Nueva Work Order</a>
     </div>
+  </section>
 
-    <div class="col-md-2">
-      <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+  <section class="card shadow-sm toolbar-card">
+    <div class="card-body">
+      <form class="row g-3 align-items-end" method="get">
+        <div class="col-md-5">
+          <label class="form-label mb-2">Buscar por código</label>
+          <input class="form-control" name="q" value="{{ q }}" placeholder="Buscar por código">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label mb-2">Status</label>
+          <select class="form-select" name="status">
+            <option value="">-- Status --</option>
+            {% for v, t in status_choices %}
+              <option value="{{ v }}" {% if status == v %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+            <a class="btn btn-outline-secondary w-100" href="{% url 'workorders:list' %}">Limpiar</a>
+          </div>
+        </div>
+      </form>
     </div>
+  </section>
 
-    <div class="col-md-2">
-      <a class="btn btn-outline-secondary w-100" href="{% url 'workorders:list' %}">
-        Limpiar
-      </a>
-    </div>
-  </form>
+  <section class="card shadow-sm list-card">
+    <div class="card-header">Listado de Work Orders</div>
 
-  <div class="card shadow-sm">
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0">
           <thead class="table-dark">
             <tr>
               <th>Código</th>
-              <th>Status</th>
-              <th>Prioridad</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Prioridad</th>
               <th>Asignado</th>
               <th>Creado</th>
             </tr>
@@ -51,22 +114,32 @@
             {% for wo in workorders %}
             <tr>
               <td>
-                <a href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a>
+                <a class="code-link" href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a>
               </td>
-              <td>{{ wo.status }}</td>
-              <td>{{ wo.priority }}</td>
+              <td class="text-center">
+                <span class="status-pill status-{{ wo.status }}">{{ wo.status }}</span>
+              </td>
+              <td class="text-center">
+                <span class="priority-pill priority-{{ wo.priority }}">{{ wo.priority }}</span>
+              </td>
               <td>{{ wo.assigned_to|default:"-" }}</td>
               <td>{{ wo.created_at }}</td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="5" class="text-muted p-3">Sin resultados</td>
+              <td colspan="5">
+                <div class="empty-state">
+                  <h3 class="empty-state-title">Sin resultados</h3>
+                  <p class="empty-state-text">No hay work orders que coincidan con los filtros aplicados.</p>
+                </div>
+              </td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     </div>
-  </div>
+  </section>
+
 </div>
 {% endblock %}

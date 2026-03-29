@@ -1,15 +1,224 @@
 {% extends "base.html" %}
+{% block title %}Reservar - {{ wo.code }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .page-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.4rem 1.45rem;
+    border: 1px solid #dbe3ee;
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(99, 102, 241, 0.05)),
+      #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.95rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .page-subtitle {
+    margin: 0.35rem 0 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .layout-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 1rem;
+  }
+
+  .form-card,
+  .aside-card {
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+  }
+
+  .form-card .card-header,
+  .aside-card .card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #dbe3ee;
+    padding: 1rem 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .form-card .card-body,
+  .aside-card .card-body {
+    padding: 1.25rem;
+  }
+
+  .section-label {
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 0.95rem;
+  }
+
+  .field-card {
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    background: #fbfdff;
+    padding: 1rem;
+    height: 100%;
+  }
+
+  .field-card--soft {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 0.5rem;
+  }
+
+  .field-error {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .error-summary {
+    border-radius: 16px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.95rem 1rem;
+  }
+
+  .form-divider {
+    margin: 1.25rem 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .sticky-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .aside-intro {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  .aside-guide-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .aside-guide-row {
+    position: relative;
+    padding: 0.9rem 0.95rem 0.9rem 1rem;
+    border-radius: 14px;
+    border: 1px solid #e7edf5;
+    background: #fbfdff;
+    overflow: hidden;
+  }
+
+  .aside-guide-row::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: #cbd5e1;
+  }
+
+  .aside-guide-blue::before { background: #2563eb; }
+  .aside-guide-green::before { background: #16a34a; }
+  .aside-guide-amber::before { background: #f59e0b; }
+  .aside-guide-red::before { background: #dc2626; }
+
+  .aside-guide-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+  }
+
+  .aside-guide-text {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.5;
+  }
+
+  .wo-link {
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .wo-link:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 1199.98px) {
+    .layout-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .page-hero {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+    }
+
+    .page-hero .btn,
+    .sticky-actions .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-3">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+<div class="page-shell">
+
+  <section class="page-hero">
     <div>
-      <h3 class="mb-0">Reservar</h3>
-      <div class="text-muted">
-        OT: <a href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a>
-      </div>
+      <h1 class="page-title">Reservar material</h1>
+      <p class="page-subtitle">
+        OT: <a class="wo-link" href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a>
+      </p>
     </div>
-    <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Volver</a>
-  </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Volver</a>
+    </div>
+  </section>
 
   {% if messages %}
     {% for m in messages %}
@@ -17,60 +226,117 @@
     {% endfor %}
   {% endif %}
 
-  <div class="card">
-    <div class="card-header">Crear reserva</div>
-    <div class="card-body">
-      <form method="post" action="{% url 'workorders:reserve' wo.id %}">
-        {% csrf_token %}
+  <section class="layout-grid">
+    <div class="card shadow-sm form-card">
+      <div class="card-header">Crear reserva</div>
 
-        {% if reserve_form.non_field_errors %}
-          <div class="alert alert-danger">
-            {{ reserve_form.non_field_errors }}
+      <div class="card-body">
+        <form method="post" action="{% url 'workorders:reserve' wo.id %}" novalidate>
+          {% csrf_token %}
+
+          {% if reserve_form.non_field_errors %}
+            <div class="error-summary mb-4">
+              {{ reserve_form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <div class="section-label">Datos de la reserva</div>
+          <div class="row g-3">
+            <div class="col-md-12">
+              <div class="field-card field-card--soft">
+                <label class="field-label">Línea (Item)</label>
+                {{ reserve_form.line }}
+                {% if reserve_form.line.errors %}
+                  <div class="field-error">{{ reserve_form.line.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="field-card field-card--soft">
+                <label class="field-label">Ubicación</label>
+                {{ reserve_form.location }}
+                {% if reserve_form.location.errors %}
+                  <div class="field-error">{{ reserve_form.location.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="field-card">
+                <label class="field-label">Cantidad</label>
+                {{ reserve_form.qty }}
+                {% if reserve_form.qty.errors %}
+                  <div class="field-error">{{ reserve_form.qty.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <div class="field-card">
+                <label class="field-label">Motivo (opcional)</label>
+                {{ reserve_form.reason }}
+                {% if reserve_form.reason.errors %}
+                  <div class="field-error">{{ reserve_form.reason.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
           </div>
-        {% endif %}
 
-        <div class="mb-3">
-          <label class="form-label">Línea (Item)</label>
-          {{ reserve_form.line }}
-          {% if reserve_form.line.errors %}
-            <div class="text-danger small">{{ reserve_form.line.errors }}</div>
-          {% endif %}
-        </div>
+          <div class="form-divider"></div>
 
-        <div class="mb-3">
-          <label class="form-label">Ubicación</label>
-          {{ reserve_form.location }}
-          {% if reserve_form.location.errors %}
-            <div class="text-danger small">{{ reserve_form.location.errors }}</div>
-          {% endif %}
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Cantidad</label>
-          {{ reserve_form.qty }}
-          {% if reserve_form.qty.errors %}
-            <div class="text-danger small">{{ reserve_form.qty.errors }}</div>
-          {% endif %}
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Motivo (opcional)</label>
-          {{ reserve_form.reason }}
-          {% if reserve_form.reason.errors %}
-            <div class="text-danger small">{{ reserve_form.reason.errors }}</div>
-          {% endif %}
-        </div>
-
-        <div class="d-flex gap-2">
-          <button class="btn btn-primary" type="submit">Reservar</button>
-          <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
-        </div>
-
-        <div class="text-muted small mt-3">
-          Nota: La reserva incrementa <code>StockSnapshot.reserved</code> y no genera movimientos (Kardex).
-        </div>
-      </form>
+          <div class="sticky-actions">
+            <button class="btn btn-primary" type="submit">Reservar</button>
+            <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+
+    <aside class="card shadow-sm aside-card">
+      <div class="card-header">Guía rápida</div>
+      <div class="card-body">
+        <div class="aside-intro">
+          La reserva aparta stock para esta work order sin generar todavía una salida real de inventario.
+        </div>
+
+        <div class="aside-guide-list">
+          <div class="aside-guide-row aside-guide-blue">
+            <div class="aside-guide-title">Línea</div>
+            <div class="aside-guide-text">Selecciona la línea de la OT para ligar correctamente el material requerido.</div>
+          </div>
+
+          <div class="aside-guide-row aside-guide-green">
+            <div class="aside-guide-title">Reserva</div>
+            <div class="aside-guide-text">Incrementa <code>StockSnapshot.reserved</code> y no genera Kardex.</div>
+          </div>
+
+          <div class="aside-guide-row aside-guide-amber">
+            <div class="aside-guide-title">Ubicación</div>
+            <div class="aside-guide-text">La ubicación debe corresponder al inventario real desde donde se apartará el material.</div>
+          </div>
+
+          <div class="aside-guide-row aside-guide-red">
+            <div class="aside-guide-title">Control</div>
+            <div class="aside-guide-text">Usa el motivo cuando necesites explicar por qué se está apartando material para la OT.</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </section>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const inputs = document.querySelectorAll("input, select, textarea");
+    inputs.forEach(el => {
+        if (el.type === "checkbox") return;
+        if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
+        else el.classList.add("form-control");
+    });
+})();
+</script>
 {% endblock %}

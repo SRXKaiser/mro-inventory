@@ -1,100 +1,345 @@
 {% extends "base.html" %}
-{% block title %}{{ title|default:"Artículo" }}{% endblock %}
+{% block title %}{% if form.instance.pk %}Editar {{ form.instance.sku }}{% else %}Nuevo artículo{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .page-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.4rem 1.45rem;
+    border: 1px solid #dbe3ee;
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(8, 145, 178, 0.04)),
+      #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.95rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .page-subtitle {
+    margin: 0.35rem 0 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .form-card {
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+  }
+
+  .form-card .card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #dbe3ee;
+    padding: 1rem 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .form-card .card-body {
+    padding: 1.25rem;
+  }
+
+  .section-label {
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 0.95rem;
+  }
+
+  .field-card {
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    background: #fbfdff;
+    padding: 1rem;
+    height: 100%;
+  }
+
+  .field-card--soft {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 0.5rem;
+  }
+
+  .field-help {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+
+  .field-error {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.48rem 0.78rem;
+    border-radius: 999px;
+    border: 1px solid #dbeafe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .form-divider {
+    margin: 1.25rem 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .sticky-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 0.25rem;
+  }
+
+  .switch-box {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-height: 46px;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #dbe3ee;
+    border-radius: 14px;
+    background: #ffffff;
+  }
+
+  .switch-box .form-check {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .switch-box .form-check-input {
+    margin: 0;
+  }
+
+  .switch-box .form-check-label {
+    margin: 0;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .error-summary {
+    border-radius: 16px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.95rem 1rem;
+  }
+
+  @media (max-width: 767.98px) {
+    .page-hero {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+    }
+
+    .page-hero .btn {
+      width: 100%;
+    }
+
+    .sticky-actions .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">{{ title|default:"Artículo" }}</h2>
-    <a class="btn btn-outline-dark" href="{% url 'item_list' %}">Volver</a>
-</div>
+<div class="page-shell">
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <form method="post" novalidate>
-            {% csrf_token %}
-
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {{ form.non_field_errors }}
-                </div>
-            {% endif %}
-
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">SKU</label>
-                    {{ form.sku }}
-                    {% if form.sku.errors %}<div class="text-danger small">{{ form.sku.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-8">
-                    <label class="form-label">Nombre</label>
-                    {{ form.name }}
-                    {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-12">
-                    <label class="form-label">Descripción</label>
-                    {{ form.description }}
-                    {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Tipo</label>
-                    {{ form.item_type }}
-                    {% if form.item_type.errors %}<div class="text-danger small">{{ form.item_type.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Criticidad</label>
-                    {{ form.criticality }}
-                    {% if form.criticality.errors %}<div class="text-danger small">{{ form.criticality.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Unidad</label>
-                    {{ form.uom }}
-                    {% if form.uom.errors %}<div class="text-danger small">{{ form.uom.errors }}</div>{% endif %}
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Stock mínimo</label>
-                    {{ form.min_stock }}
-                    {% if form.min_stock.errors %}<div class="text-danger small">{{ form.min_stock.errors }}</div>{% endif %}
-                    <div class="form-text">Usa decimal (ej. 2.000)</div>
-                </div>
-
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="form-check">
-                        {{ form.is_active }}
-                        <label class="form-check-label">Activo</label>
-                    </div>
-                    {% if form.is_active.errors %}<div class="text-danger small">{{ form.is_active.errors }}</div>{% endif %}
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Guardar</button>
-                <a class="btn btn-outline-secondary" href="{% url 'item_list' %}">Cancelar</a>
-            </div>
-        </form>
+  <section class="page-hero">
+    <div>
+      <h1 class="page-title">
+        {% if form.instance.pk %}
+          Editar {{ form.instance.sku }}
+        {% else %}
+          Nuevo artículo
+        {% endif %}
+      </h1>
+      <p class="page-subtitle">
+        Define la identidad del artículo, su clasificación operativa y los parámetros mínimos para control de inventario.
+      </p>
     </div>
-</div>
 
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary" href="{% url 'item_list' %}">Volver</a>
+    </div>
+  </section>
+
+  <section class="card shadow-sm form-card">
+    <div class="card-header">
+      Datos del artículo
+    </div>
+
+    <div class="card-body">
+      <div class="info-strip">
+        <span class="info-pill">Catálogo maestro</span>
+        <span class="info-pill">Control MRO</span>
+        <span class="info-pill">Trazabilidad operativa</span>
+      </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors or form.errors %}
+          <div class="error-summary mb-4">
+            {% if form.non_field_errors %}
+              <div>{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% if form.errors %}
+              <div class="mt-1">{{ form.errors }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="section-label">Identificación</div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <div class="field-card">
+              <label class="field-label">SKU</label>
+              {{ form.sku }}
+              {% if form.sku.errors %}<div class="field-error">{{ form.sku.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-8">
+            <div class="field-card">
+              <label class="field-label">Nombre</label>
+              {{ form.name }}
+              {% if form.name.errors %}<div class="field-error">{{ form.name.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="field-card">
+              <label class="field-label">Descripción</label>
+              {{ form.description }}
+              {% if form.description.errors %}<div class="field-error">{{ form.description.errors }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="section-label">Clasificación y control</div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="field-card field-card--soft">
+              <label class="field-label">Tipo</label>
+              {{ form.item_type }}
+              {% if form.item_type.errors %}<div class="field-error">{{ form.item_type.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="field-card field-card--soft">
+              <label class="field-label">Criticidad</label>
+              {{ form.criticality }}
+              {% if form.criticality.errors %}<div class="field-error">{{ form.criticality.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="field-card field-card--soft">
+              <label class="field-label">Unidad</label>
+              {{ form.uom }}
+              {% if form.uom.errors %}<div class="field-error">{{ form.uom.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="field-card field-card--soft">
+              <label class="field-label">Stock mínimo</label>
+              {{ form.min_stock }}
+              {% if form.min_stock.errors %}<div class="field-error">{{ form.min_stock.errors }}</div>{% endif %}
+              <div class="field-help">Usa decimal, por ejemplo: 2.000</div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="field-card field-card--soft">
+              <label class="field-label">Estado</label>
+              <div class="switch-box">
+                <div class="form-check">
+                  {{ form.is_active }}
+                  <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Activo</label>
+                </div>
+              </div>
+              {% if form.is_active.errors %}<div class="field-error">{{ form.is_active.errors }}</div>{% endif %}
+              <div class="field-help">Desactiva el artículo si ya no debe utilizarse en operación.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="sticky-actions">
+          <button type="submit" class="btn btn-primary">
+            {% if form.instance.pk %}Guardar cambios{% else %}Guardar artículo{% endif %}
+          </button>
+          <a class="btn btn-outline-secondary" href="{% url 'item_list' %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-/* Bootstrap-ish: agrega clases a inputs generados por Django (rápido y útil) */
 (function () {
     const inputs = document.querySelectorAll("input, select, textarea");
     inputs.forEach(el => {
         if (el.type === "checkbox") return;
-        el.classList.add("form-control");
+        if (el.tagName.toLowerCase() === "select") {
+            el.classList.add("form-select");
+        } else {
+            el.classList.add("form-control");
+        }
     });
-
-    const selects = document.querySelectorAll("select");
-    selects.forEach(el => el.classList.add("form-select"));
-
-    const textarea = document.querySelectorAll("textarea");
-    textarea.forEach(el => el.classList.add("form-control"));
 })();
 </script>
 {% endblock %}
