@@ -16,12 +16,36 @@
             --mro-border-strong: #d6dde8;
             --mro-text: #0f172a;
             --mro-text-muted: #64748b;
+
             --mro-primary: #2563eb;
             --mro-primary-dark: #1d4ed8;
+
+            --mro-secondary: #22c1e6;
+            --mro-secondary-dark: #0ea5c6;
+
+            --mro-neutral-bg-1: #f8fafc;
+            --mro-neutral-bg-2: #e2e8f0;
+            --mro-neutral-border: #cbd5e1;
+            --mro-neutral-text: #475569;
+            --mro-neutral-text-dark: #334155;
+
+            --mro-success: #16a34a;
+            --mro-success-dark: #15803d;
+
+            --mro-warning: #f59e0b;
+            --mro-warning-dark: #d97706;
+            --mro-warning-text: #422006;
+
+            --mro-danger: #dc2626;
+            --mro-danger-dark: #b91c1c;
+
             --mro-shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.05);
             --mro-shadow-md: 0 10px 30px rgba(15, 23, 42, 0.08);
+            --mro-shadow-btn: 0 6px 18px rgba(15, 23, 42, 0.08);
+
             --mro-radius: 16px;
             --mro-radius-sm: 12px;
+            --mro-btn-radius: 16px;
         }
 
         html, body {
@@ -121,25 +145,155 @@
             padding: 0.95rem 1.1rem;
         }
 
+        /* =========================
+           SISTEMA GLOBAL DE BOTONES
+           ========================= */
         .btn {
-            border-radius: 12px;
-            font-weight: 600;
-            padding: 0.6rem 1rem;
+            border-radius: var(--mro-btn-radius);
+            font-weight: 800;
+            padding: 0.72rem 1.2rem;
             transition: all 0.18s ease-in-out;
+            box-shadow: var(--mro-shadow-btn);
+            border-width: 1px;
         }
 
         .btn:hover {
             transform: translateY(-1px);
         }
 
-        .btn-primary {
-            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
-            border-color: #2563eb;
+        .btn:active {
+            transform: translateY(0);
         }
 
-        .btn-primary:hover {
-            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+        .btn-sm {
+            padding: 0.45rem 0.9rem;
+            border-radius: 14px;
+            font-weight: 700;
+        }
+
+        .btn-lg {
+            padding: 0.9rem 1.35rem;
+            border-radius: 18px;
+        }
+
+        .btn:focus,
+        .btn.focus {
+            box-shadow:
+                var(--mro-shadow-btn),
+                0 0 0 0.2rem rgba(37, 99, 235, 0.12) !important;
+        }
+
+        /* Clases UI nuevas */
+        .btn-ui-primary,
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            border-color: #2563eb;
+            color: #fff !important;
+        }
+
+        .btn-ui-primary:hover,
+        .btn-ui-primary:focus,
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
             border-color: #1d4ed8;
+            color: #fff !important;
+        }
+
+        .btn-ui-secondary,
+        .btn-outline-info,
+        .btn-info {
+            background: linear-gradient(135deg, #22c1e6, #1fb6d9);
+            border-color: #22c1e6;
+            color: #0f172a !important;
+        }
+
+        .btn-ui-secondary:hover,
+        .btn-ui-secondary:focus,
+        .btn-outline-info:hover,
+        .btn-outline-info:focus,
+        .btn-info:hover,
+        .btn-info:focus {
+            background: linear-gradient(135deg, #12b5db, #0ea5c6);
+            border-color: #0ea5c6;
+            color: #0f172a !important;
+        }
+
+        .btn-ui-neutral,
+        .btn-outline-secondary,
+        .btn-outline-dark,
+        .btn-secondary {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-color: #cbd5e1;
+            color: #475569 !important;
+        }
+
+        .btn-ui-neutral:hover,
+        .btn-ui-neutral:focus,
+        .btn-outline-secondary:hover,
+        .btn-outline-secondary:focus,
+        .btn-outline-dark:hover,
+        .btn-outline-dark:focus,
+        .btn-secondary:hover,
+        .btn-secondary:focus {
+            background: linear-gradient(135deg, #eef2f7, #dbe4ee);
+            border-color: #b8c5d3;
+            color: #334155 !important;
+        }
+
+        .btn-ui-success,
+        .btn-success {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            border-color: #16a34a;
+            color: #fff !important;
+        }
+
+        .btn-ui-success:hover,
+        .btn-ui-success:focus,
+        .btn-success:hover,
+        .btn-success:focus {
+            background: linear-gradient(135deg, #15803d, #16a34a);
+            border-color: #15803d;
+            color: #fff !important;
+        }
+
+        .btn-ui-warning,
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            border-color: #f59e0b;
+            color: #422006 !important;
+        }
+
+        .btn-ui-warning:hover,
+        .btn-ui-warning:focus,
+        .btn-warning:hover,
+        .btn-warning:focus {
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            border-color: #d97706;
+            color: #422006 !important;
+        }
+
+        .btn-ui-danger,
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            border-color: #dc2626;
+            color: #fff !important;
+        }
+
+        .btn-ui-danger:hover,
+        .btn-ui-danger:focus,
+        .btn-danger:hover,
+        .btn-danger:focus {
+            background: linear-gradient(135deg, #b91c1c, #dc2626);
+            border-color: #b91c1c;
+            color: #fff !important;
+        }
+
+        /* Para evitar que los outline se vean huecos */
+        .btn-outline-secondary,
+        .btn-outline-dark,
+        .btn-outline-info {
+            background-clip: padding-box;
         }
 
         .form-control,
@@ -350,14 +504,14 @@
                     </button>
                 </li>
                 {% else %}
-    {% if request.resolver_match.url_name != 'login' %}
-    <li class="nav-item">
-        <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">
-            Iniciar sesión
-        </a>
-    </li>
-    {% endif %}
-{% endif %}
+                {% if request.resolver_match.url_name != 'login' %}
+                <li class="nav-item">
+                    <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">
+                        Iniciar sesión
+                    </a>
+                </li>
+                {% endif %}
+                {% endif %}
             </ul>
         </div>
     </div>

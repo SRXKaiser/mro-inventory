@@ -40,15 +40,147 @@
   .priority-HIGH,.priority-ALTA{ background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
   .priority-URG,.priority-URGENT,.priority-URGENTE{ background:#111827; color:#fff; border:1px solid #111827; }
 
+  .help-toggle-btn { min-width:170px; }
+
+  .btn-ui-primary,
+  .btn-ui-secondary,
+  .btn-ui-neutral,
+  .btn-ui-success,
+  .btn-ui-warning,
+  .btn-ui-danger {
+    border-radius: 16px;
+    font-weight: 800;
+    padding: .78rem 1.2rem;
+    transition: all .18s ease;
+    border: 1px solid transparent;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .08);
+    text-decoration: none;
+  }
+
+  .btn-ui-primary {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff;
+    border-color: #2563eb;
+  }
+  .btn-ui-primary:hover,
+  .btn-ui-primary:focus {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: #fff;
+    border-color: #1d4ed8;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-secondary {
+    background: linear-gradient(135deg, #22c1e6, #1fb6d9);
+    color: #0f172a;
+    border-color: #22c1e6;
+  }
+  .btn-ui-secondary:hover,
+  .btn-ui-secondary:focus {
+    background: linear-gradient(135deg, #12b5db, #0ea5c6);
+    color: #0f172a;
+    border-color: #0ea5c6;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-neutral {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #475569;
+    border-color: #cbd5e1;
+  }
+  .btn-ui-neutral:hover,
+  .btn-ui-neutral:focus {
+    background: linear-gradient(135deg, #eef2f7, #dbe4ee);
+    color: #334155;
+    border-color: #b8c5d3;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-success {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: #fff;
+    border-color: #16a34a;
+  }
+  .btn-ui-success:hover,
+  .btn-ui-success:focus {
+    background: linear-gradient(135deg, #15803d, #16a34a);
+    color: #fff;
+    border-color: #15803d;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-warning {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #422006;
+    border-color: #f59e0b;
+  }
+  .btn-ui-warning:hover,
+  .btn-ui-warning:focus {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    color: #422006;
+    border-color: #d97706;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-danger {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: #fff;
+    border-color: #dc2626;
+  }
+  .btn-ui-danger:hover,
+  .btn-ui-danger:focus {
+    background: linear-gradient(135deg, #b91c1c, #dc2626);
+    color: #fff;
+    border-color: #b91c1c;
+    transform: translateY(-1px);
+  }
+
+  .guide-section{
+    display:none;
+    border-radius:20px; overflow:hidden; border:1px solid #dbe3ee;
+  }
+  .guide-section.guide-visible{ display:block; }
+
   .section-card{
     border-radius:20px; overflow:hidden; border:1px solid #dbe3ee;
   }
-  .section-card .card-header{
+  .section-card .card-header,
+  .guide-section .card-header{
     background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
     border-bottom:1px solid #dbe3ee; font-weight:800; color:#0f172a; padding:.95rem 1.1rem;
   }
 
   .quick-actions{ display:flex; flex-wrap:wrap; gap:.65rem; }
+
+  .guide-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:.9rem;
+  }
+
+  .guide-box{
+    border:1px solid #e7edf5;
+    border-radius:16px;
+    background:#fbfdff;
+    padding:1rem;
+    height:100%;
+  }
+
+  .guide-title{
+    font-size:.82rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:#64748b;
+    margin-bottom:.35rem;
+  }
+
+  .guide-text{
+    color:#0f172a;
+    font-weight:600;
+    line-height:1.55;
+    font-size:.93rem;
+  }
 
   .operation-grid{
     display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:1rem;
@@ -63,7 +195,7 @@
   .list-group-item small, .list-group-item .text-muted{ line-height:1.5; }
 
   @media (max-width:1199.98px){
-    .operation-grid, .trace-grid{ grid-template-columns:1fr; }
+    .guide-grid, .operation-grid, .trace-grid{ grid-template-columns:1fr; }
   }
 
   @media (max-width:767.98px){
@@ -94,7 +226,48 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-secondary" href="{% url 'workorders:list' %}">Volver</a>
+      <button type="button"
+              class="btn btn-ui-secondary help-toggle-btn"
+              id="helpToggleBtn"
+              aria-expanded="false"
+              aria-controls="guideSection">
+        Ayuda
+      </button>
+      <a class="btn btn-ui-neutral" href="{% url 'workorders:list' %}">Volver</a>
+    </div>
+  </section>
+
+  <section class="card shadow-sm guide-section" id="guideSection">
+    <div class="card-header">Cómo funciona esta Work Order</div>
+    <div class="card-body">
+      <div class="guide-grid">
+        <div class="guide-box">
+          <div class="guide-title">1. Estado de la OT</div>
+          <div class="guide-text">
+            <b>DRAFT</b> es preparación. <b>APPROVED</b> habilita operación.
+            <b>IN_PROGRESS</b> significa ejecución activa.
+            <b>PAUSED</b> detiene temporalmente.
+            <b>COMPLETED</b> concluye la orden.
+            <b>CANCELLED</b> la cancela y libera reservas activas.
+          </div>
+        </div>
+
+        <div class="guide-box">
+          <div class="guide-title">2. Flujo de material</div>
+          <div class="guide-text">
+            <b>Reservar</b> aparta stock sin mover inventario físico.
+            <b>Issue</b> registra el consumo real y genera un <code>OUT</code>.
+            <b>Return</b> devuelve material no usado y genera un <code>IN</code>.
+          </div>
+        </div>
+
+        <div class="guide-box">
+          <div class="guide-title">3. Trazabilidad</div>
+          <div class="guide-text">
+            Las líneas definen lo requerido. Las reservas, issues y returns quedan ligados a esta OT para mantener trazabilidad entre mantenimiento e inventario.
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -107,13 +280,13 @@
           {% if wo.status == "DRAFT" %}
             <form method="post" action="{% url 'workorders:approve' wo.id %}">
               {% csrf_token %}
-              <button class="btn btn-success" type="submit" onclick="return confirm('¿Aprobar esta Work Order?');">Aprobar</button>
+              <button class="btn btn-ui-success" type="submit" onclick="return confirm('¿Aprobar esta Work Order?');">Aprobar</button>
             </form>
 
             <form method="post" action="{% url 'workorders:cancel' wo.id %}">
               {% csrf_token %}
               <input type="hidden" name="reason" value="Cancelación desde UI">
-              <button class="btn btn-outline-danger" type="submit" onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">Cancelar</button>
+              <button class="btn btn-ui-danger" type="submit" onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">Cancelar</button>
             </form>
           {% endif %}
 
@@ -121,7 +294,7 @@
             <form method="post" action="{% url 'workorders:cancel' wo.id %}">
               {% csrf_token %}
               <input type="hidden" name="reason" value="Cancelación desde UI">
-              <button class="btn btn-outline-danger" type="submit" onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">Cancelar</button>
+              <button class="btn btn-ui-danger" type="submit" onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">Cancelar</button>
             </form>
           {% endif %}
 
@@ -129,30 +302,30 @@
             <form method="post" action="{% url 'workorders:pause' wo.id %}">
               {% csrf_token %}
               <input type="hidden" name="reason" value="Pausado desde UI">
-              <button class="btn btn-warning" type="submit" onclick="return confirm('¿Pausar esta Work Order?');">Pausar</button>
+              <button class="btn btn-ui-warning" type="submit" onclick="return confirm('¿Pausar esta Work Order?');">Pausar</button>
             </form>
 
             <form method="post" action="{% url 'workorders:complete' wo.id %}">
               {% csrf_token %}
-              <button class="btn btn-primary" type="submit" onclick="return confirm('¿Marcar como COMPLETED esta Work Order?');">Completar</button>
+              <button class="btn btn-ui-primary" type="submit" onclick="return confirm('¿Marcar como COMPLETED esta Work Order?');">Completar</button>
             </form>
           {% endif %}
 
           {% if wo.status == "PAUSED" %}
             <form method="post" action="{% url 'workorders:resume' wo.id %}">
               {% csrf_token %}
-              <button class="btn btn-success" type="submit" onclick="return confirm('¿Reanudar esta Work Order?');">Reanudar</button>
+              <button class="btn btn-ui-success" type="submit" onclick="return confirm('¿Reanudar esta Work Order?');">Reanudar</button>
             </form>
 
             <form method="post" action="{% url 'workorders:cancel' wo.id %}">
               {% csrf_token %}
               <input type="hidden" name="reason" value="Cancelación desde UI">
-              <button class="btn btn-outline-danger" type="submit" onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">Cancelar</button>
+              <button class="btn btn-ui-danger" type="submit" onclick="return confirm('¿Cancelar esta Work Order? Esto liberará reservas activas.');">Cancelar</button>
             </form>
           {% endif %}
         {% endif %}
 
-        <a class="btn btn-outline-primary" href="{% url 'workorders:line_create' wo.id %}">Agregar línea</a>
+        <a class="btn btn-ui-primary" href="{% url 'workorders:line_create' wo.id %}">Agregar línea</a>
       </div>
     </div>
   </section>
@@ -182,7 +355,9 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="5" class="text-muted p-3">Aún no hay líneas. Agrega una línea para poder reservar o consumir.</td>
+              <td colspan="5" class="text-muted p-3">
+                Aún no hay líneas. Agrega una línea para poder reservar o consumir.
+              </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -199,11 +374,15 @@
           <form method="post" action="{% url 'workorders:reserve' wo.id %}">
             {% csrf_token %}
             {{ reserve_form.as_p }}
-            <button class="btn btn-primary w-100" type="submit">Reservar</button>
+            <button class="btn btn-ui-primary w-100" type="submit">Reservar</button>
           </form>
-          <div class="info-note">Incrementa <code>StockSnapshot.reserved</code> y no genera Kardex.</div>
+          <div class="info-note">
+            Aparta stock para esta OT sin generar Kardex ni salida física.
+          </div>
         {% else %}
-          <div class="alert alert-light text-muted mb-0">Reserva no disponible para el estado actual o sin permisos.</div>
+          <div class="alert alert-light text-muted mb-0">
+            Reserva no disponible para el estado actual o sin permisos.
+          </div>
         {% endif %}
       </div>
     </div>
@@ -215,11 +394,15 @@
           <form method="post" action="{% url 'workorders:issue' wo.id %}">
             {% csrf_token %}
             {{ consume_form.as_p }}
-            <button class="btn btn-danger w-100" type="submit">Registrar Issue</button>
+            <button class="btn btn-ui-danger w-100" type="submit">Registrar Issue</button>
           </form>
-          <div class="info-note">Genera <code>InventoryMovement OUT</code> con referencia <code>WO:{{ wo.code }}</code>.</div>
+          <div class="info-note">
+            Convierte material reservado o disponible en consumo real y genera <code>InventoryMovement OUT</code>.
+          </div>
         {% else %}
-          <div class="alert alert-light text-muted mb-0">Issue no disponible para el estado actual o sin permisos.</div>
+          <div class="alert alert-light text-muted mb-0">
+            Issue no disponible para el estado actual o sin permisos.
+          </div>
         {% endif %}
       </div>
     </div>
@@ -231,11 +414,15 @@
           <form method="post" action="{% url 'workorders:return_' wo.id %}">
             {% csrf_token %}
             {{ return_form.as_p }}
-            <button class="btn btn-success w-100" type="submit">Devolver</button>
+            <button class="btn btn-ui-success w-100" type="submit">Devolver</button>
           </form>
-          <div class="info-note">Genera <code>InventoryMovement IN</code> con referencia <code>WO:{{ wo.code }}</code>.</div>
+          <div class="info-note">
+            Devuelve material no utilizado al inventario y genera <code>InventoryMovement IN</code>.
+          </div>
         {% else %}
-          <div class="alert alert-light text-muted mb-0">Return no disponible para el estado actual o sin permisos.</div>
+          <div class="alert alert-light text-muted mb-0">
+            Return no disponible para el estado actual o sin permisos.
+          </div>
         {% endif %}
       </div>
     </div>
@@ -254,38 +441,44 @@
                   <div class="fw-semibold">{{ r.item.sku }} @ {{ r.location }}</div>
                   <div class="text-muted small">{{ r.status }}</div>
                 </div>
-                <span class="badge bg-secondary">{{ r.quantity }}</span>
+                <span class="badge bg-secondary">{{ r.qty }}</span>
               </li>
             {% empty %}
-              <li class="list-group-item text-muted">Sin reservas</li>
+              <li class="list-group-item text-muted">Sin reservas.</li>
             {% endfor %}
           </ul>
         </div>
 
         <div>
-          <h6 class="mb-3">Issues (Consumos)</h6>
+          <h6 class="mb-3">Issues</h6>
           <ul class="list-group list-group-flush">
-            {% for i in wo.issues.all %}
-              <li class="list-group-item">
-                <div class="fw-semibold">{{ i.created_at }} — {{ i.technician }}</div>
-                <div class="text-muted small">{{ i.notes|default:"-" }}</div>
+            {% for m in issue_movements %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-semibold">{{ m.item.sku }} @ {{ m.location }}</div>
+                  <div class="text-muted small">{{ m.created_at|date:"Y-m-d H:i" }}</div>
+                </div>
+                <span class="badge bg-danger">{{ m.qty }}</span>
               </li>
             {% empty %}
-              <li class="list-group-item text-muted">Sin consumos</li>
+              <li class="list-group-item text-muted">Sin consumos.</li>
             {% endfor %}
           </ul>
         </div>
 
         <div>
-          <h6 class="mb-3">Returns (Devoluciones)</h6>
+          <h6 class="mb-3">Returns</h6>
           <ul class="list-group list-group-flush">
-            {% for r in wo.returns.all %}
-              <li class="list-group-item">
-                <div class="fw-semibold">{{ r.created_at }} — {{ r.technician }}</div>
-                <div class="text-muted small">{{ r.notes|default:"-" }}</div>
+            {% for m in return_movements %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-semibold">{{ m.item.sku }} @ {{ m.location }}</div>
+                  <div class="text-muted small">{{ m.created_at|date:"Y-m-d H:i" }}</div>
+                </div>
+                <span class="badge bg-success">{{ m.qty }}</span>
               </li>
             {% empty %}
-              <li class="list-group-item text-muted">Sin devoluciones</li>
+              <li class="list-group-item text-muted">Sin devoluciones.</li>
             {% endfor %}
           </ul>
         </div>
@@ -294,4 +487,33 @@
   </section>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const storageKey = "modo_para_retrasados";
+    const helpToggleBtn = document.getElementById("helpToggleBtn");
+    const guideSection = document.getElementById("guideSection");
+
+    function modoParaRetrasados(enabled) {
+        if (!helpToggleBtn || !guideSection) return;
+
+        guideSection.classList.toggle("guide-visible", enabled);
+        helpToggleBtn.setAttribute("aria-expanded", enabled ? "true" : "false");
+        helpToggleBtn.textContent = enabled ? "Ocultar ayuda" : "Ayuda";
+        localStorage.setItem(storageKey, enabled ? "1" : "0");
+    }
+
+    if (helpToggleBtn && guideSection) {
+        const savedState = localStorage.getItem(storageKey) === "1";
+        modoParaRetrasados(savedState);
+
+        helpToggleBtn.addEventListener("click", function () {
+            const isVisible = guideSection.classList.contains("guide-visible");
+            modoParaRetrasados(!isVisible);
+        });
+    }
+})();
+</script>
 {% endblock %}

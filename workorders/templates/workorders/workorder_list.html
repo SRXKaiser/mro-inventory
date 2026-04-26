@@ -4,20 +4,149 @@
 {% block extra_css %}
 <style>
   .page-shell { display:flex; flex-direction:column; gap:1.1rem; }
+
   .page-hero{
     display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
     padding:1.4rem 1.45rem; border:1px solid #dbe3ee; border-radius:22px;
     background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(99,102,241,.05)), #fff;
     box-shadow:0 12px 28px rgba(15,23,42,.05);
   }
+
   .page-title{ margin:0; font-size:2rem; font-weight:800; letter-spacing:-.03em; color:#0f172a; }
   .page-subtitle{ margin:.35rem 0 0; color:#64748b; font-size:.95rem; }
 
-  .toolbar-card,.list-card{ border-radius:20px; overflow:hidden; border:1px solid #dbe3ee; }
-  .toolbar-card .card-body{ padding:1rem 1.1rem; }
+  .guide-card,
+  .toolbar-card,
+  .list-card{
+    border-radius:20px; overflow:hidden; border:1px solid #dbe3ee;
+  }
+
+  .guide-card .card-header,
   .list-card .card-header{
     background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
     border-bottom:1px solid #dbe3ee; font-weight:700; color:#0f172a; padding:.95rem 1.1rem;
+  }
+
+  .toolbar-card .card-body,
+  .guide-card .card-body{ padding:1rem 1.1rem; }
+
+  .guide-card { display:none; }
+  .guide-card.guide-visible { display:block; }
+
+  .help-toggle-btn { min-width:170px; }
+
+  .btn-ui-primary,
+  .btn-ui-secondary,
+  .btn-ui-neutral {
+    border-radius: 16px;
+    font-weight: 800;
+    padding: .78rem 1.2rem;
+    transition: all .18s ease;
+    border: 1px solid transparent;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .08);
+    text-decoration: none;
+  }
+
+  .btn-ui-primary {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff;
+    border-color: #2563eb;
+  }
+
+  .btn-ui-primary:hover,
+  .btn-ui-primary:focus {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: #fff;
+    border-color: #1d4ed8;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-secondary {
+    background: linear-gradient(135deg, #22c1e6, #1fb6d9);
+    color: #0f172a;
+    border-color: #22c1e6;
+  }
+
+  .btn-ui-secondary:hover,
+  .btn-ui-secondary:focus {
+    background: linear-gradient(135deg, #12b5db, #0ea5c6);
+    color: #0f172a;
+    border-color: #0ea5c6;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-neutral {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #475569;
+    border-color: #cbd5e1;
+  }
+
+  .btn-ui-neutral:hover,
+  .btn-ui-neutral:focus {
+    background: linear-gradient(135deg, #eef2f7, #dbe4ee);
+    color: #334155;
+    border-color: #b8c5d3;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-primary:active,
+  .btn-ui-secondary:active,
+  .btn-ui-neutral:active {
+    transform: translateY(0);
+  }
+
+  .flow-wrap{
+    display:flex; flex-wrap:wrap; align-items:center; gap:.55rem;
+    margin-bottom:1rem;
+  }
+
+  .flow-step{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:110px; padding:.5rem .8rem; border-radius:999px;
+    font-size:.82rem; font-weight:800; border:1px solid transparent;
+  }
+
+  .step-draft{ background:#f1f5f9; color:#475569; border-color:#e2e8f0; }
+  .step-approved{ background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe; }
+  .step-progress{ background:#dcfce7; color:#166534; border-color:#bbf7d0; }
+  .step-paused{ background:#fffbeb; color:#b45309; border-color:#fde68a; }
+  .step-completed{ background:#ecfdf5; color:#047857; border-color:#a7f3d0; }
+  .step-cancelled{ background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+
+  .flow-arrow{
+    color:#94a3b8;
+    font-weight:800;
+    font-size:1rem;
+  }
+
+  .guide-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:.85rem;
+  }
+
+  .guide-box{
+    border:1px solid #e7edf5;
+    border-radius:16px;
+    background:#fbfdff;
+    padding:1rem;
+    height:100%;
+  }
+
+  .guide-title{
+    font-size:.82rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:#64748b;
+    margin-bottom:.35rem;
+  }
+
+  .guide-text{
+    color:#0f172a;
+    font-weight:600;
+    line-height:1.55;
+    font-size:.93rem;
   }
 
   .status-pill,.priority-pill{
@@ -45,6 +174,10 @@
   .empty-state-title{ margin:0 0 .35rem; font-size:1.05rem; font-weight:700; color:#0f172a; }
   .empty-state-text{ margin:0; color:#64748b; font-size:.92rem; }
 
+  @media (max-width:991.98px){
+    .guide-grid{ grid-template-columns:1fr; }
+  }
+
   @media (max-width:767.98px){
     .page-hero{ flex-direction:column; align-items:stretch; }
     .page-title{ font-size:1.6rem; }
@@ -63,7 +196,61 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-primary" href="{% url 'workorders:create' %}">Nueva Work Order</a>
+      <button type="button"
+              class="btn btn-ui-secondary help-toggle-btn"
+              id="helpToggleBtn"
+              aria-expanded="false"
+              aria-controls="guideCard">
+        Ayuda
+      </button>
+      <a class="btn btn-ui-primary" href="{% url 'workorders:create' %}">Nueva Work Order</a>
+    </div>
+  </section>
+
+  <section class="card shadow-sm guide-card" id="guideCard">
+    <div class="card-header">Guía rápida del flujo Work Order</div>
+    <div class="card-body">
+      <div class="flow-wrap">
+        <span class="flow-step step-draft">DRAFT</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step step-approved">APPROVED</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step step-progress">IN_PROGRESS</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step step-completed">COMPLETED</span>
+        <span class="flow-arrow">|</span>
+        <span class="flow-step step-paused">PAUSED</span>
+        <span class="flow-arrow">|</span>
+        <span class="flow-step step-cancelled">CANCELLED</span>
+      </div>
+
+      <div class="guide-grid">
+        <div class="guide-box">
+          <div class="guide-title">Estados</div>
+          <div class="guide-text">
+            <b>DRAFT</b> es borrador. <b>APPROVED</b> queda lista para operar.
+            <b>IN_PROGRESS</b> indica ejecución. <b>PAUSED</b> detiene temporalmente.
+            <b>COMPLETED</b> cierra la operación. <b>CANCELLED</b> cancela y libera reservas activas.
+          </div>
+        </div>
+
+        <div class="guide-box">
+          <div class="guide-title">Flujo de material</div>
+          <div class="guide-text">
+            Primero puedes <b>reservar</b> material para apartarlo.
+            Después haces <b>issue</b> cuando el consumo es real.
+            Si sobró material, registras <b>return</b> para devolverlo al inventario.
+          </div>
+        </div>
+
+        <div class="guide-box">
+          <div class="guide-title">Trazabilidad</div>
+          <div class="guide-text">
+            Cada reserva, issue y devolución queda asociada a la OT.
+            El objetivo es mantener correspondencia entre estado operativo y movimiento real de inventario.
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -87,8 +274,8 @@
 
         <div class="col-md-3">
           <div class="d-flex gap-2">
-            <button class="btn btn-primary w-100" type="submit">Filtrar</button>
-            <a class="btn btn-outline-secondary w-100" href="{% url 'workorders:list' %}">Limpiar</a>
+            <button class="btn btn-ui-primary w-100" type="submit">Filtrar</button>
+            <a class="btn btn-ui-neutral w-100" href="{% url 'workorders:list' %}">Limpiar</a>
           </div>
         </div>
       </form>
@@ -142,4 +329,40 @@
   </section>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const STORAGE_KEY = "modo_para_retrasados";
+    const btn = document.getElementById("helpToggleBtn");
+    const guide = document.getElementById("guideCard");
+
+    function isModoParaRetrasadosEnabled() {
+        return localStorage.getItem(STORAGE_KEY) === "1";
+    }
+
+    function setModoParaRetrasados(enabled) {
+        localStorage.setItem(STORAGE_KEY, enabled ? "1" : "0");
+    }
+
+    function applyModoParaRetrasadosState() {
+        const enabled = isModoParaRetrasadosEnabled();
+
+        if (!btn || !guide) return;
+
+        guide.classList.toggle("guide-visible", enabled);
+        btn.textContent = enabled ? "Ocultar ayuda" : "Ayuda";
+        btn.setAttribute("aria-expanded", enabled ? "true" : "false");
+    }
+
+    function toggleModoParaRetrasados() {
+        setModoParaRetrasados(!isModoParaRetrasadosEnabled());
+        applyModoParaRetrasadosState();
+    }
+
+    btn?.addEventListener("click", toggleModoParaRetrasados);
+    applyModoParaRetrasadosState();
+})();
+</script>
 {% endblock %}

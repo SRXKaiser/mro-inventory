@@ -46,13 +46,84 @@
     text-decoration: underline;
   }
 
-  .section-card {
+  .help-toggle-btn {
+    min-width: 170px;
+  }
+
+  .btn-ui-primary,
+  .btn-ui-secondary,
+  .btn-ui-neutral,
+  .btn-ui-danger {
+    border-radius: 16px;
+    font-weight: 800;
+    padding: .78rem 1.2rem;
+    transition: all .18s ease;
+    border: 1px solid transparent;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .08);
+    text-decoration: none;
+  }
+
+  .btn-ui-primary {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff;
+    border-color: #2563eb;
+  }
+  .btn-ui-primary:hover,
+  .btn-ui-primary:focus {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: #fff;
+    border-color: #1d4ed8;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-secondary {
+    background: linear-gradient(135deg, #22c1e6, #1fb6d9);
+    color: #0f172a;
+    border-color: #22c1e6;
+  }
+  .btn-ui-secondary:hover,
+  .btn-ui-secondary:focus {
+    background: linear-gradient(135deg, #12b5db, #0ea5c6);
+    color: #0f172a;
+    border-color: #0ea5c6;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-neutral {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #475569;
+    border-color: #cbd5e1;
+  }
+  .btn-ui-neutral:hover,
+  .btn-ui-neutral:focus {
+    background: linear-gradient(135deg, #eef2f7, #dbe4ee);
+    color: #334155;
+    border-color: #b8c5d3;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-danger {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: #fff;
+    border-color: #dc2626;
+  }
+  .btn-ui-danger:hover,
+  .btn-ui-danger:focus {
+    background: linear-gradient(135deg, #b91c1c, #dc2626);
+    color: #fff;
+    border-color: #b91c1c;
+    transform: translateY(-1px);
+  }
+
+  .section-card,
+  .guide-block {
     border-radius: 20px;
     overflow: hidden;
     border: 1px solid #dbe3ee;
   }
 
-  .section-card .card-header {
+  .section-card .card-header,
+  .guide-block .card-header {
     background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
     border-bottom: 1px solid #dbe3ee;
     font-weight: 800;
@@ -60,14 +131,45 @@
     padding: 0.95rem 1.1rem;
   }
 
-  .line-table thead th {
-    white-space: nowrap;
+  .guide-block {
+    display: none;
+  }
+  .guide-block.guide-visible {
+    display: block;
   }
 
-  .layout-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    gap: 1rem;
+  .guide-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:.9rem;
+  }
+
+  .guide-box{
+    border:1px solid #e7edf5;
+    border-radius:16px;
+    background:#fbfdff;
+    padding:1rem;
+    height:100%;
+  }
+
+  .guide-title{
+    font-size:.82rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:#64748b;
+    margin-bottom:.35rem;
+  }
+
+  .guide-text{
+    color:#0f172a;
+    font-weight:600;
+    line-height:1.55;
+    font-size:.93rem;
+  }
+
+  .line-table thead th {
+    white-space: nowrap;
   }
 
   .field-card {
@@ -132,77 +234,8 @@
     align-items: center;
   }
 
-  .aside-card {
-    border-radius: 22px;
-    overflow: hidden;
-    border: 1px solid #dbe3ee;
-  }
-
-  .aside-card .card-header {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-    border-bottom: 1px solid #dbe3ee;
-    padding: 1rem 1.15rem;
-    font-weight: 800;
-    color: #0f172a;
-  }
-
-  .aside-card .card-body {
-    padding: 1.25rem;
-  }
-
-  .aside-intro {
-    font-size: 0.88rem;
-    color: #64748b;
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-
-  .aside-guide-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
-  .aside-guide-row {
-    position: relative;
-    padding: 0.9rem 0.95rem 0.9rem 1rem;
-    border-radius: 14px;
-    border: 1px solid #e7edf5;
-    background: #fbfdff;
-    overflow: hidden;
-  }
-
-  .aside-guide-row::before {
-    content: "";
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 4px;
-    background: #cbd5e1;
-  }
-
-  .aside-guide-red::before { background: #dc2626; }
-  .aside-guide-blue::before { background: #2563eb; }
-  .aside-guide-amber::before { background: #f59e0b; }
-  .aside-guide-green::before { background: #16a34a; }
-
-  .aside-guide-title {
-    font-size: 0.8rem;
-    font-weight: 800;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.35rem;
-  }
-
-  .aside-guide-text {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #0f172a;
-    line-height: 1.5;
-  }
-
   @media (max-width: 1199.98px) {
-    .layout-grid {
+    .guide-grid {
       grid-template-columns: 1fr;
     }
   }
@@ -231,13 +264,46 @@
   <section class="page-hero">
     <div>
       <h1 class="page-title">Issue (Consumo)</h1>
-      <p class="page-subtitle">
-        OT: <a class="wo-link" href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a>
-      </p>
+      <p class="page-subtitle">OT: <a class="wo-link" href="{% url 'workorders:detail' wo.id %}">{{ wo.code }}</a></p>
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Volver</a>
+      <button type="button"
+              class="btn btn-ui-secondary help-toggle-btn"
+              id="helpToggleBtn"
+              aria-expanded="false"
+              aria-controls="guideBlock">
+        Ayuda
+      </button>
+      <a class="btn btn-ui-neutral" href="{% url 'workorders:detail' wo.id %}">Volver</a>
+    </div>
+  </section>
+
+  <section class="card shadow-sm guide-block" id="guideBlock">
+    <div class="card-header">Cómo funciona un Issue</div>
+    <div class="card-body">
+      <div class="guide-grid">
+        <div class="guide-box">
+          <div class="guide-title">Consumo real</div>
+          <div class="guide-text">
+            Issue significa consumo real. Aquí ya no apartas material: aquí lo conviertes en salida efectiva de inventario.
+          </div>
+        </div>
+
+        <div class="guide-box">
+          <div class="guide-title">Kardex y trazabilidad</div>
+          <div class="guide-text">
+            El sistema genera un <code>InventoryMovement OUT</code> y deja la referencia de esta OT como parte de la trazabilidad.
+          </div>
+        </div>
+
+        <div class="guide-box">
+          <div class="guide-title">Reserva y siguiente paso</div>
+          <div class="guide-text">
+            Si eliges una reserva, se descuenta primero del reservado. Si luego sobra material, la operación correcta es <b>Return</b>.
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -281,115 +347,82 @@
     </div>
   </section>
 
-  <section class="layout-grid">
-    <div class="card shadow-sm section-card">
-      <div class="card-header">Registrar consumo (OUT)</div>
-      <div class="card-body">
-        <form method="post" action="{% url 'workorders:issue' wo.id %}" novalidate>
-          {% csrf_token %}
+  <section class="card shadow-sm section-card">
+    <div class="card-header">Registrar consumo (OUT)</div>
+    <div class="card-body">
+      <form method="post" action="{% url 'workorders:issue' wo.id %}" novalidate>
+        {% csrf_token %}
 
-          {% if consume_form.non_field_errors %}
-            <div class="error-summary mb-4">
-              {{ consume_form.non_field_errors }}
+        {% if consume_form.non_field_errors %}
+          <div class="error-summary mb-4">
+            {{ consume_form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="section-label">Datos del consumo</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="field-card field-card--soft">
+              <label class="field-label">Item</label>
+              {{ consume_form.item }}
+              {% if consume_form.item.errors %}
+                <div class="field-error">{{ consume_form.item.errors }}</div>
+              {% endif %}
             </div>
-          {% endif %}
+          </div>
 
-          <div class="section-label">Datos del consumo</div>
-          <div class="row g-3">
-            <div class="col-md-6">
-              <div class="field-card field-card--soft">
-                <label class="field-label">Item</label>
-                {{ consume_form.item }}
-                {% if consume_form.item.errors %}
-                  <div class="field-error">{{ consume_form.item.errors }}</div>
-                {% endif %}
-              </div>
+          <div class="col-md-6">
+            <div class="field-card field-card--soft">
+              <label class="field-label">Ubicación</label>
+              {{ consume_form.location }}
+              {% if consume_form.location.errors %}
+                <div class="field-error">{{ consume_form.location.errors }}</div>
+              {% endif %}
             </div>
+          </div>
 
-            <div class="col-md-6">
-              <div class="field-card field-card--soft">
-                <label class="field-label">Ubicación</label>
-                {{ consume_form.location }}
-                {% if consume_form.location.errors %}
-                  <div class="field-error">{{ consume_form.location.errors }}</div>
-                {% endif %}
-              </div>
+          <div class="col-md-4">
+            <div class="field-card">
+              <label class="field-label">Cantidad</label>
+              {{ consume_form.qty }}
+              {% if consume_form.qty.errors %}
+                <div class="field-error">{{ consume_form.qty.errors }}</div>
+              {% endif %}
             </div>
+          </div>
 
-            <div class="col-md-4">
-              <div class="field-card">
-                <label class="field-label">Cantidad</label>
-                {{ consume_form.qty }}
-                {% if consume_form.qty.errors %}
-                  <div class="field-error">{{ consume_form.qty.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-
-            <div class="col-md-8">
-              <div class="field-card">
-                <label class="field-label">Reserva (opcional)</label>
-                {{ consume_form.reservation }}
-                {% if consume_form.reservation.errors %}
-                  <div class="field-error">{{ consume_form.reservation.errors }}</div>
-                {% endif %}
-                <div class="field-help">
-                  Si eliges una reserva, se descuenta primero de <code>reserved</code> y luego se realiza el OUT real.
-                </div>
-              </div>
-            </div>
-
-            <div class="col-12">
-              <div class="field-card">
-                <label class="field-label">Notas (opcional)</label>
-                {{ consume_form.notes }}
-                {% if consume_form.notes.errors %}
-                  <div class="field-error">{{ consume_form.notes.errors }}</div>
-                {% endif %}
+          <div class="col-md-8">
+            <div class="field-card">
+              <label class="field-label">Reserva (opcional)</label>
+              {{ consume_form.reservation }}
+              {% if consume_form.reservation.errors %}
+                <div class="field-error">{{ consume_form.reservation.errors }}</div>
+              {% endif %}
+              <div class="field-help">
+                Si eliges una reserva, se descuenta primero de <code>reserved</code> y luego se hace el OUT real.
               </div>
             </div>
           </div>
 
-          <div class="form-divider"></div>
-
-          <div class="sticky-actions">
-            <button class="btn btn-danger" type="submit">Registrar Issue</button>
-            <a class="btn btn-outline-secondary" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
+          <div class="col-12">
+            <div class="field-card">
+              <label class="field-label">Notas (opcional)</label>
+              {{ consume_form.notes }}
+              {% if consume_form.notes.errors %}
+                <div class="field-error">{{ consume_form.notes.errors }}</div>
+              {% endif %}
+            </div>
           </div>
-        </form>
-      </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="sticky-actions">
+          <button class="btn btn-ui-danger" type="submit">Registrar Issue</button>
+          <a class="btn btn-ui-neutral" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
+        </div>
+      </form>
     </div>
-
-    <aside class="card shadow-sm aside-card">
-      <div class="card-header">Guía rápida</div>
-      <div class="card-body">
-        <div class="aside-intro">
-          El issue registra una salida real de inventario asociada a la ejecución de la work order.
-        </div>
-
-        <div class="aside-guide-list">
-          <div class="aside-guide-row aside-guide-red">
-            <div class="aside-guide-title">Consumo</div>
-            <div class="aside-guide-text">Genera un <code>InventoryMovement OUT</code> y afecta el stock físico.</div>
-          </div>
-
-          <div class="aside-guide-row aside-guide-blue">
-            <div class="aside-guide-title">Referencia</div>
-            <div class="aside-guide-text">Queda trazado en Kardex con referencia <code>WO:{{ wo.code }}</code>.</div>
-          </div>
-
-          <div class="aside-guide-row aside-guide-amber">
-            <div class="aside-guide-title">Reserva</div>
-            <div class="aside-guide-text">Si existe una reserva asociada, se descuenta primero del reservado antes del OUT.</div>
-          </div>
-
-          <div class="aside-guide-row aside-guide-green">
-            <div class="aside-guide-title">Control</div>
-            <div class="aside-guide-text">Usa notas para documentar condiciones especiales, técnico o contexto operativo.</div>
-          </div>
-        </div>
-      </div>
-    </aside>
   </section>
 
 </div>
@@ -398,12 +431,35 @@
 {% block extra_js %}
 <script>
 (function () {
+    const storageKey = "modo_para_retrasados";
+    const helpToggleBtn = document.getElementById("helpToggleBtn");
+    const guideBlock = document.getElementById("guideBlock");
+
+    function modoParaRetrasados(enabled) {
+        if (!helpToggleBtn || !guideBlock) return;
+
+        guideBlock.classList.toggle("guide-visible", enabled);
+        helpToggleBtn.setAttribute("aria-expanded", enabled ? "true" : "false");
+        helpToggleBtn.textContent = enabled ? "Ocultar ayuda" : "Ayuda";
+        localStorage.setItem(storageKey, enabled ? "1" : "0");
+    }
+
     const inputs = document.querySelectorAll("input, select, textarea");
-    inputs.forEach(el => {
+    inputs.forEach(function (el) {
         if (el.type === "checkbox") return;
         if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
         else el.classList.add("form-control");
     });
+
+    if (helpToggleBtn && guideBlock) {
+        const savedState = localStorage.getItem(storageKey) === "1";
+        modoParaRetrasados(savedState);
+
+        helpToggleBtn.addEventListener("click", function () {
+            const isVisible = guideBlock.classList.contains("guide-visible");
+            modoParaRetrasados(!isVisible);
+        });
+    }
 })();
 </script>
 {% endblock %}

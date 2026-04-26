@@ -3,111 +3,446 @@
 
 {% block extra_css %}
 <style>
-  .page-shell { display:flex; flex-direction:column; gap:1.1rem; }
-  .page-hero{
-    display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
-    padding:1.4rem 1.45rem; border:1px solid #dbe3ee; border-radius:22px;
-    background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(99,102,241,.05)), #fff;
-    box-shadow:0 12px 28px rgba(15,23,42,.05);
-  }
-  .page-title{ margin:0; font-size:1.95rem; font-weight:800; letter-spacing:-.03em; color:#0f172a; }
-  .page-subtitle{ margin:.35rem 0 0; color:#64748b; font-size:.95rem; }
-
-  .form-card{ border-radius:22px; overflow:hidden; border:1px solid #dbe3ee; }
-  .form-card .card-header{
-    background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
-    border-bottom:1px solid #dbe3ee; padding:1rem 1.15rem; font-weight:800; color:#0f172a;
-  }
-  .form-card .card-body{ padding:1.25rem; }
-
-  .section-label{
-    font-size:.86rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
-    color:#64748b; margin-bottom:.95rem;
-  }
-  .field-card{
-    border:1px solid #e7edf5; border-radius:16px; background:#fbfdff; padding:1rem; height:100%;
-  }
-  .field-label{ display:block; font-size:.9rem; font-weight:700; color:#334155; margin-bottom:.5rem; }
-  .field-error{ margin-top:.4rem; font-size:.82rem; color:#dc2626; font-weight:600; }
-  .form-divider{ margin:1.25rem 0; border-top:1px solid #e5e7eb; }
-  .sticky-actions{ display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; }
-  .error-summary{
-    border-radius:16px; border:1px solid #fecaca; background:#fef2f2;
-    color:#991b1b; padding:.95rem 1rem;
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
   }
 
-  @media (max-width:767.98px){
-    .page-hero{ flex-direction:column; align-items:stretch; }
-    .page-title{ font-size:1.6rem; }
-    .page-hero .btn, .sticky-actions .btn{ width:100%; }
+  .page-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.4rem 1.45rem;
+    border: 1px solid #dbe3ee;
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(99, 102, 241, 0.05)),
+      #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.95rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .page-subtitle {
+    margin: 0.35rem 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .help-toggle-btn {
+    min-width: 170px;
+  }
+
+  .btn-ui-primary,
+  .btn-ui-secondary,
+  .btn-ui-neutral {
+    border-radius: 16px;
+    font-weight: 800;
+    padding: .78rem 1.2rem;
+    transition: all .18s ease;
+    border: 1px solid transparent;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .08);
+  }
+
+  .btn-ui-primary {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff;
+    border-color: #2563eb;
+  }
+
+  .btn-ui-primary:hover,
+  .btn-ui-primary:focus {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: #fff;
+    border-color: #1d4ed8;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-secondary {
+    background: linear-gradient(135deg, #22c1e6, #1fb6d9);
+    color: #0f172a;
+    border-color: #22c1e6;
+  }
+
+  .btn-ui-secondary:hover,
+  .btn-ui-secondary:focus {
+    background: linear-gradient(135deg, #12b5db, #0ea5c6);
+    color: #0f172a;
+    border-color: #0ea5c6;
+    transform: translateY(-1px);
+  }
+
+  .btn-ui-neutral {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #475569;
+    border-color: #cbd5e1;
+  }
+
+  .btn-ui-neutral:hover,
+  .btn-ui-neutral:focus {
+    background: linear-gradient(135deg, #eef2f7, #dbe4ee);
+    color: #334155;
+    border-color: #b8c5d3;
+    transform: translateY(-1px);
+  }
+
+  .guide-block,
+  .form-card {
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+  }
+
+  .guide-block .card-header,
+  .form-card .card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #dbe3ee;
+    padding: 1rem 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .guide-block .card-body,
+  .form-card .card-body {
+    padding: 1.25rem;
+  }
+
+  .guide-block {
+    display: none;
+  }
+
+  .guide-block.guide-visible {
+    display: block;
+  }
+
+  .guide-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .guide-box {
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    background: #fbfdff;
+    padding: 1rem;
+    height: 100%;
+  }
+
+  .guide-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+  }
+
+  .guide-text {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.5;
+  }
+
+  .section-label {
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 0.95rem;
+  }
+
+  .field-card {
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    background: #fbfdff;
+    padding: 1rem;
+    height: 100%;
+  }
+
+  .field-card--soft {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 0.5rem;
+  }
+
+  .field-error {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .field-help {
+    margin-top: 0.45rem;
+    font-size: 0.82rem;
+    color: #64748b;
+    line-height: 1.5;
+  }
+
+  .error-summary {
+    border-radius: 16px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.95rem 1rem;
+  }
+
+  .form-divider {
+    margin: 1.25rem 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .sticky-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  @media (max-width: 1199.98px) {
+    .guide-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .page-hero {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+    }
+
+    .page-hero .btn,
+    .sticky-actions .btn {
+      width: 100%;
+    }
   }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-shell">
+
   <section class="page-hero">
     <div>
       <h1 class="page-title">Nueva Work Order</h1>
-      <p class="page-subtitle">Crea una orden de trabajo con prioridad, responsable y notas operativas.</p>
+      <p class="page-subtitle">
+        Registra una orden de trabajo para controlar ejecución, materiales y trazabilidad operativa.
+      </p>
     </div>
+
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-secondary" href="{% url 'workorders:list' %}">Volver</a>
+      <button type="button"
+              class="btn btn-ui-secondary help-toggle-btn"
+              id="helpToggleBtn"
+              aria-expanded="false"
+              aria-controls="guideBlock">
+        Ayuda
+      </button>
+      <a class="btn btn-ui-neutral" href="{% url 'workorders:list' %}">Volver</a>
     </div>
   </section>
 
+  <section class="card shadow-sm guide-block" id="guideBlock">
+    <div class="card-header">Cómo funciona una Work Order</div>
+    <div class="card-body">
+      <div class="guide-grid">
+        <div class="guide-box">
+          <div class="guide-title">Identidad operativa</div>
+          <div class="guide-text">
+            El código de la OT será la referencia principal para seguimiento, reservas, consumos y cierre del trabajo.
+          </div>
+        </div>
+
+        <div class="guide-box">
+          <div class="guide-title">Planeación</div>
+          <div class="guide-text">
+            La Work Order define prioridad, responsable y contexto. Aún no mueve inventario, pero sí estructura la operación.
+          </div>
+        </div>
+
+        <div class="guide-box">
+          <div class="guide-title">Siguiente flujo</div>
+          <div class="guide-text">
+            Después de crear la OT normalmente agregas líneas, luego reservas material, haces issue y finalmente registras cierre o devolución.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if messages %}
+    {% for m in messages %}
+      <div class="alert alert-{{ m.tags }} py-2">{{ m }}</div>
+    {% endfor %}
+  {% endif %}
+
   <section class="card shadow-sm form-card">
-    <div class="card-header">Datos generales</div>
+    <div class="card-header">Registrar Work Order</div>
+
     <div class="card-body">
       <form method="post" novalidate>
         {% csrf_token %}
 
-        {% if form.non_field_errors or form.errors %}
+        {% if form.non_field_errors %}
           <div class="error-summary mb-4">
-            {% if form.non_field_errors %}<div>{{ form.non_field_errors }}</div>{% endif %}
-            {% if form.errors %}<div class="mt-1">{{ form.errors }}</div>{% endif %}
+            {{ form.non_field_errors }}
           </div>
         {% endif %}
 
-        <div class="section-label">Configuración</div>
+        <div class="section-label">Datos principales</div>
         <div class="row g-3">
-          <div class="col-md-4">
-            <div class="field-card">
-              <label class="field-label">Código (opcional)</label>
+          <div class="col-md-6">
+            <div class="field-card field-card--soft">
+              <label class="field-label">Código</label>
               {{ form.code }}
+              {% if form.code.errors %}
+                <div class="field-error">{{ form.code.errors }}</div>
+              {% endif %}
+              <div class="field-help">
+                Identificador único de la OT para seguimiento, reservas, issue y cierre.
+              </div>
             </div>
           </div>
 
-          <div class="col-md-4">
-            <div class="field-card">
+          <div class="col-md-6">
+            <div class="field-card field-card--soft">
               <label class="field-label">Prioridad</label>
               {{ form.priority }}
+              {% if form.priority.errors %}
+                <div class="field-error">{{ form.priority.errors }}</div>
+              {% endif %}
             </div>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-md-6">
             <div class="field-card">
-              <label class="field-label">Asignado a (opcional)</label>
+              <label class="field-label">Asignado a</label>
               {{ form.assigned_to }}
+              {% if form.assigned_to.errors %}
+                <div class="field-error">{{ form.assigned_to.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="field-card">
+              <label class="field-label">Fecha requerida</label>
+              {{ form.required_date }}
+              {% if form.required_date.errors %}
+                <div class="field-error">{{ form.required_date.errors }}</div>
+              {% endif %}
             </div>
           </div>
 
           <div class="col-12">
             <div class="field-card">
-              <label class="field-label">Notas</label>
-              {{ form.notes }}
+              <label class="field-label">Descripción</label>
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="field-error">{{ form.description.errors }}</div>
+              {% endif %}
             </div>
           </div>
         </div>
 
         <div class="form-divider"></div>
 
+        <div class="section-label">Configuración operativa</div>
+        <div class="row g-3">
+          {% if form.status %}
+          <div class="col-md-4">
+            <div class="field-card field-card--soft">
+              <label class="field-label">Status</label>
+              {{ form.status }}
+              {% if form.status.errors %}
+                <div class="field-error">{{ form.status.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if form.notes %}
+          <div class="col-md-8">
+            <div class="field-card">
+              <label class="field-label">Notas internas</label>
+              {{ form.notes }}
+              {% if form.notes.errors %}
+                <div class="field-error">{{ form.notes.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="form-divider"></div>
+
         <div class="sticky-actions">
-          <button class="btn btn-primary" type="submit">Crear</button>
-          <a class="btn btn-outline-secondary" href="{% url 'workorders:list' %}">Cancelar</a>
+          <button class="btn btn-ui-primary" type="submit">Guardar Work Order</button>
+          <a class="btn btn-ui-neutral" href="{% url 'workorders:list' %}">Cancelar</a>
         </div>
       </form>
     </div>
   </section>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const storageKey = "modo_para_retrasados";
+    const helpToggleBtn = document.getElementById("helpToggleBtn");
+    const guideBlock = document.getElementById("guideBlock");
+
+    function modoParaRetrasados(enabled) {
+        if (!helpToggleBtn || !guideBlock) return;
+
+        guideBlock.classList.toggle("guide-visible", enabled);
+        helpToggleBtn.setAttribute("aria-expanded", enabled ? "true" : "false");
+        helpToggleBtn.textContent = enabled ? "Ocultar ayuda" : "Ayuda";
+        localStorage.setItem(storageKey, enabled ? "1" : "0");
+    }
+
+    const inputs = document.querySelectorAll("input, select, textarea");
+    inputs.forEach(function (el) {
+        if (el.type === "checkbox") return;
+        if (el.tagName.toLowerCase() === "select") {
+            el.classList.add("form-select");
+        } else {
+            el.classList.add("form-control");
+        }
+    });
+
+    if (helpToggleBtn && guideBlock) {
+        const savedState = localStorage.getItem(storageKey) === "1";
+        modoParaRetrasados(savedState);
+
+        helpToggleBtn.addEventListener("click", function () {
+            const isVisible = guideBlock.classList.contains("guide-visible");
+            modoParaRetrasados(!isVisible);
+        });
+    }
+})();
+</script>
 {% endblock %}
