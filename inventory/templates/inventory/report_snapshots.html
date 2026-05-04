@@ -104,7 +104,7 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-dark" href="{% url 'reports_home' %}">Volver</a>
+      <a class="btn btn-ui-neutral" href="{% url 'reports_home' %}">Volver</a>
     </div>
   </section>
 
@@ -135,12 +135,12 @@
         </div>
 
         <div class="col-12 d-flex gap-2 flex-wrap">
-          <button class="btn btn-primary" type="submit">Aplicar filtros</button>
-          <a class="btn btn-outline-success"
+          <button class="btn btn-ui-primary" type="submit">Aplicar filtros</button>
+          <a class="btn btn-ui-success"
              href="?warehouse_id={{ filter_warehouse_id }}&location_id={{ filter_location_id }}&q={{ filter_q }}&low={{ filter_low }}&download=1">
             Descargar CSV
           </a>
-          <a class="btn btn-outline-secondary" href="{% url 'report_snapshots' %}">Limpiar</a>
+          <a class="btn btn-ui-neutral" href="{% url 'report_snapshots' %}">Limpiar</a>
         </div>
       </form>
     </div>

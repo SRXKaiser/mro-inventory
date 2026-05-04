@@ -145,7 +145,7 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-dark" href="{% url 'reports_home' %}">Volver</a>
+      <a class="btn btn-ui-neutral" href="{% url 'reports_home' %}">Volver</a>
     </div>
   </section>
 
@@ -191,14 +191,14 @@
         </div>
 
         <div class="col-12 d-flex gap-2 flex-wrap">
-          <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+          <button class="btn btn-ui-primary" type="submit">Aplicar filtros</button>
 
-          <a class="btn btn-outline-success"
+          <a class="btn btn-ui-success"
              href="?item_id={{ filter_item_id }}&location_id={{ filter_location_id }}&type={{ filter_type }}&from={{ filter_from }}&to={{ filter_to }}&void={{ filter_void }}&download=1">
             Descargar CSV
           </a>
 
-          <a class="btn btn-outline-secondary" href="{% url 'report_movements' %}">Limpiar</a>
+          <a class="btn btn-ui-neutral" href="{% url 'report_movements' %}">Limpiar</a>
         </div>
       </form>
     </div>

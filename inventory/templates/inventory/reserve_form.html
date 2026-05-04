@@ -93,12 +93,6 @@
     margin-bottom: 0.5rem;
   }
 
-  .field-help {
-    margin-top: 0.4rem;
-    font-size: 0.82rem;
-    color: #64748b;
-  }
-
   .field-error {
     margin-top: 0.4rem;
     font-size: 0.82rem;
@@ -172,10 +166,10 @@
     background: #cbd5e1;
   }
 
-  .aside-guide-row.aside-guide-blue::before { background: #2563eb; }
-  .aside-guide-row.aside-guide-green::before { background: #16a34a; }
-  .aside-guide-row.aside-guide-amber::before { background: #f59e0b; }
-  .aside-guide-row.aside-guide-red::before { background: #dc2626; }
+  .aside-guide-blue::before { background: #2563eb; }
+  .aside-guide-green::before { background: #16a34a; }
+  .aside-guide-amber::before { background: #f59e0b; }
+  .aside-guide-red::before { background: #dc2626; }
 
   .aside-guide-title {
     font-size: 0.8rem;
@@ -229,7 +223,7 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Volver</a>
+      <a class="btn btn-ui-neutral" href="{% url 'dashboard' %}">Volver</a>
     </div>
   </section>
 
@@ -313,8 +307,8 @@
           <div class="form-divider"></div>
 
           <div class="sticky-actions">
-            <button class="btn btn-primary" type="submit">Reservar</button>
-            <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+            <button class="btn btn-ui-primary" type="submit">Reservar</button>
+            <a class="btn btn-ui-neutral" href="{% url 'dashboard' %}">Cancelar</a>
           </div>
         </form>
       </div>
@@ -367,8 +361,12 @@
 
   const wh = document.getElementById("id_warehouse");
   const loc = document.getElementById("id_location");
+  const item = document.getElementById("id_item");
+  const qty = document.getElementById("id_quantity");
+  const info = document.getElementById("stockInfo");
 
   function reset(select) {
+    if (!select) return;
     select.innerHTML = "";
     const opt = document.createElement("option");
     opt.value = "";
@@ -378,6 +376,8 @@
   }
 
   async function loadLocations() {
+    if (!wh || !loc) return;
+
     const wid = wh.value;
     reset(loc);
     if (!wid) return;
@@ -395,56 +395,41 @@
     loc.disabled = false;
   }
 
-  wh?.addEventListener("change", loadLocations);
-  if (wh?.value) loadLocations();
-})();
-</script>
+  async function loadStock() {
+    if (!item || !loc || !info) return;
 
-<script>
-(function () {
-  const item = document.getElementById("id_item");
-  const loc = document.getElementById("id_location");
-  const qty = document.getElementById("id_quantity");
-  const info = document.getElementById("stockInfo");
-
-  let lastAvailable = 0;
-
-  async function refreshStock() {
-    if (!item?.value || !loc?.value) {
-      info.innerText = "";
+    if (!item.value || !loc.value) {
       info.style.display = "none";
-      lastAvailable = 0;
-      qty?.setCustomValidity("");
+      info.textContent = "";
+      if (qty) qty.setCustomValidity("");
       return;
     }
 
-    const url = "{% url 'stock_by_item_location' %}" + `?item_id=${item.value}&location_id=${loc.value}`;
-    const r = await fetch(url);
-    const d = await r.json();
+    const url = "{% url 'stock_by_item_location' %}?item_id=" + item.value + "&location_id=" + loc.value;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    info.innerText = `On hand: ${d.on_hand} | Reservado: ${d.reserved} | Disponible: ${d.available}`;
+    const available = parseFloat(data.available ?? 0);
+    info.textContent = `Disponible: ${data.available ?? "0.000"} | En mano: ${data.on_hand ?? "0.000"} | Reservado: ${data.reserved ?? "0.000"}`;
     info.style.display = "inline-flex";
 
-    const parsed = parseFloat(d.available ?? "0");
-    lastAvailable = Number.isFinite(parsed) ? parsed : 0;
-
-    validateQty();
-  }
-
-  function validateQty(){
-    const q = parseFloat(qty?.value || "0");
-    if(q > lastAvailable){
-      qty.setCustomValidity("Cantidad mayor al stock disponible.");
-    }else{
-      qty.setCustomValidity("");
+    if (qty) {
+      const q = parseFloat(qty.value || "0");
+      qty.setCustomValidity(q > available ? "La cantidad supera el disponible." : "");
     }
   }
 
-  item?.addEventListener("change", refreshStock);
-  loc?.addEventListener("change", refreshStock);
-  qty?.addEventListener("input", validateQty);
+  wh?.addEventListener("change", async function () {
+    await loadLocations();
+    await loadStock();
+  });
 
-  setTimeout(refreshStock, 150);
+  loc?.addEventListener("change", loadStock);
+  item?.addEventListener("change", loadStock);
+  qty?.addEventListener("input", loadStock);
+
+  if (wh?.value) loadLocations();
+  setTimeout(loadStock, 150);
 })();
 </script>
 {% endblock %}

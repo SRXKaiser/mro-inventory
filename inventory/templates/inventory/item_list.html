@@ -86,37 +86,14 @@
     vertical-align: middle;
   }
 
-  .col-sku {
-    min-width: 150px;
-  }
-
-  .col-name {
-    min-width: 240px;
-  }
-
-  .col-type {
-    min-width: 110px;
-  }
-
-  .col-criticality {
-    min-width: 150px;
-  }
-
-  .col-uom {
-    min-width: 90px;
-  }
-
-  .col-min-stock {
-    min-width: 120px;
-  }
-
-  .col-active {
-    min-width: 110px;
-  }
-
-  .col-actions {
-    min-width: 190px;
-  }
+  .col-sku { min-width: 150px; }
+  .col-name { min-width: 240px; }
+  .col-type { min-width: 110px; }
+  .col-criticality { min-width: 150px; }
+  .col-uom { min-width: 90px; }
+  .col-min-stock { min-width: 120px; }
+  .col-active { min-width: 110px; }
+  .col-actions { min-width: 190px; }
 
   .th-center,
   .td-center {
@@ -348,7 +325,7 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-primary" href="{% url 'item_create' %}">
+      <a class="btn btn-ui-primary" href="{% url 'item_create' %}">
         Nuevo artículo
       </a>
     </div>
@@ -372,10 +349,10 @@
 
         <div class="col-lg-4">
           <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary w-100" type="submit">
+            <button class="btn btn-ui-primary w-100" type="submit">
               Buscar
             </button>
-            <a class="btn btn-outline-secondary w-100" href="{% url 'item_list' %}">
+            <a class="btn btn-ui-neutral w-100" href="{% url 'item_list' %}">
               Limpiar
             </a>
           </div>
@@ -468,10 +445,8 @@
             <tr>
               <td colspan="8">
                 <div class="empty-state">
-                  <h3 class="empty-state-title">No hay artículos registrados</h3>
-                  <p class="empty-state-text">
-                    Cuando captures artículos MRO aparecerán aquí para su consulta y administración.
-                  </p>
+                  <p class="empty-state-title">No se encontraron artículos</p>
+                  <p class="empty-state-text">Ajusta tu búsqueda o registra un nuevo artículo en el catálogo.</p>
                 </div>
               </td>
             </tr>

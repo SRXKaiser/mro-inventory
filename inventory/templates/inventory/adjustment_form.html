@@ -3,208 +3,154 @@
 
 {% block extra_css %}
 <style>
-  .page-shell {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
-  }
+  .page-shell { display:flex; flex-direction:column; gap:1.1rem; }
 
   .page-hero {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1.4rem 1.45rem;
-    border: 1px solid #dbe3ee;
-    border-radius: 22px;
-    background:
-      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(8, 145, 178, 0.04)),
-      #ffffff;
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+    display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
+    padding:1.4rem 1.45rem; border:1px solid #dbe3ee; border-radius:22px;
+    background:linear-gradient(135deg, rgba(245,158,11,.10), rgba(37,99,235,.05)), #fff;
+    box-shadow:0 12px 28px rgba(15,23,42,.05);
   }
 
-  .page-title {
-    margin: 0;
-    font-size: 1.95rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: #0f172a;
-  }
-
-  .page-subtitle {
-    margin: 0.35rem 0 0 0;
-    color: #64748b;
-    font-size: 0.95rem;
-  }
+  .page-title { margin:0; font-size:1.95rem; font-weight:800; letter-spacing:-.03em; color:#0f172a; }
+  .page-subtitle { margin:.35rem 0 0; color:#64748b; font-size:.95rem; }
 
   .adjustment-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    gap: 1rem;
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) 340px;
+    gap:1rem;
   }
 
-  .form-card,
-  .aside-card {
-    border-radius: 22px;
-    overflow: hidden;
-    border: 1px solid #dbe3ee;
+  .form-card, .aside-card {
+    border-radius:22px;
+    overflow:hidden;
+    border:1px solid #dbe3ee;
   }
 
-  .form-card .card-header,
-  .aside-card .card-header {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-    border-bottom: 1px solid #dbe3ee;
-    padding: 1rem 1.15rem;
-    font-weight: 800;
-    color: #0f172a;
+  .form-card .card-header, .aside-card .card-header {
+    background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+    border-bottom:1px solid #dbe3ee;
+    padding:1rem 1.15rem;
+    font-weight:800;
+    color:#0f172a;
   }
 
-  .form-card .card-body,
-  .aside-card .card-body {
-    padding: 1.25rem;
-  }
+  .form-card .card-body, .aside-card .card-body { padding:1.25rem; }
 
   .section-label {
-    font-size: 0.86rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #64748b;
-    margin-bottom: 0.95rem;
+    font-size:.86rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:#64748b;
+    margin-bottom:.95rem;
   }
 
   .field-card {
-    border: 1px solid #e7edf5;
-    border-radius: 16px;
-    background: #fbfdff;
-    padding: 1rem;
-    height: 100%;
+    border:1px solid #e7edf5;
+    border-radius:16px;
+    background:#fbfdff;
+    padding:1rem;
+    height:100%;
   }
 
-  .field-card--soft {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  }
+  .field-card--soft { background:linear-gradient(180deg,#fff 0%,#f8fafc 100%); }
 
   .field-label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #334155;
-    margin-bottom: 0.5rem;
-  }
-
-  .field-help {
-    margin-top: 0.4rem;
-    font-size: 0.82rem;
-    color: #64748b;
+    display:block;
+    font-size:.9rem;
+    font-weight:700;
+    color:#334155;
+    margin-bottom:.5rem;
   }
 
   .field-error {
-    margin-top: 0.4rem;
-    font-size: 0.82rem;
-    color: #dc2626;
-    font-weight: 600;
+    margin-top:.4rem;
+    font-size:.82rem;
+    color:#dc2626;
+    font-weight:600;
   }
 
   .error-summary {
-    border-radius: 16px;
-    border: 1px solid #fecaca;
-    background: #fef2f2;
-    color: #991b1b;
-    padding: 0.95rem 1rem;
+    border-radius:16px;
+    border:1px solid #fecaca;
+    background:#fef2f2;
+    color:#991b1b;
+    padding:.95rem 1rem;
   }
 
   .mode-note {
-    margin-top: 0.45rem;
-    font-size: 0.84rem;
-    color: #64748b;
+    margin-top:.45rem;
+    font-size:.84rem;
+    color:#64748b;
   }
 
-  .form-divider {
-    margin: 1.25rem 0;
-    border-top: 1px solid #e5e7eb;
-  }
+  .form-divider { margin:1.25rem 0; border-top:1px solid #e5e7eb; }
 
   .sticky-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    justify-content: flex-start;
-    align-items: center;
-    padding-top: 0.25rem;
+    display:flex;
+    flex-wrap:wrap;
+    gap:.75rem;
+    justify-content:flex-start;
+    align-items:center;
+    padding-top:.25rem;
   }
 
   .aside-intro {
-    font-size: 0.88rem;
-    color: #64748b;
-    margin-bottom: 1rem;
-    line-height: 1.5;
+    font-size:.88rem;
+    color:#64748b;
+    margin-bottom:1rem;
+    line-height:1.5;
   }
 
-  .aside-guide-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
+  .aside-guide-list { display:flex; flex-direction:column; gap:.8rem; }
 
   .aside-guide-row {
-    position: relative;
-    padding: 0.9rem 0.95rem 0.9rem 1rem;
-    border-radius: 14px;
-    border: 1px solid #e7edf5;
-    background: #fbfdff;
-    overflow: hidden;
+    position:relative;
+    padding:.9rem .95rem .9rem 1rem;
+    border-radius:14px;
+    border:1px solid #e7edf5;
+    background:#fbfdff;
+    overflow:hidden;
   }
 
   .aside-guide-row::before {
-    content: "";
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 4px;
-    background: #cbd5e1;
+    content:"";
+    position:absolute;
+    inset:0 auto 0 0;
+    width:4px;
+    background:#cbd5e1;
   }
 
-  .aside-guide-blue::before { background: #2563eb; }
-  .aside-guide-green::before { background: #16a34a; }
-  .aside-guide-amber::before { background: #f59e0b; }
-  .aside-guide-red::before { background: #dc2626; }
+  .aside-guide-blue::before { background:#2563eb; }
+  .aside-guide-green::before { background:#16a34a; }
+  .aside-guide-amber::before { background:#f59e0b; }
+  .aside-guide-red::before { background:#dc2626; }
 
   .aside-guide-title {
-    font-size: 0.8rem;
-    font-weight: 800;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.35rem;
+    font-size:.8rem;
+    font-weight:800;
+    color:#64748b;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    margin-bottom:.35rem;
   }
 
   .aside-guide-text {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #0f172a;
-    line-height: 1.5;
+    font-size:.95rem;
+    font-weight:700;
+    color:#0f172a;
+    line-height:1.5;
   }
 
-  @media (max-width: 1199.98px) {
-    .adjustment-layout {
-      grid-template-columns: 1fr;
-    }
+  @media (max-width:1199.98px) {
+    .adjustment-layout { grid-template-columns:1fr; }
   }
 
-  @media (max-width: 767.98px) {
-    .page-hero {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .page-title {
-      font-size: 1.6rem;
-    }
-
-    .page-hero .btn,
-    .sticky-actions .btn {
-      width: 100%;
-    }
+  @media (max-width:767.98px) {
+    .page-hero { flex-direction:column; align-items:stretch; }
+    .page-title { font-size:1.6rem; }
+    .page-hero .btn, .sticky-actions .btn { width:100%; }
   }
 </style>
 {% endblock %}
@@ -221,7 +167,7 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Volver</a>
+      <a class="btn btn-ui-neutral" href="{% url 'dashboard' %}">Volver</a>
     </div>
   </section>
 
@@ -329,8 +275,8 @@
           <div class="form-divider"></div>
 
           <div class="sticky-actions">
-            <button class="btn btn-primary" type="submit">Aplicar ajuste</button>
-            <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+            <button class="btn btn-ui-warning" type="submit">Aplicar ajuste</button>
+            <a class="btn btn-ui-neutral" href="{% url 'dashboard' %}">Cancelar</a>
           </div>
         </form>
       </div>
@@ -380,63 +326,6 @@
     if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
     else el.classList.add("form-control");
   });
-
-  const wh = document.getElementById("id_warehouse");
-  const loc = document.getElementById("id_location");
-
-  function resetLocations() {
-    loc.innerHTML = "";
-    const opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "---------";
-    loc.appendChild(opt);
-    loc.disabled = true;
-  }
-
-  async function loadLocations() {
-    const wid = wh.value;
-    const current = loc.value;
-    resetLocations();
-    if (!wid) return;
-
-    const res = await fetch("{% url 'locations_by_warehouse' %}?warehouse_id=" + wid);
-    const data = await res.json();
-
-    data.forEach(x => {
-      const opt = document.createElement("option");
-      opt.value = x.id;
-      opt.textContent = x.code ? `${x.code} - ${x.name}` : x.name;
-      loc.appendChild(opt);
-    });
-
-    loc.disabled = false;
-
-    if (current && [...loc.options].some(o => o.value === current)) {
-      loc.value = current;
-    }
-  }
-
-  wh?.addEventListener("change", loadLocations);
-  if (wh?.value) loadLocations();
-})();
-</script>
-
-<script>
-(function () {
-  const mode = document.getElementById("id_mode");
-  const deltaWrap = document.getElementById("deltaWrap");
-  const setWrap = document.getElementById("setWrap");
-
-  function applyMode() {
-    const m = mode?.value || "";
-    const isSet = m === "set";
-
-    if (deltaWrap) deltaWrap.style.display = isSet ? "none" : "";
-    if (setWrap) setWrap.style.display = isSet ? "" : "none";
-  }
-
-  mode?.addEventListener("change", applyMode);
-  applyMode();
 })();
 </script>
 {% endblock %}

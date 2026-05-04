@@ -299,8 +299,8 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-secondary" href="{% url 'item_edit' item.id %}">Editar</a>
-      <a class="btn btn-outline-dark" href="{% url 'item_list' %}">Volver</a>
+      <a class="btn btn-ui-neutral" href="{% url 'item_edit' item.id %}">Editar</a>
+      <a class="btn btn-ui-neutral" href="{% url 'item_list' %}">Volver</a>
     </div>
   </section>
 
@@ -308,23 +308,23 @@
     <div class="section-card-header">Acciones rápidas</div>
     <div class="card-body">
       <div class="quick-actions">
-        <a class="btn btn-primary" href="{% url 'movement_create' %}?item_id={{ item.id }}">Registrar entrada / salida</a>
+        <a class="btn btn-ui-primary" href="{% url 'movement_create' %}?item_id={{ item.id }}">Registrar entrada / salida</a>
 
         {% if can_transfer %}
-          <a class="btn btn-outline-primary" href="{% url 'transfer_create' %}?item_id={{ item.id }}">Transferir</a>
+          <a class="btn btn-ui-primary" href="{% url 'transfer_create' %}?item_id={{ item.id }}">Transferir</a>
         {% endif %}
 
-        <a class="btn btn-outline-info" href="{% url 'reserve_create' %}?item_id={{ item.id }}">Reservar</a>
-        <a class="btn btn-outline-secondary" href="{% url 'release_create' %}?item_id={{ item.id }}">Liberar reserva</a>
+        <a class="btn btn-ui-secondary" href="{% url 'reserve_create' %}?item_id={{ item.id }}">Reservar</a>
+        <a class="btn btn-ui-neutral" href="{% url 'release_create' %}?item_id={{ item.id }}">Liberar reserva</a>
 
         {% if can_adjust %}
-          <a class="btn btn-outline-warning" href="{% url 'adjustment_create' %}?item_id={{ item.id }}">Ajuste (ADJ)</a>
-          <a class="btn btn-outline-warning" href="{% url 'cycle_count' %}?item_id={{ item.id }}">Conteo físico</a>
-          <a class="btn btn-outline-info" href="{% url 'reservation_manage' %}?item_id={{ item.id }}">Reservar / Liberar</a>
+          <a class="btn btn-ui-warning" href="{% url 'adjustment_create' %}?item_id={{ item.id }}">Ajuste (ADJ)</a>
+          <a class="btn btn-ui-warning" href="{% url 'cycle_count' %}?item_id={{ item.id }}">Conteo físico</a>
+          <a class="btn btn-ui-secondary" href="{% url 'reservation_manage' %}?item_id={{ item.id }}">Reservar / Liberar</a>
         {% endif %}
 
         {% if can_export %}
-          <a class="btn btn-outline-success" href="{% url 'export_movements_csv' %}?item_id={{ item.id }}">Exportar Kardex CSV</a>
+          <a class="btn btn-ui-success" href="{% url 'export_movements_csv' %}?item_id={{ item.id }}">Exportar Kardex CSV</a>
         {% endif %}
       </div>
     </div>
@@ -486,8 +486,8 @@
           </div>
 
           <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar</button>
-            <a class="btn btn-outline-secondary btn-sm w-100" href="{% url 'item_detail' item.id %}">Limpiar</a>
+            <button type="submit" class="btn btn-ui-primary btn-sm w-100">Aplicar</button>
+            <a class="btn btn-ui-neutral btn-sm w-100" href="{% url 'item_detail' item.id %}">Limpiar</a>
           </div>
         </div>
       </form>
@@ -545,7 +545,7 @@
               <td style="white-space: pre-wrap;">{{ m.notes|default:"-" }}</td>
               <td>
                 {% if can_export and not m.is_void and not m.voided_by_movement %}
-                  <a class="btn btn-sm btn-outline-danger" href="{% url 'movement_void' m.id %}">Anular</a>
+                  <a class="btn btn-sm btn-ui-danger" href="{% url 'movement_void' m.id %}">Anular</a>
                 {% else %}
                   <span class="text-muted small">—</span>
                 {% endif %}

@@ -18,7 +18,7 @@
     border: 1px solid #dbe3ee;
     border-radius: 22px;
     background:
-      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(8, 145, 178, 0.04)),
+      linear-gradient(135deg, rgba(22, 163, 74, 0.08), rgba(37, 99, 235, 0.04)),
       #ffffff;
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
   }
@@ -114,9 +114,9 @@
     align-items: center;
     padding: 0.38rem 0.7rem;
     border-radius: 999px;
-    background: #eff6ff;
-    border: 1px solid #dbeafe;
-    color: #1d4ed8;
+    background: #ecfdf5;
+    border: 1px solid #bbf7d0;
+    color: #166534;
     font-size: 0.82rem;
     font-weight: 700;
     line-height: 1.3;
@@ -133,6 +133,7 @@
     gap: 0.75rem;
     justify-content: flex-start;
     align-items: center;
+    padding-top: 0.25rem;
   }
 
   .aside-intro {
@@ -221,7 +222,7 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Volver</a>
+      <a class="btn btn-ui-neutral" href="{% url 'dashboard' %}">Volver</a>
     </div>
   </section>
 
@@ -305,8 +306,8 @@
           <div class="form-divider"></div>
 
           <div class="sticky-actions">
-            <button class="btn btn-primary" type="submit">Liberar reserva</button>
-            <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+            <button class="btn btn-ui-success" type="submit">Liberar reserva</button>
+            <a class="btn btn-ui-neutral" href="{% url 'dashboard' %}">Cancelar</a>
           </div>
         </form>
       </div>
@@ -358,8 +359,12 @@
 
   const wh = document.getElementById("id_warehouse");
   const loc = document.getElementById("id_location");
+  const item = document.getElementById("id_item");
+  const qty = document.getElementById("id_quantity");
+  const info = document.getElementById("stockInfo");
 
   function reset(select) {
+    if (!select) return;
     select.innerHTML = "";
     const opt = document.createElement("option");
     opt.value = "";
@@ -369,6 +374,8 @@
   }
 
   async function loadLocations() {
+    if (!wh || !loc) return;
+
     const wid = wh.value;
     reset(loc);
     if (!wid) return;
@@ -386,45 +393,41 @@
     loc.disabled = false;
   }
 
-  wh?.addEventListener("change", loadLocations);
-  if (wh?.value) loadLocations();
+  async function loadStock() {
+    if (!item || !loc || !info) return;
 
-  const item = document.getElementById("id_item");
-  const qty = document.getElementById("id_quantity");
-  const info = document.getElementById("stockInfo");
-
-  async function refreshStock() {
-    if (!item?.value || !loc?.value) {
-      info.innerText = "";
+    if (!item.value || !loc.value) {
       info.style.display = "none";
+      info.textContent = "";
+      if (qty) qty.setCustomValidity("");
       return;
     }
 
-    const url = "{% url 'stock_by_item_location' %}" + `?item_id=${item.value}&location_id=${loc.value}`;
-    const r = await fetch(url);
-    const d = await r.json();
+    const url = "{% url 'stock_by_item_location' %}?item_id=" + item.value + "&location_id=" + loc.value;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    info.innerText = `On hand: ${d.on_hand} | Reservado: ${d.reserved} | Disponible: ${d.available}`;
+    const reserved = parseFloat(data.reserved ?? 0);
+    info.textContent = `Reservado: ${data.reserved ?? "0.000"} | En mano: ${data.on_hand ?? "0.000"} | Disponible: ${data.available ?? "0.000"}`;
     info.style.display = "inline-flex";
-  }
 
-  function validateQty() {
-    const match = (info.innerText.match(/Reservado:\s*([\d.]+)/i) || []);
-    const reserved = parseFloat(match[1] || "0");
-    const q = parseFloat(qty?.value || "0");
-
-    if (q > reserved) {
-      qty.setCustomValidity("Cantidad mayor a lo reservado.");
-    } else {
-      qty.setCustomValidity("");
+    if (qty) {
+      const q = parseFloat(qty.value || "0");
+      qty.setCustomValidity(q > reserved ? "La cantidad supera lo reservado." : "");
     }
   }
 
-  item?.addEventListener("change", refreshStock);
-  loc?.addEventListener("change", refreshStock);
-  qty?.addEventListener("input", validateQty);
+  wh?.addEventListener("change", async function () {
+    await loadLocations();
+    await loadStock();
+  });
 
-  setTimeout(refreshStock, 150);
+  loc?.addEventListener("change", loadStock);
+  item?.addEventListener("change", loadStock);
+  qty?.addEventListener("input", loadStock);
+
+  if (wh?.value) loadLocations();
+  setTimeout(loadStock, 150);
 })();
 </script>
 {% endblock %}

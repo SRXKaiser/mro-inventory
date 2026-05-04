@@ -18,7 +18,7 @@
     border: 1px solid #dbe3ee;
     border-radius: 22px;
     background:
-      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(8, 145, 178, 0.04)),
+      linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(22, 163, 74, 0.05)),
       #ffffff;
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
   }
@@ -32,7 +32,7 @@
   }
 
   .page-subtitle {
-    margin: 0.35rem 0 0 0;
+    margin: 0.35rem 0 0;
     color: #64748b;
     font-size: 0.95rem;
   }
@@ -227,7 +227,7 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Volver</a>
+      <a class="btn btn-ui-neutral" href="{% url 'dashboard' %}">Volver</a>
     </div>
   </section>
 
@@ -257,7 +257,7 @@
                 <label class="field-label">Acción</label>
                 {{ form.mode }}
                 {% if form.mode.errors %}<div class="field-error">{{ form.mode.errors }}</div>{% endif %}
-                <div class="mode-help">Selecciona si deseas reservar o liberar stock.</div>
+                <div class="mode-help">Selecciona si vas a reservar o liberar disponibilidad.</div>
               </div>
             </div>
 
@@ -317,8 +317,8 @@
           <div class="form-divider"></div>
 
           <div class="sticky-actions">
-            <button class="btn btn-primary" type="submit">Guardar</button>
-            <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+            <button class="btn btn-ui-primary" type="submit">Guardar</button>
+            <a class="btn btn-ui-neutral" href="{% url 'dashboard' %}">Cancelar</a>
           </div>
         </form>
       </div>
@@ -383,6 +383,8 @@
   }
 
   async function loadLocations() {
+    if (!wh || !loc) return;
+
     const wid = wh.value;
     const wanted = reset(loc);
     if (!wid) return;
@@ -399,7 +401,7 @@
 
     loc.disabled = false;
 
-    if (wanted && [...loc.options].some(o => o.value === wanted)) {
+    if (wanted && Array.from(loc.options).some(o => o.value === wanted)) {
       loc.value = wanted;
       loc.dispatchEvent(new Event("change"));
     }

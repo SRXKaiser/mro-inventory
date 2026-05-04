@@ -206,7 +206,7 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-secondary" href="{% url 'item_list' %}">Volver</a>
+      <a class="btn btn-ui-neutral" href="{% url 'item_list' %}">Volver</a>
     </div>
   </section>
 
@@ -316,10 +316,10 @@
         <div class="form-divider"></div>
 
         <div class="sticky-actions">
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="btn btn-ui-primary">
             {% if form.instance.pk %}Guardar cambios{% else %}Guardar artículo{% endif %}
           </button>
-          <a class="btn btn-outline-secondary" href="{% url 'item_list' %}">Cancelar</a>
+          <a class="btn btn-ui-neutral" href="{% url 'item_list' %}">Cancelar</a>
         </div>
       </form>
     </div>
