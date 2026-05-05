@@ -94,10 +94,15 @@
   }
 
   .field-error {
-    margin-top: 0.4rem;
+    margin-top: 0.45rem;
     font-size: 0.82rem;
-    color: #dc2626;
-    font-weight: 600;
+    color: #991b1b;
+    font-weight: 700;
+    background: #fef2f2;
+    padding: 0.45rem 0.65rem;
+    border-radius: 10px;
+    border: 1px solid #fecaca;
+    line-height: 1.4;
   }
 
   .error-summary {
@@ -106,6 +111,9 @@
     background: #fef2f2;
     color: #991b1b;
     padding: 0.95rem 1rem;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(153, 27, 27, 0.08);
+    line-height: 1.5;
   }
 
   .stock-info-box {
@@ -239,14 +247,11 @@
         <form method="post" novalidate>
           {% csrf_token %}
 
-          {% if form.non_field_errors or form.errors %}
+          {% if form.non_field_errors %}
             <div class="error-summary mb-4">
-              {% if form.non_field_errors %}
-                <div>{{ form.non_field_errors }}</div>
-              {% endif %}
-              {% if form.errors %}
-                <div class="mt-1">{{ form.errors }}</div>
-              {% endif %}
+              {% for error in form.non_field_errors %}
+                <div>⚠ {{ error }}</div>
+              {% endfor %}
             </div>
           {% endif %}
 
@@ -256,7 +261,13 @@
               <div class="field-card">
                 <label class="field-label">Acción</label>
                 {{ form.mode }}
-                {% if form.mode.errors %}<div class="field-error">{{ form.mode.errors }}</div>{% endif %}
+                {% if form.mode.errors %}
+                  <div class="field-error">
+                    {% for error in form.mode.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
                 <div class="mode-help">Selecciona si vas a reservar o liberar disponibilidad.</div>
               </div>
             </div>
@@ -265,7 +276,13 @@
               <div class="field-card">
                 <label class="field-label">Artículo</label>
                 {{ form.item }}
-                {% if form.item.errors %}<div class="field-error">{{ form.item.errors }}</div>{% endif %}
+                {% if form.item.errors %}
+                  <div class="field-error">
+                    {% for error in form.item.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -276,7 +293,13 @@
               <div class="field-card field-card--soft">
                 <label class="field-label">Warehouse</label>
                 {{ form.warehouse }}
-                {% if form.warehouse.errors %}<div class="field-error">{{ form.warehouse.errors }}</div>{% endif %}
+                {% if form.warehouse.errors %}
+                  <div class="field-error">
+                    {% for error in form.warehouse.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
 
@@ -284,7 +307,13 @@
               <div class="field-card field-card--soft">
                 <label class="field-label">Ubicación</label>
                 {{ form.location }}
-                {% if form.location.errors %}<div class="field-error">{{ form.location.errors }}</div>{% endif %}
+                {% if form.location.errors %}
+                  <div class="field-error">
+                    {% for error in form.location.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
 
@@ -292,7 +321,13 @@
               <div class="field-card">
                 <label class="field-label">Cantidad</label>
                 {{ form.quantity }}
-                {% if form.quantity.errors %}<div class="field-error">{{ form.quantity.errors }}</div>{% endif %}
+                {% if form.quantity.errors %}
+                  <div class="field-error">
+                    {% for error in form.quantity.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
                 <div id="stockInfo" class="stock-info-box"></div>
               </div>
             </div>
@@ -301,7 +336,13 @@
               <div class="field-card">
                 <label class="field-label">Referencia</label>
                 {{ form.reference }}
-                {% if form.reference.errors %}<div class="field-error">{{ form.reference.errors }}</div>{% endif %}
+                {% if form.reference.errors %}
+                  <div class="field-error">
+                    {% for error in form.reference.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
 
@@ -309,7 +350,13 @@
               <div class="field-card">
                 <label class="field-label">Notas</label>
                 {{ form.notes }}
-                {% if form.notes.errors %}<div class="field-error">{{ form.notes.errors }}</div>{% endif %}
+                {% if form.notes.errors %}
+                  <div class="field-error">
+                    {% for error in form.notes.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -389,21 +436,28 @@
     const wanted = reset(loc);
     if (!wid) return;
 
-    const res = await fetch("{% url 'locations_by_warehouse' %}?warehouse_id=" + wid);
-    const data = await res.json();
+    try {
+      const res = await fetch("{% url 'locations_by_warehouse' %}?warehouse_id=" + wid);
 
-    for (const x of data) {
-      const opt = document.createElement("option");
-      opt.value = x.id;
-      opt.textContent = x.code ? `${x.code} - ${x.name}` : x.name;
-      loc.appendChild(opt);
-    }
+      if (!res.ok) return;
 
-    loc.disabled = false;
+      const data = await res.json();
 
-    if (wanted && Array.from(loc.options).some(o => o.value === wanted)) {
-      loc.value = wanted;
-      loc.dispatchEvent(new Event("change"));
+      for (const x of data) {
+        const opt = document.createElement("option");
+        opt.value = x.id;
+        opt.textContent = x.code ? `${x.code} - ${x.name}` : x.name;
+        loc.appendChild(opt);
+      }
+
+      loc.disabled = false;
+
+      if (wanted && Array.from(loc.options).some(o => o.value === wanted)) {
+        loc.value = wanted;
+        loc.dispatchEvent(new Event("change"));
+      }
+    } catch (error) {
+      console.error("No se pudieron cargar las ubicaciones.", error);
     }
   }
 
@@ -425,12 +479,25 @@
       return;
     }
 
-    const url = "{% url 'stock_by_item_location' %}" + `?item_id=${item.value}&location_id=${loc.value}`;
-    const r = await fetch(url);
-    const d = await r.json();
+    try {
+      const url = "{% url 'stock_by_item_location' %}" + `?item_id=${item.value}&location_id=${loc.value}`;
+      const r = await fetch(url);
 
-    info.innerText = `On hand: ${d.on_hand} | Reservado: ${d.reserved} | Disponible: ${d.available}`;
-    info.style.display = "inline-flex";
+      if (!r.ok) {
+        info.innerText = "";
+        info.style.display = "none";
+        return;
+      }
+
+      const d = await r.json();
+
+      info.innerText = `On hand: ${d.on_hand} | Reservado: ${d.reserved} | Disponible: ${d.available}`;
+      info.style.display = "inline-flex";
+    } catch (error) {
+      console.error("No se pudo consultar el stock.", error);
+      info.innerText = "";
+      info.style.display = "none";
+    }
   }
 
   item?.addEventListener("change", refresh);

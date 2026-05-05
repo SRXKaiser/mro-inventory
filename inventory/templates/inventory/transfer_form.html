@@ -100,10 +100,15 @@
   }
 
   .field-error {
-    margin-top: 0.4rem;
+    margin-top: 0.45rem;
     font-size: 0.82rem;
-    color: #dc2626;
-    font-weight: 600;
+    color: #991b1b;
+    font-weight: 700;
+    background: #fef2f2;
+    padding: 0.45rem 0.65rem;
+    border-radius: 10px;
+    border: 1px solid #fecaca;
+    line-height: 1.4;
   }
 
   .error-summary {
@@ -112,6 +117,9 @@
     background: #fef2f2;
     color: #991b1b;
     padding: 0.95rem 1rem;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(153, 27, 27, 0.08);
+    line-height: 1.5;
   }
 
   .stock-info-box {
@@ -229,7 +237,7 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Volver</a>
+      <a class="btn btn-ui-neutral" href="{% url 'dashboard' %}">Volver</a>
     </div>
   </section>
 
@@ -241,14 +249,11 @@
         <form method="post" novalidate>
           {% csrf_token %}
 
-          {% if form.non_field_errors or form.errors %}
+          {% if form.non_field_errors %}
             <div class="error-summary mb-4">
-              {% if form.non_field_errors %}
-                <div>{{ form.non_field_errors }}</div>
-              {% endif %}
-              {% if form.errors %}
-                <div class="mt-1">{{ form.errors }}</div>
-              {% endif %}
+              {% for error in form.non_field_errors %}
+                <div>⚠ {{ error }}</div>
+              {% endfor %}
             </div>
           {% endif %}
 
@@ -258,7 +263,13 @@
               <div class="field-card">
                 <label class="field-label">Artículo</label>
                 {{ form.item }}
-                {% if form.item.errors %}<div class="field-error">{{ form.item.errors }}</div>{% endif %}
+                {% if form.item.errors %}
+                  <div class="field-error">
+                    {% for error in form.item.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
 
@@ -266,7 +277,13 @@
               <div class="field-card">
                 <label class="field-label">Cantidad</label>
                 {{ form.quantity }}
-                {% if form.quantity.errors %}<div class="field-error">{{ form.quantity.errors }}</div>{% endif %}
+                {% if form.quantity.errors %}
+                  <div class="field-error">
+                    {% for error in form.quantity.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
                 <div class="stock-info-box" id="stockInfo"></div>
               </div>
             </div>
@@ -278,7 +295,13 @@
               <div class="field-card field-card--soft">
                 <label class="field-label">Warehouse origen</label>
                 {{ form.from_warehouse }}
-                {% if form.from_warehouse.errors %}<div class="field-error">{{ form.from_warehouse.errors }}</div>{% endif %}
+                {% if form.from_warehouse.errors %}
+                  <div class="field-error">
+                    {% for error in form.from_warehouse.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
 
@@ -286,7 +309,13 @@
               <div class="field-card field-card--soft">
                 <label class="field-label">Ubicación origen</label>
                 {{ form.from_location }}
-                {% if form.from_location.errors %}<div class="field-error">{{ form.from_location.errors }}</div>{% endif %}
+                {% if form.from_location.errors %}
+                  <div class="field-error">
+                    {% for error in form.from_location.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -297,7 +326,13 @@
               <div class="field-card field-card--soft">
                 <label class="field-label">Warehouse destino</label>
                 {{ form.to_warehouse }}
-                {% if form.to_warehouse.errors %}<div class="field-error">{{ form.to_warehouse.errors }}</div>{% endif %}
+                {% if form.to_warehouse.errors %}
+                  <div class="field-error">
+                    {% for error in form.to_warehouse.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
 
@@ -305,7 +340,13 @@
               <div class="field-card field-card--soft">
                 <label class="field-label">Ubicación destino</label>
                 {{ form.to_location }}
-                {% if form.to_location.errors %}<div class="field-error">{{ form.to_location.errors }}</div>{% endif %}
+                {% if form.to_location.errors %}
+                  <div class="field-error">
+                    {% for error in form.to_location.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
 
@@ -313,7 +354,13 @@
               <div class="field-card">
                 <label class="field-label">Referencia</label>
                 {{ form.reference }}
-                {% if form.reference.errors %}<div class="field-error">{{ form.reference.errors }}</div>{% endif %}
+                {% if form.reference.errors %}
+                  <div class="field-error">
+                    {% for error in form.reference.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
 
@@ -321,7 +368,13 @@
               <div class="field-card">
                 <label class="field-label">Notas</label>
                 {{ form.notes }}
-                {% if form.notes.errors %}<div class="field-error">{{ form.notes.errors }}</div>{% endif %}
+                {% if form.notes.errors %}
+                  <div class="field-error">
+                    {% for error in form.notes.errors %}
+                      <div>• {{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -329,8 +382,8 @@
           <div class="form-divider"></div>
 
           <div class="sticky-actions">
-            <button class="btn btn-primary" type="submit">Transferir</button>
-            <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Cancelar</a>
+            <button class="btn btn-ui-primary" type="submit">Transferir</button>
+            <a class="btn btn-ui-neutral" href="{% url 'dashboard' %}">Cancelar</a>
           </div>
         </form>
       </div>
@@ -391,6 +444,7 @@
   const toLoc = document.getElementById("id_to_location");
 
   function reset(select) {
+    if (!select) return "";
     const keep = select.value;
     select.innerHTML = "";
     const opt = document.createElement("option");
@@ -402,25 +456,34 @@
   }
 
   async function load(whSelect, locSelect) {
+    if (!whSelect || !locSelect) return;
+
     const wid = whSelect.value;
     const wanted = reset(locSelect);
     if (!wid) return;
 
-    const res = await fetch("{% url 'locations_by_warehouse' %}?warehouse_id=" + wid);
-    const data = await res.json();
+    try {
+      const res = await fetch("{% url 'locations_by_warehouse' %}?warehouse_id=" + wid);
 
-    for (const x of data) {
-      const opt = document.createElement("option");
-      opt.value = x.id;
-      opt.textContent = x.code ? `${x.code} - ${x.name}` : x.name;
-      locSelect.appendChild(opt);
-    }
+      if (!res.ok) return;
 
-    locSelect.disabled = false;
+      const data = await res.json();
 
-    if (wanted && [...locSelect.options].some(o => o.value === wanted)) {
-      locSelect.value = wanted;
-      locSelect.dispatchEvent(new Event("change"));
+      for (const x of data) {
+        const opt = document.createElement("option");
+        opt.value = x.id;
+        opt.textContent = x.code ? `${x.code} - ${x.name}` : x.name;
+        locSelect.appendChild(opt);
+      }
+
+      locSelect.disabled = false;
+
+      if (wanted && [...locSelect.options].some(o => o.value === wanted)) {
+        locSelect.value = wanted;
+        locSelect.dispatchEvent(new Event("change"));
+      }
+    } catch (error) {
+      console.error("No se pudieron cargar las ubicaciones.", error);
     }
   }
 
@@ -451,18 +514,35 @@
       return;
     }
 
-    const url = "{% url 'stock_by_item_location' %}" + `?item_id=${item.value}&location_id=${fromLoc.value}`;
-    const r = await fetch(url);
-    const d = await r.json();
+    try {
+      const url = "{% url 'stock_by_item_location' %}" + `?item_id=${item.value}&location_id=${fromLoc.value}`;
+      const r = await fetch(url);
 
-    const onHandStr = (d.on_hand ?? "0.000");
-    info.innerText = `Stock origen: ${onHandStr}`;
-    info.style.display = "inline-flex";
+      if (!r.ok) {
+        info.innerText = "";
+        info.style.display = "none";
+        lastStock = 0;
+        validate();
+        return;
+      }
 
-    const parsed = parseFloat(onHandStr);
-    lastStock = Number.isFinite(parsed) ? parsed : 0;
+      const d = await r.json();
 
-    validate();
+      const onHandStr = (d.on_hand ?? "0.000");
+      info.innerText = `Stock origen: ${onHandStr}`;
+      info.style.display = "inline-flex";
+
+      const parsed = parseFloat(onHandStr);
+      lastStock = Number.isFinite(parsed) ? parsed : 0;
+
+      validate();
+    } catch (error) {
+      console.error("No se pudo consultar el stock de origen.", error);
+      info.innerText = "";
+      info.style.display = "none";
+      lastStock = 0;
+      validate();
+    }
   }
 
   function validate(){

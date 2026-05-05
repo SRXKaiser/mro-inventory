@@ -1,42 +1,55 @@
 from decimal import Decimal
 import csv
+import logging
+from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
-from django.db.models import F, Q, Sum, Count, Value, Case, When, IntegerField, DecimalField, ExpressionWrapper
+from django.db.models import (
+    F,
+    Q,
+    Sum,
+    Value,
+    Case,
+    When,
+    IntegerField,
+    DecimalField,
+    ExpressionWrapper,
+)
+from django.db.models.functions import TruncDate, Coalesce
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.core.exceptions import ValidationError
+from django.views.decorators.http import require_http_methods
 
 from locations.models import Warehouse, Location
 from .forms import ItemForm, MovementForm
-from .forms_extra import TransferForm, AdjustmentForm, VoidMovementForm, CycleCountForm
+from .forms_extra import (
+    TransferForm,
+    AdjustmentForm,
+    VoidMovementForm,
+    CycleCountForm,
+    ReservationForm,
+    ReserveForm,
+    ReleaseForm,
+)
 from .models import InventoryMovement, Item, StockSnapshot
 from .services.stock_service import StockService
-from .forms_extra import ReservationForm 
-from .forms_extra import ReserveForm, ReleaseForm
 
-from datetime import date
-from django.shortcuts import render
+logger = logging.getLogger(__name__)
 
-from django.views.decorators.http import require_http_methods
-from django.db import transaction
-from audit.services import AuditService, AuditContext
-import json
-from datetime import timedelta
-from django.db.models.functions import TruncDate, Coalesce
-from django.db.models import Value, DecimalField
-
-from inventory.models import StockSnapshot, InventoryMovement
 try:
     from workorders.models import WorkOrder
     HAS_WO = True
 except Exception:
     HAS_WO = False
 
+
+# ============================================================
+# Helpers generales
+# ============================================================
 
 def _get_default_location():
     wh, _ = Warehouse.objects.get_or_create(
@@ -74,15 +87,75 @@ def _require_group(user, group_name: str):
         raise PermissionDenied(f"Permiso requerido: {group_name}")
 
 
+def _format_validation_error(ex: ValidationError) -> str:
+    """
+    Convierte ValidationError de Django a texto limpio para usuario.
 
+    Django puede entregar:
+    - ex.message_dict
+    - ex.messages
+    - string simple
+    """
+    if hasattr(ex, "message_dict") and ex.message_dict:
+        parts = []
+        for field, errors in ex.message_dict.items():
+            label = str(field).replace("_", " ").capitalize()
+
+            if isinstance(errors, (list, tuple)):
+                for error in errors:
+                    parts.append(f"{label}: {error}")
+            else:
+                parts.append(f"{label}: {errors}")
+
+        return " | ".join(parts)
+
+    if hasattr(ex, "messages") and ex.messages:
+        return " | ".join(str(m) for m in ex.messages)
+
+    return str(ex)
+
+
+def _add_form_warning(request, form):
+    """
+    Mensaje general para formularios inválidos.
+    Los errores específicos siguen viviendo en form.errors dentro del HTML.
+    """
+    if form.non_field_errors():
+        messages.warning(request, _format_validation_error(ValidationError(form.non_field_errors())))
+    else:
+        messages.warning(request, "Revisa los campos marcados antes de continuar.")
+
+
+def _add_validation_error(request, prefix: str, ex: ValidationError):
+    messages.error(request, f"{prefix}: {_format_validation_error(ex)}")
+
+
+def _add_unexpected_error(request, ex: Exception, *, public_message: str):
+    """
+    Nunca muestra el detalle técnico al usuario.
+    El detalle queda en logs del servidor.
+    """
+    logger.exception(public_message, exc_info=ex)
+    messages.error(
+        request,
+        f"{public_message}. Si el problema continúa, revisa el log del servidor o contacta al administrador.",
+    )
+
+
+def _ctx_with_perms(request, base: dict | None = None) -> dict:
+    ctx = base or {}
+    ctx.update(_perm_flags(request.user))
+    return ctx
+
+
+# ============================================================
+# Dashboard
+# ============================================================
 
 @login_required
 def dashboard(request):
     today = timezone.localdate()
 
-    # =========================
-    # Filtro Warehouse
-    # =========================
     warehouse_id = (request.GET.get("warehouse_id") or "").strip()
 
     warehouses = Warehouse.objects.order_by("code")
@@ -94,9 +167,6 @@ def dashboard(request):
         snap_qs = snap_qs.filter(location__warehouse_id=warehouse_id)
         mv_qs = mv_qs.filter(location__warehouse_id=warehouse_id)
 
-    # =========================
-    # ALERTAS: bajo mínimo + severidad
-    # =========================
     DEC_QTY = DecimalField(max_digits=18, decimal_places=3)
 
     low_stock = (
@@ -111,23 +181,19 @@ def dashboard(request):
         .filter(on_hand__lte=F("item__min_stock"))
         .annotate(
             severity=Case(
-                When(available__lte=0, then=Value(3)),     # CRÍTICO
-                When(reserved0__gt=0, then=Value(2)),      # ALTO
-                default=Value(1),                          # MEDIO
+                When(available__lte=0, then=Value(3)),
+                When(reserved0__gt=0, then=Value(2)),
+                default=Value(1),
                 output_field=IntegerField(),
             )
         )
         .order_by("-severity", "item__sku", "location__warehouse__code", "location__code")
     )
 
-    # KPIs por severidad (opcionales, por si luego haces tarjetas separadas)
     kpi_critical_count = low_stock.filter(severity=3).count()
     kpi_high_count = low_stock.filter(severity=2).count()
     kpi_medium_count = low_stock.filter(severity=1).count()
 
-    # =========================
-    # KPIs Inventario
-    # =========================
     inv_totals = snap_qs.aggregate(
         total_on_hand=Coalesce(Sum("on_hand"), Decimal("0.000")),
         total_reserved=Coalesce(Sum("reserved"), Decimal("0.000")),
@@ -138,12 +204,9 @@ def dashboard(request):
 
     low_count = low_stock.count()
 
-    # =========================
-    # Movimientos hoy + recientes
-    # =========================
     movements_today = mv_qs.filter(
         occurred_at__date=today,
-        is_void=False
+        is_void=False,
     ).count()
 
     recent_movements = (
@@ -152,25 +215,20 @@ def dashboard(request):
         .order_by("-occurred_at", "-id")[:10]
     )
 
-    # KPI: Consumo OUT últimos 7 días
     since_7d = timezone.now() - timedelta(days=7)
     kpi_out_7d = mv_qs.filter(
         movement_type="OUT",
         is_void=False,
-        occurred_at__gte=since_7d
+        occurred_at__gte=since_7d,
     ).aggregate(
         total=Coalesce(Sum("quantity"), Decimal("0.000"))
     )["total"]
 
-    # KPI: Riesgo (bajo mínimo + reservado)
     kpi_stockout_risk = snap_qs.filter(
         on_hand__lte=F("item__min_stock"),
-        reserved__gt=0
+        reserved__gt=0,
     ).count()
 
-    # =========================
-    # GRÁFICAS
-    # =========================
     days = 14
     start_date = today - timedelta(days=days - 1)
 
@@ -184,25 +242,25 @@ def dashboard(request):
                 Sum(Case(
                     When(movement_type="IN", then=Value(1)),
                     default=Value(0),
-                    output_field=IntegerField()
+                    output_field=IntegerField(),
                 )),
-                0
+                0,
             ),
             out_cnt=Coalesce(
                 Sum(Case(
                     When(movement_type="OUT", then=Value(1)),
                     default=Value(0),
-                    output_field=IntegerField()
+                    output_field=IntegerField(),
                 )),
-                0
+                0,
             ),
             adj_cnt=Coalesce(
                 Sum(Case(
                     When(movement_type="ADJ", then=Value(1)),
                     default=Value(0),
-                    output_field=IntegerField()
+                    output_field=IntegerField(),
                 )),
-                0
+                0,
             ),
         )
         .order_by("day")
@@ -222,7 +280,6 @@ def dashboard(request):
     mv_out = [mv_map.get(d, {}).get("OUT", 0) for d in mv_labels]
     mv_adj = [mv_map.get(d, {}).get("ADJ", 0) for d in mv_labels]
 
-    # Top 10 OUT 30 días
     since_30d = timezone.now() - timedelta(days=30)
     top_out = (
         mv_qs
@@ -234,7 +291,6 @@ def dashboard(request):
     top_out_labels = [r["item__sku"] for r in top_out]
     top_out_values = [float(r["total"]) for r in top_out]
 
-    # Stock por WH
     wh_raw = (
         snap_qs
         .filter(location__isnull=False)
@@ -245,9 +301,6 @@ def dashboard(request):
     wh_labels = [r["location__warehouse__code"] for r in wh_raw]
     wh_values = [float(r["total"]) for r in wh_raw]
 
-    # =========================
-    # WorkOrders
-    # =========================
     wo_open = 0
     wo_paused = 0
     recent_wos = []
@@ -265,14 +318,9 @@ def dashboard(request):
         )
 
     ctx = {
-        # Filtro
         "warehouses": warehouses,
         "filter_warehouse_id": warehouse_id,
-
-        # Alertas
         "low_stock": low_stock,
-
-        # KPIs
         "kpi_low_count": low_count,
         "kpi_movements_today": movements_today,
         "kpi_total_on_hand": total_on_hand,
@@ -280,30 +328,20 @@ def dashboard(request):
         "kpi_total_available": total_available,
         "kpi_out_7d": kpi_out_7d,
         "kpi_stockout_risk": kpi_stockout_risk,
-
-        # KPIs severidad (opcionales)
         "kpi_critical_count": kpi_critical_count,
         "kpi_high_count": kpi_high_count,
         "kpi_medium_count": kpi_medium_count,
-
-        # WorkOrders
         "kpi_wo_open": wo_open,
         "kpi_wo_paused": wo_paused,
         "has_wo": HAS_WO,
-
-        # Tablas
         "recent_movements": recent_movements,
         "recent_wos": recent_wos,
-
-        # Charts
         "mv_labels": mv_labels,
         "mv_in": mv_in,
         "mv_out": mv_out,
         "mv_adj": mv_adj,
-
         "top_out_labels": top_out_labels,
         "top_out_values": top_out_values,
-
         "wh_labels": wh_labels,
         "wh_values": wh_values,
     }
@@ -312,7 +350,9 @@ def dashboard(request):
     return render(request, "dashboard.html", ctx)
 
 
-
+# ============================================================
+# Items
+# ============================================================
 
 @login_required
 def item_list(request):
@@ -330,9 +370,16 @@ def item_create(request):
     if request.method == "POST":
         form = ItemForm(request.POST)
         if form.is_valid():
-            item = form.save()
-            messages.success(request, f"Artículo creado: {item.sku}")
-            return redirect("item_detail", item.id)
+            try:
+                item = form.save()
+                messages.success(request, f"Artículo creado: {item.sku}")
+                return redirect("item_detail", item.id)
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo crear el artículo", ex)
+            except Exception as ex:
+                _add_unexpected_error(request, ex, public_message="No se pudo crear el artículo")
+        else:
+            _add_form_warning(request, form)
     else:
         form = ItemForm()
 
@@ -346,9 +393,16 @@ def item_edit(request, item_id: int):
     if request.method == "POST":
         form = ItemForm(request.POST, instance=item)
         if form.is_valid():
-            item = form.save()
-            messages.success(request, f"Artículo actualizado: {item.sku}")
-            return redirect("item_detail", item.id)
+            try:
+                item = form.save()
+                messages.success(request, f"Artículo actualizado: {item.sku}")
+                return redirect("item_detail", item.id)
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo actualizar el artículo", ex)
+            except Exception as ex:
+                _add_unexpected_error(request, ex, public_message="No se pudo actualizar el artículo")
+        else:
+            _add_form_warning(request, form)
     else:
         form = ItemForm(instance=item)
 
@@ -371,7 +425,6 @@ def item_detail(request, item_id: int):
 
     total_stock = sum((s.on_hand for s in stock_by_location), start=Decimal("0.000"))
 
-    # filtros kardex
     movement_type = (request.GET.get("type") or "").strip().upper()
     location_id = (request.GET.get("location") or "").strip()
     date_from = (request.GET.get("from") or "").strip()
@@ -399,12 +452,10 @@ def item_detail(request, item_id: int):
     if show_void != "1":
         movements_qs = movements_qs.filter(is_void=False)
 
-    # paginación
     paginator = Paginator(movements_qs, 50)
     page_number = request.GET.get("page") or 1
     movements_page = paginator.get_page(page_number)
 
-    # options para filtro de location
     location_options = (
         StockSnapshot.objects
         .select_related("location", "location__warehouse")
@@ -418,10 +469,8 @@ def item_detail(request, item_id: int):
         "item": item,
         "stock_by_location": stock_by_location,
         "total_stock": total_stock,
-
         "movements": movements_page,
         "paginator": paginator,
-
         "filter_type": movement_type,
         "filter_location": location_id,
         "filter_from": date_from,
@@ -432,6 +481,10 @@ def item_detail(request, item_id: int):
     ctx.update(_perm_flags(request.user))
     return render(request, "inventory/item_detail.html", ctx)
 
+
+# ============================================================
+# Movimientos y consultas AJAX
+# ============================================================
 
 @login_required
 def movement_create(request):
@@ -449,8 +502,11 @@ def movement_create(request):
                     reference=cd.get("reference") or "",
                     notes=cd.get("notes") or "",
                 )
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo registrar el movimiento", ex)
+                return render(request, "inventory/movement_form.html", {"form": form})
             except Exception as ex:
-                messages.error(request, f"No se pudo registrar el movimiento: {ex}")
+                _add_unexpected_error(request, ex, public_message="No se pudo registrar el movimiento")
                 return render(request, "inventory/movement_form.html", {"form": form})
 
             messages.success(
@@ -458,15 +514,16 @@ def movement_create(request):
                 f"Movimiento registrado en {cd['location']}. Stock actual: {result.new_on_hand}",
             )
             return redirect("item_detail", cd["item"].id)
+        else:
+            _add_form_warning(request, form)
 
-    # GET -> prellenado
     initial = {}
     if request.GET.get("item_id"):
         initial["item"] = request.GET.get("item_id")
     if request.GET.get("location_id"):
         initial["location"] = request.GET.get("location_id")
 
-    form = MovementForm(initial=initial)
+    form = form if request.method == "POST" else MovementForm(initial=initial)
     return render(request, "inventory/movement_form.html", {"form": form})
 
 
@@ -517,6 +574,9 @@ def stock_by_item_location(request):
         })
 
 
+# ============================================================
+# Operaciones especiales
+# ============================================================
 
 @login_required
 def transfer_create(request):
@@ -537,8 +597,11 @@ def transfer_create(request):
                     notes=cd.get("notes") or "",
                     occurred_at=timezone.now(),
                 )
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo transferir", ex)
+                return render(request, "inventory/transfer_form.html", {"form": form})
             except Exception as ex:
-                messages.error(request, f"No se pudo transferir: {ex}")
+                _add_unexpected_error(request, ex, public_message="No se pudo transferir")
                 return render(request, "inventory/transfer_form.html", {"form": form})
 
             messages.success(
@@ -546,9 +609,11 @@ def transfer_create(request):
                 f"Transferencia OK. Origen nuevo: {result.from_new_on_hand}, Destino nuevo: {result.to_new_on_hand}",
             )
             return redirect("item_detail", cd["item"].id)
+        else:
+            _add_form_warning(request, form)
 
     else:
-        initial = {}  # <-- SIEMPRE definido, evita UnboundLocalError
+        initial = {}
 
         item_id = (request.GET.get("item_id") or "").strip()
         from_location_id = (request.GET.get("from_location_id") or "").strip()
@@ -562,7 +627,6 @@ def transfer_create(request):
         form = TransferForm(initial=initial)
 
     return render(request, "inventory/transfer_form.html", {"form": form})
-
 
 
 @login_required
@@ -594,14 +658,19 @@ def adjustment_create(request):
                         reference=cd.get("reference") or "",
                         notes=cd.get("notes") or "",
                     )
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo aplicar el ajuste", ex)
+                return render(request, "inventory/adjustment_form.html", {"form": form})
             except Exception as ex:
-                messages.error(request, f"No se pudo aplicar el ajuste: {ex}")
+                _add_unexpected_error(request, ex, public_message="No se pudo aplicar el ajuste")
                 return render(request, "inventory/adjustment_form.html", {"form": form})
 
             messages.success(request, f"Ajuste OK. Stock actual: {result.new_on_hand}")
             return redirect("item_detail", cd["item"].id)
+        else:
+            _add_form_warning(request, form)
 
-    form = AdjustmentForm()
+    form = form if request.method == "POST" else AdjustmentForm()
     return render(request, "inventory/adjustment_form.html", {"form": form})
 
 
@@ -623,16 +692,25 @@ def cycle_count(request):
                     reference=cd.get("reference") or "CYCLE COUNT",
                     notes=cd.get("notes") or "",
                 )
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo aplicar el conteo", ex)
+                return render(request, "inventory/cycle_count.html", {"form": form})
             except Exception as ex:
-                messages.error(request, f"No se pudo aplicar el conteo: {ex}")
+                _add_unexpected_error(request, ex, public_message="No se pudo aplicar el conteo")
                 return render(request, "inventory/cycle_count.html", {"form": form})
 
             messages.success(request, f"Conteo aplicado. Nuevo stock: {result.new_on_hand}")
             return redirect("item_detail", cd["item"].id)
+        else:
+            _add_form_warning(request, form)
 
-    form = CycleCountForm()
+    form = form if request.method == "POST" else CycleCountForm()
     return render(request, "inventory/cycle_count.html", {"form": form})
 
+
+# ============================================================
+# Exportaciones CSV
+# ============================================================
 
 @login_required
 def export_movements_csv(request):
@@ -745,38 +823,34 @@ def export_snapshots_csv(request):
     return response
 
 
+# ============================================================
+# Void / anulación
+# ============================================================
+
 @require_http_methods(["GET", "POST"])
 @login_required
-@transaction.atomic
 def movement_void(request, movement_id: int):
     """
     Anula un movimiento de inventario creando un movimiento inverso.
     Solo inventory_admin puede ejecutarlo.
     """
-
     _require_group(request.user, "inventory_admin")
 
-
-    movement_locked = get_object_or_404(
-        InventoryMovement.objects.select_for_update(),
+    movement = get_object_or_404(
+        InventoryMovement.objects.select_related(
+            "item",
+            "location",
+            "location__warehouse",
+            "registered_by",
+        ),
         pk=movement_id,
     )
 
-    movement = (
-        InventoryMovement.objects
-        .select_related("item", "location", "location__warehouse", "registered_by")
-        .get(pk=movement_locked.pk)
-    )
-
-    # ¿Ya fue anulado?
     if movement.is_void:
         messages.warning(request, "Este movimiento ya está marcado como anulado.")
         return redirect("item_detail", movement.item_id)
 
-    # ¿Ya existe reverso asociado?
-    already_has_reverse = InventoryMovement.objects.filter(
-        void_of_id=movement.id
-    ).exists()
+    already_has_reverse = InventoryMovement.objects.filter(void_of_id=movement.id).exists()
 
     if already_has_reverse:
         messages.warning(request, "Este movimiento ya tiene un reverso asociado.")
@@ -797,17 +871,15 @@ def movement_void(request, movement_id: int):
                     notes=cd.get("notes") or "",
                     occurred_at=timezone.now(),
                 )
-
             except ValidationError as ex:
-                messages.error(request, f"No se pudo anular: {ex}")
+                _add_validation_error(request, "No se pudo anular", ex)
                 return render(
                     request,
                     "inventory/movement_void.html",
                     {"form": form, "movement": movement},
                 )
-
             except Exception as ex:
-                messages.error(request, f"Error inesperado: {ex}")
+                _add_unexpected_error(request, ex, public_message="No se pudo anular el movimiento")
                 return render(
                     request,
                     "inventory/movement_void.html",
@@ -816,14 +888,13 @@ def movement_void(request, movement_id: int):
 
             messages.success(
                 request,
-                f"Movimiento anulado correctamente. Nuevo stock: {result.new_on_hand}"
+                f"Movimiento anulado correctamente. Nuevo stock: {result.new_on_hand}",
             )
             return redirect("item_detail", movement.item_id)
 
-        else:
-            messages.error(request, "Formulario inválido.")
+        _add_form_warning(request, form)
 
-    form = VoidMovementForm()
+    form = form if request.method == "POST" else VoidMovementForm()
 
     return render(
         request,
@@ -835,10 +906,13 @@ def movement_void(request, movement_id: int):
     )
 
 
+# ============================================================
+# Reservas
+# ============================================================
 
 @login_required
 def reservation_manage(request):
-    _require_group(request.user, "inventory_supervisor")  # o operator 
+    _require_group(request.user, "inventory_supervisor")
 
     if request.method == "POST":
         form = ReservationForm(request.POST)
@@ -855,7 +929,10 @@ def reservation_manage(request):
                         notes=cd.get("notes") or "",
                         occurred_at=timezone.now(),
                     )
-                    messages.success(request, f"Reserva OK. Reservado: {result.new_reserved} | Disponible: {result.new_available}")
+                    messages.success(
+                        request,
+                        f"Reserva OK. Reservado: {result.new_reserved} | Disponible: {result.new_available}",
+                    )
                 else:
                     result = StockService.release(
                         item=cd["item"],
@@ -866,13 +943,21 @@ def reservation_manage(request):
                         notes=cd.get("notes") or "",
                         occurred_at=timezone.now(),
                     )
-                    messages.success(request, f"Liberación OK. Reservado: {result.new_reserved} | Disponible: {result.new_available}")
+                    messages.success(
+                        request,
+                        f"Liberación OK. Reservado: {result.new_reserved} | Disponible: {result.new_available}",
+                    )
 
                 return redirect("item_detail", cd["item"].id)
 
-            except Exception as ex:
-                messages.error(request, f"No se pudo aplicar: {ex}")
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo aplicar la operación", ex)
                 return render(request, "inventory/reservation_form.html", {"form": form})
+            except Exception as ex:
+                _add_unexpected_error(request, ex, public_message="No se pudo aplicar la operación")
+                return render(request, "inventory/reservation_form.html", {"form": form})
+        else:
+            _add_form_warning(request, form)
 
     else:
         initial = {}
@@ -906,22 +991,27 @@ def reserve_create(request):
                     reference=cd.get("reference") or "RESERVE",
                     notes=cd.get("notes") or "",
                 )
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo reservar", ex)
+                ctx = _ctx_with_perms(request, {"form": form})
+                return render(request, "inventory/reserve_form.html", ctx)
             except Exception as ex:
-                messages.error(request, f"No se pudo reservar: {ex}")
-                ctx = {"form": form}
-                ctx.update(_perm_flags(request.user))
+                _add_unexpected_error(request, ex, public_message="No se pudo reservar")
+                ctx = _ctx_with_perms(request, {"form": form})
                 return render(request, "inventory/reserve_form.html", ctx)
 
             messages.success(
                 request,
-                f"Reserva aplicada. Reservado: {result.new_reserved} | Disponible: {result.new_available}"
+                f"Reserva aplicada. Reservado: {result.new_reserved} | Disponible: {result.new_available}",
             )
             return redirect("item_detail", cd["item"].id)
+        else:
+            _add_form_warning(request, form)
+
     else:
         form = ReserveForm()
 
-    ctx = {"form": form}
-    ctx.update(_perm_flags(request.user))
+    ctx = _ctx_with_perms(request, {"form": form})
     return render(request, "inventory/reserve_form.html", ctx)
 
 
@@ -942,24 +1032,33 @@ def release_create(request):
                     reference=cd.get("reference") or "RELEASE",
                     notes=cd.get("notes") or "",
                 )
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo liberar", ex)
+                ctx = _ctx_with_perms(request, {"form": form})
+                return render(request, "inventory/release_form.html", ctx)
             except Exception as ex:
-                messages.error(request, f"No se pudo liberar: {ex}")
-                ctx = {"form": form}
-                ctx.update(_perm_flags(request.user))
+                _add_unexpected_error(request, ex, public_message="No se pudo liberar")
+                ctx = _ctx_with_perms(request, {"form": form})
                 return render(request, "inventory/release_form.html", ctx)
 
             messages.success(
                 request,
-                f"Liberación aplicada. Reservado: {result.new_reserved} | Disponible: {result.new_available}"
+                f"Liberación aplicada. Reservado: {result.new_reserved} | Disponible: {result.new_available}",
             )
             return redirect("item_detail", cd["item"].id)
+        else:
+            _add_form_warning(request, form)
+
     else:
         form = ReleaseForm()
 
-    ctx = {"form": form}
-    ctx.update(_perm_flags(request.user))
+    ctx = _ctx_with_perms(request, {"form": form})
     return render(request, "inventory/release_form.html", ctx)
 
+
+# ============================================================
+# Reportes
+# ============================================================
 
 @login_required
 def reports_home(request):
@@ -967,9 +1066,10 @@ def reports_home(request):
 
     ctx = {}
     ctx.update(_perm_flags(request.user))
-    ctx["today"] = date.today().isoformat()  # para presets (Hoy)
+    ctx["today"] = date.today().isoformat()
 
     return render(request, "inventory/reports_home.html", ctx)
+
 
 @login_required
 def report_movements(request):
@@ -1002,7 +1102,6 @@ def report_movements(request):
     if show_void != "1":
         qs = qs.filter(is_void=False)
 
-    # ---- DESCARGA CSV (mismos filtros) ----
     if download:
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="report_movements.csv"'
@@ -1012,7 +1111,7 @@ def report_movements(request):
             "item_sku", "item_name",
             "warehouse", "location_code",
             "registered_by",
-            "reference", "notes", "is_void", "void_of"
+            "reference", "notes", "is_void", "void_of",
         ])
 
         for m in qs.iterator(chunk_size=2000):
@@ -1035,7 +1134,6 @@ def report_movements(request):
             ])
         return response
 
-    # ---- VISTA PREVIA (paginada) ----
     paginator = Paginator(qs, 50)
     page_number = request.GET.get("page") or 1
     page = paginator.get_page(page_number)

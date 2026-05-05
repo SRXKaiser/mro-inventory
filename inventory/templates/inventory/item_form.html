@@ -91,10 +91,26 @@
   }
 
   .field-error {
-    margin-top: 0.4rem;
+    margin-top: 0.45rem;
     font-size: 0.82rem;
-    color: #dc2626;
-    font-weight: 600;
+    color: #991b1b;
+    font-weight: 700;
+    background: #fef2f2;
+    padding: 0.45rem 0.65rem;
+    border-radius: 10px;
+    border: 1px solid #fecaca;
+    line-height: 1.4;
+  }
+
+  .error-summary {
+    border-radius: 16px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.95rem 1rem;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(153, 27, 27, 0.08);
+    line-height: 1.5;
   }
 
   .info-strip {
@@ -159,13 +175,7 @@
     color: #334155;
   }
 
-  .error-summary {
-    border-radius: 16px;
-    border: 1px solid #fecaca;
-    background: #fef2f2;
-    color: #991b1b;
-    padding: 0.95rem 1rem;
-  }
+
 
   @media (max-width: 767.98px) {
     .page-hero {
@@ -225,14 +235,11 @@
       <form method="post" novalidate>
         {% csrf_token %}
 
-        {% if form.non_field_errors or form.errors %}
+        {% if form.non_field_errors %}
           <div class="error-summary mb-4">
-            {% if form.non_field_errors %}
-              <div>{{ form.non_field_errors }}</div>
-            {% endif %}
-            {% if form.errors %}
-              <div class="mt-1">{{ form.errors }}</div>
-            {% endif %}
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
           </div>
         {% endif %}
 
@@ -242,7 +249,13 @@
             <div class="field-card">
               <label class="field-label">SKU</label>
               {{ form.sku }}
-              {% if form.sku.errors %}<div class="field-error">{{ form.sku.errors }}</div>{% endif %}
+              {% if form.sku.errors %}
+                <div class="field-error">
+                  {% for error in form.sku.errors %}
+                    <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
 
@@ -250,7 +263,13 @@
             <div class="field-card">
               <label class="field-label">Nombre</label>
               {{ form.name }}
-              {% if form.name.errors %}<div class="field-error">{{ form.name.errors }}</div>{% endif %}
+              {% if form.name.errors %}
+                <div class="field-error">
+                  {% for error in form.name.errors %}
+                    <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
 
@@ -258,7 +277,13 @@
             <div class="field-card">
               <label class="field-label">Descripción</label>
               {{ form.description }}
-              {% if form.description.errors %}<div class="field-error">{{ form.description.errors }}</div>{% endif %}
+              {% if form.description.errors %}
+                <div class="field-error">
+                  {% for error in form.description.errors %}
+                    <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -269,7 +294,13 @@
             <div class="field-card field-card--soft">
               <label class="field-label">Tipo</label>
               {{ form.item_type }}
-              {% if form.item_type.errors %}<div class="field-error">{{ form.item_type.errors }}</div>{% endif %}
+              {% if form.item_type.errors %}
+                <div class="field-error">
+                  {% for error in form.item_type.errors %}
+                    <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
 
@@ -277,7 +308,13 @@
             <div class="field-card field-card--soft">
               <label class="field-label">Criticidad</label>
               {{ form.criticality }}
-              {% if form.criticality.errors %}<div class="field-error">{{ form.criticality.errors }}</div>{% endif %}
+              {% if form.criticality.errors %}
+                <div class="field-error">
+                  {% for error in form.criticality.errors %}
+                    <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
 
@@ -285,7 +322,13 @@
             <div class="field-card field-card--soft">
               <label class="field-label">Unidad</label>
               {{ form.uom }}
-              {% if form.uom.errors %}<div class="field-error">{{ form.uom.errors }}</div>{% endif %}
+              {% if form.uom.errors %}
+                <div class="field-error">
+                  {% for error in form.uom.errors %}
+                    <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
 
@@ -293,7 +336,13 @@
             <div class="field-card field-card--soft">
               <label class="field-label">Stock mínimo</label>
               {{ form.min_stock }}
-              {% if form.min_stock.errors %}<div class="field-error">{{ form.min_stock.errors }}</div>{% endif %}
+              {% if form.min_stock.errors %}
+                <div class="field-error">
+                  {% for error in form.min_stock.errors %}
+                    <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
               <div class="field-help">Usa decimal, por ejemplo: 2.000</div>
             </div>
           </div>
@@ -307,7 +356,13 @@
                   <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Activo</label>
                 </div>
               </div>
-              {% if form.is_active.errors %}<div class="field-error">{{ form.is_active.errors }}</div>{% endif %}
+              {% if form.is_active.errors %}
+                <div class="field-error">
+                  {% for error in form.is_active.errors %}
+                    <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
               <div class="field-help">Desactiva el artículo si ya no debe utilizarse en operación.</div>
             </div>
           </div>
