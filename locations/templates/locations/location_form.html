@@ -29,7 +29,18 @@
     border:1px solid #e7edf5; border-radius:16px; background:#fbfdff; padding:1rem; height:100%;
   }
   .field-label{ display:block; font-size:.9rem; font-weight:700; color:#334155; margin-bottom:.5rem; }
-  .field-error{ margin-top:.4rem; font-size:.82rem; color:#dc2626; font-weight:600; }
+
+  .field-error{
+    margin-top:.45rem;
+    font-size:.82rem;
+    color:#991b1b;
+    font-weight:700;
+    background:#fef2f2;
+    padding:.45rem .65rem;
+    border-radius:10px;
+    border:1px solid #fecaca;
+    line-height:1.4;
+  }
 
   .switch-box{
     display:flex; align-items:center; gap:.7rem; min-height:46px;
@@ -40,8 +51,14 @@
   .switch-box .form-check-label{ margin:0; font-weight:700; color:#334155; }
 
   .error-summary{
-    border-radius:16px; border:1px solid #fecaca; background:#fef2f2;
-    color:#991b1b; padding:.95rem 1rem;
+    border-radius:16px;
+    border:1px solid #fecaca;
+    background:#fef2f2;
+    color:#991b1b;
+    padding:.95rem 1rem;
+    font-weight:700;
+    box-shadow:0 8px 20px rgba(153,27,27,.08);
+    line-height:1.5;
   }
 
   .form-divider{ margin:1.25rem 0; border-top:1px solid #e5e7eb; }
@@ -75,10 +92,11 @@
       <form method="post" novalidate>
         {% csrf_token %}
 
-        {% if form.non_field_errors or form.errors %}
+        {% if form.non_field_errors %}
           <div class="error-summary mb-4">
-            {% if form.non_field_errors %}<div>{{ form.non_field_errors }}</div>{% endif %}
-            {% if form.errors %}<div class="mt-1">{{ form.errors }}</div>{% endif %}
+            {% for error in form.non_field_errors %}
+              <div>• {{ error }}</div>
+            {% endfor %}
           </div>
         {% endif %}
 
@@ -88,7 +106,13 @@
             <div class="field-card">
               <label class="field-label">Almacén</label>
               {{ form.warehouse }}
-              {% if form.warehouse.errors %}<div class="field-error">{{ form.warehouse.errors }}</div>{% endif %}
+              {% if form.warehouse.errors %}
+                <div class="field-error">
+                  {% for error in form.warehouse.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
 
@@ -96,7 +120,13 @@
             <div class="field-card">
               <label class="field-label">Código</label>
               {{ form.code }}
-              {% if form.code.errors %}<div class="field-error">{{ form.code.errors }}</div>{% endif %}
+              {% if form.code.errors %}
+                <div class="field-error">
+                  {% for error in form.code.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
 
@@ -104,7 +134,13 @@
             <div class="field-card">
               <label class="field-label">Nombre</label>
               {{ form.name }}
-              {% if form.name.errors %}<div class="field-error">{{ form.name.errors }}</div>{% endif %}
+              {% if form.name.errors %}
+                <div class="field-error">
+                  {% for error in form.name.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
 
@@ -112,7 +148,13 @@
             <div class="field-card">
               <label class="field-label">Descripción</label>
               {{ form.description }}
-              {% if form.description.errors %}<div class="field-error">{{ form.description.errors }}</div>{% endif %}
+              {% if form.description.errors %}
+                <div class="field-error">
+                  {% for error in form.description.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
 
@@ -125,7 +167,13 @@
                   <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Activo</label>
                 </div>
               </div>
-              {% if form.is_active.errors %}<div class="field-error">{{ form.is_active.errors }}</div>{% endif %}
+              {% if form.is_active.errors %}
+                <div class="field-error">
+                  {% for error in form.is_active.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
         </div>
