@@ -190,6 +190,51 @@
     display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:1rem;
   }
 
+  .field-card {
+    border:1px solid #e7edf5;
+    border-radius:16px;
+    background:#fbfdff;
+    padding:1rem;
+    height:100%;
+  }
+
+  .field-label {
+    display:block;
+    font-size:.9rem;
+    font-weight:700;
+    color:#334155;
+    margin-bottom:.5rem;
+  }
+
+  .field-error {
+    margin-top:0.45rem;
+    font-size:0.82rem;
+    color:#991b1b;
+    font-weight:700;
+    background:#fef2f2;
+    padding:0.45rem 0.65rem;
+    border-radius:10px;
+    border:1px solid #fecaca;
+    line-height:1.4;
+  }
+
+  .error-summary {
+    border-radius:16px;
+    border:1px solid #fecaca;
+    background:#fef2f2;
+    color:#991b1b;
+    padding:0.95rem 1rem;
+    font-weight:700;
+    box-shadow:0 8px 20px rgba(153,27,27,0.08);
+    line-height:1.5;
+  }
+
+  .form-mini {
+    display:flex;
+    flex-direction:column;
+    gap:.85rem;
+  }
+
   .info-note{ color:#64748b; font-size:.84rem; margin-top:.75rem; line-height:1.6; }
 
   .list-group-item small, .list-group-item .text-muted{ line-height:1.5; }
@@ -371,9 +416,65 @@
       <div class="card-header">Reservar</div>
       <div class="card-body">
         {% if can_reserve %}
-          <form method="post" action="{% url 'workorders:reserve' wo.id %}">
+          <form method="post" action="{% url 'workorders:reserve' wo.id %}" class="form-mini" novalidate>
             {% csrf_token %}
-            {{ reserve_form.as_p }}
+
+            {% if reserve_form.non_field_errors %}
+              <div class="error-summary">
+                {% for error in reserve_form.non_field_errors %}
+                  <div>• {{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="field-card">
+              <label class="field-label">Línea</label>
+              {{ reserve_form.line }}
+              {% if reserve_form.line.errors %}
+                <div class="field-error">
+                  {% for error in reserve_form.line.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="field-card">
+              <label class="field-label">Ubicación</label>
+              {{ reserve_form.location }}
+              {% if reserve_form.location.errors %}
+                <div class="field-error">
+                  {% for error in reserve_form.location.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="field-card">
+              <label class="field-label">Cantidad</label>
+              {{ reserve_form.qty }}
+              {% if reserve_form.qty.errors %}
+                <div class="field-error">
+                  {% for error in reserve_form.qty.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="field-card">
+              <label class="field-label">Motivo</label>
+              {{ reserve_form.reason }}
+              {% if reserve_form.reason.errors %}
+                <div class="field-error">
+                  {% for error in reserve_form.reason.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
             <button class="btn btn-ui-primary w-100" type="submit">Reservar</button>
           </form>
           <div class="info-note">
@@ -391,9 +492,77 @@
       <div class="card-header">Issue (Consumo)</div>
       <div class="card-body">
         {% if can_issue %}
-          <form method="post" action="{% url 'workorders:issue' wo.id %}">
+          <form method="post" action="{% url 'workorders:issue' wo.id %}" class="form-mini" novalidate>
             {% csrf_token %}
-            {{ consume_form.as_p }}
+
+            {% if consume_form.non_field_errors %}
+              <div class="error-summary">
+                {% for error in consume_form.non_field_errors %}
+                  <div>• {{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="field-card">
+              <label class="field-label">Artículo</label>
+              {{ consume_form.item }}
+              {% if consume_form.item.errors %}
+                <div class="field-error">
+                  {% for error in consume_form.item.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="field-card">
+              <label class="field-label">Ubicación</label>
+              {{ consume_form.location }}
+              {% if consume_form.location.errors %}
+                <div class="field-error">
+                  {% for error in consume_form.location.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="field-card">
+              <label class="field-label">Cantidad</label>
+              {{ consume_form.qty }}
+              {% if consume_form.qty.errors %}
+                <div class="field-error">
+                  {% for error in consume_form.qty.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="field-card">
+              <label class="field-label">Reserva</label>
+              {{ consume_form.reservation }}
+              {% if consume_form.reservation.errors %}
+                <div class="field-error">
+                  {% for error in consume_form.reservation.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="field-card">
+              <label class="field-label">Notas</label>
+              {{ consume_form.notes }}
+              {% if consume_form.notes.errors %}
+                <div class="field-error">
+                  {% for error in consume_form.notes.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
             <button class="btn btn-ui-danger w-100" type="submit">Registrar Issue</button>
           </form>
           <div class="info-note">
@@ -411,9 +580,65 @@
       <div class="card-header">Return (Devolución)</div>
       <div class="card-body">
         {% if can_return %}
-          <form method="post" action="{% url 'workorders:return_' wo.id %}">
+          <form method="post" action="{% url 'workorders:return_' wo.id %}" class="form-mini" novalidate>
             {% csrf_token %}
-            {{ return_form.as_p }}
+
+            {% if return_form.non_field_errors %}
+              <div class="error-summary">
+                {% for error in return_form.non_field_errors %}
+                  <div>• {{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="field-card">
+              <label class="field-label">Artículo</label>
+              {{ return_form.item }}
+              {% if return_form.item.errors %}
+                <div class="field-error">
+                  {% for error in return_form.item.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="field-card">
+              <label class="field-label">Ubicación</label>
+              {{ return_form.location }}
+              {% if return_form.location.errors %}
+                <div class="field-error">
+                  {% for error in return_form.location.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="field-card">
+              <label class="field-label">Cantidad</label>
+              {{ return_form.qty }}
+              {% if return_form.qty.errors %}
+                <div class="field-error">
+                  {% for error in return_form.qty.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="field-card">
+              <label class="field-label">Notas</label>
+              {{ return_form.notes }}
+              {% if return_form.notes.errors %}
+                <div class="field-error">
+                  {% for error in return_form.notes.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
             <button class="btn btn-ui-success w-100" type="submit">Devolver</button>
           </form>
           <div class="info-note">
@@ -441,7 +666,7 @@
                   <div class="fw-semibold">{{ r.item.sku }} @ {{ r.location }}</div>
                   <div class="text-muted small">{{ r.status }}</div>
                 </div>
-                <span class="badge bg-secondary">{{ r.qty }}</span>
+                <span class="badge bg-secondary">{{ r.quantity }}</span>
               </li>
             {% empty %}
               <li class="list-group-item text-muted">Sin reservas.</li>
@@ -452,14 +677,18 @@
         <div>
           <h6 class="mb-3">Issues</h6>
           <ul class="list-group list-group-flush">
-            {% for m in issue_movements %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <div class="fw-semibold">{{ m.item.sku }} @ {{ m.location }}</div>
-                  <div class="text-muted small">{{ m.created_at|date:"Y-m-d H:i" }}</div>
-                </div>
-                <span class="badge bg-danger">{{ m.qty }}</span>
-              </li>
+            {% for issue in wo.issues.all %}
+              {% for line in issue.lines.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="fw-semibold">{{ line.item.sku }} @ {{ line.location }}</div>
+                    <div class="text-muted small">{{ issue.created_at|date:"Y-m-d H:i" }}</div>
+                  </div>
+                  <span class="badge bg-danger">{{ line.quantity }}</span>
+                </li>
+              {% empty %}
+                <li class="list-group-item text-muted">Sin líneas de consumo.</li>
+              {% endfor %}
             {% empty %}
               <li class="list-group-item text-muted">Sin consumos.</li>
             {% endfor %}
@@ -469,14 +698,18 @@
         <div>
           <h6 class="mb-3">Returns</h6>
           <ul class="list-group list-group-flush">
-            {% for m in return_movements %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <div class="fw-semibold">{{ m.item.sku }} @ {{ m.location }}</div>
-                  <div class="text-muted small">{{ m.created_at|date:"Y-m-d H:i" }}</div>
-                </div>
-                <span class="badge bg-success">{{ m.qty }}</span>
-              </li>
+            {% for ret in wo.returns.all %}
+              {% for line in ret.lines.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="fw-semibold">{{ line.item.sku }} @ {{ line.location }}</div>
+                    <div class="text-muted small">{{ ret.created_at|date:"Y-m-d H:i" }}</div>
+                  </div>
+                  <span class="badge bg-success">{{ line.quantity }}</span>
+                </li>
+              {% empty %}
+                <li class="list-group-item text-muted">Sin líneas de devolución.</li>
+              {% endfor %}
             {% empty %}
               <li class="list-group-item text-muted">Sin devoluciones.</li>
             {% endfor %}
@@ -504,6 +737,16 @@
         helpToggleBtn.textContent = enabled ? "Ocultar ayuda" : "Ayuda";
         localStorage.setItem(storageKey, enabled ? "1" : "0");
     }
+
+    const inputs = document.querySelectorAll("input, select, textarea");
+    inputs.forEach(function (el) {
+        if (el.type === "checkbox") return;
+        if (el.tagName.toLowerCase() === "select") {
+            el.classList.add("form-select");
+        } else {
+            el.classList.add("form-control");
+        }
+    });
 
     if (helpToggleBtn && guideSection) {
         const savedState = localStorage.getItem(storageKey) === "1";

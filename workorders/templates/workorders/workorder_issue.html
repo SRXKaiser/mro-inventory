@@ -193,10 +193,15 @@
   }
 
   .field-error {
-    margin-top: 0.4rem;
+    margin-top: 0.45rem;
     font-size: 0.82rem;
-    color: #dc2626;
-    font-weight: 600;
+    color: #991b1b;
+    font-weight: 700;
+    background: #fef2f2;
+    padding: 0.45rem 0.65rem;
+    border-radius: 10px;
+    border: 1px solid #fecaca;
+    line-height: 1.4;
   }
 
   .field-help {
@@ -211,6 +216,9 @@
     background: #fef2f2;
     color: #991b1b;
     padding: 0.95rem 1rem;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(153, 27, 27, 0.08);
+    line-height: 1.5;
   }
 
   .section-label {
@@ -355,7 +363,9 @@
 
         {% if consume_form.non_field_errors %}
           <div class="error-summary mb-4">
-            {{ consume_form.non_field_errors }}
+            {% for error in consume_form.non_field_errors %}
+              <div>• {{ error }}</div>
+            {% endfor %}
           </div>
         {% endif %}
 
@@ -366,7 +376,11 @@
               <label class="field-label">Item</label>
               {{ consume_form.item }}
               {% if consume_form.item.errors %}
-                <div class="field-error">{{ consume_form.item.errors }}</div>
+                <div class="field-error">
+                  {% for error in consume_form.item.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>
@@ -376,7 +390,11 @@
               <label class="field-label">Ubicación</label>
               {{ consume_form.location }}
               {% if consume_form.location.errors %}
-                <div class="field-error">{{ consume_form.location.errors }}</div>
+                <div class="field-error">
+                  {% for error in consume_form.location.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>
@@ -386,7 +404,11 @@
               <label class="field-label">Cantidad</label>
               {{ consume_form.qty }}
               {% if consume_form.qty.errors %}
-                <div class="field-error">{{ consume_form.qty.errors }}</div>
+                <div class="field-error">
+                  {% for error in consume_form.qty.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>
@@ -396,7 +418,11 @@
               <label class="field-label">Reserva (opcional)</label>
               {{ consume_form.reservation }}
               {% if consume_form.reservation.errors %}
-                <div class="field-error">{{ consume_form.reservation.errors }}</div>
+                <div class="field-error">
+                  {% for error in consume_form.reservation.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
               <div class="field-help">
                 Si eliges una reserva, se descuenta primero de <code>reserved</code> y luego se hace el OUT real.
@@ -409,7 +435,11 @@
               <label class="field-label">Notas (opcional)</label>
               {{ consume_form.notes }}
               {% if consume_form.notes.errors %}
-                <div class="field-error">{{ consume_form.notes.errors }}</div>
+                <div class="field-error">
+                  {% for error in consume_form.notes.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>

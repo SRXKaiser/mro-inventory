@@ -2,42 +2,111 @@
 from __future__ import annotations
 
 from decimal import Decimal
+import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.db.models import Prefetch
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.db import transaction
-from .forms import WorkOrderCreateForm, WorkOrderLineCreateForm
-from inventory.services.stock_service import StockService
-
 from django.views.decorators.http import require_POST
-from workorders.permissions import can_manage_workorders, can_operate_inventory
-from workorders.services.workorder_workflow_service import WorkOrderWorkflowService
-
-from workorders.models import WorkOrder
-from workorders.forms import ReserveForm, ConsumeForm, ReturnForm
-
-from django.contrib import messages
-from django.core.exceptions import ValidationError
-from django.shortcuts import redirect
 
 from inventory.services.stock_service import StockService
-
+from workorders.forms import (
+    WorkOrderCreateForm,
+    WorkOrderLineCreateForm,
+    ReserveForm,
+    ConsumeForm,
+    ReturnForm,
+)
+from workorders.models import WorkOrder
+from workorders.permissions import can_manage_workorders, can_operate_inventory
 from workorders.services.workorder_stock_service import (
     WorkOrderStockService,
     ConsumeLine,
     ReturnLine,
 )
+from workorders.services.workorder_workflow_service import WorkOrderWorkflowService
 
-from .forms import ReserveForm, ConsumeForm, ReturnForm
-from .models import WorkOrder, WorkOrderLine, Reservation, WorkOrderIssue, WorkOrderReturn
 
+logger = logging.getLogger(__name__)
+
+
+# -------------------------
+# Helpers
+# -------------------------
 
 def _svc() -> WorkOrderStockService:
     return WorkOrderStockService(StockService())
+
+
+def _wf() -> WorkOrderWorkflowService:
+    """
+    Importante: el workflow debe usar el servicio de stock de WO,
+    porque cancel() libera reservas, etc.
+    """
+    stock = StockService()
+    wo_stock = WorkOrderStockService(stock)
+    return WorkOrderWorkflowService(wo_stock)
+
+
+def _format_validation_error(ex: ValidationError) -> str:
+    """
+    Django ValidationError puede venir como:
+    - mensaje string
+    - lista ex.messages
+    - dict ex.message_dict
+    """
+    if hasattr(ex, "message_dict") and ex.message_dict:
+        parts = []
+        for field, errors in ex.message_dict.items():
+            label = str(field).replace("_", " ").capitalize()
+
+            if isinstance(errors, (list, tuple)):
+                for error in errors:
+                    parts.append(f"{label}: {error}")
+            else:
+                parts.append(f"{label}: {errors}")
+
+        return " | ".join(parts)
+
+    if hasattr(ex, "messages") and ex.messages:
+        return " | ".join(str(message) for message in ex.messages)
+
+    return str(ex)
+
+
+def _add_form_warning(request, form, message: str = "Revisa los campos marcados antes de continuar."):
+    """
+    Muestra un mensaje general sin imprimir form.errors crudo.
+    Los detalles deben mostrarse en el template campo por campo.
+    """
+    if form.non_field_errors():
+        messages.warning(request, _format_validation_error(ValidationError(form.non_field_errors())))
+    else:
+        messages.warning(request, message)
+
+
+def _add_validation_error(request, prefix: str, ex: ValidationError):
+    messages.error(request, f"{prefix}: {_format_validation_error(ex)}")
+
+
+def _add_unexpected_error(request, ex: Exception, *, public_message: str):
+    """
+    Nunca muestra el detalle técnico de la excepción al usuario.
+    El detalle completo queda registrado en logs del servidor.
+    """
+    logger.exception(public_message, exc_info=ex)
+    messages.error(
+        request,
+        f"{public_message}. Si el problema continúa, revisa el log del servidor o contacta al administrador.",
+    )
+
+
+def _deny(request, msg: str, pk: int):
+    messages.error(request, msg)
+    return redirect("workorders:detail", pk=pk)
 
 
 # -------------------------
@@ -84,19 +153,15 @@ def workorder_detail(request, pk: int):
     can_manage_wo = can_manage_workorders(request.user)
     can_operate_wo = can_operate_inventory(request.user)
 
-    # Reglas por estado (usa EXACTAMENTE tus values)
-    can_manage_wo = can_manage_workorders(request.user)
-    can_operate_wo = can_operate_inventory(request.user)
-
     can_issue = can_operate_wo and wo.status in (
         WorkOrder.Status.APPROVED,
         WorkOrder.Status.IN_PROGRESS,
-        WorkOrder.Status.PAUSED,   # opcional, pero práctico
+        WorkOrder.Status.PAUSED,
     )
 
     can_return = can_operate_wo and wo.status in (
         WorkOrder.Status.IN_PROGRESS,
-        WorkOrder.Status.PAUSED,   # opcional
+        WorkOrder.Status.PAUSED,
         WorkOrder.Status.COMPLETED,
     )
 
@@ -120,8 +185,8 @@ def workorder_detail(request, pk: int):
         "can_issue": can_issue,
         "can_return": can_return,
         "can_reserve": can_reserve,
-        
     })
+
 
 # -------------------------
 # Reservar
@@ -139,7 +204,7 @@ def workorder_reserve(request, pk: int):
 
     form = ReserveForm(request.POST, work_order=wo)
     if not form.is_valid():
-        messages.error(request, "Formulario de reserva inválido.")
+        _add_form_warning(request, form, "Formulario de reserva inválido.")
         return redirect("workorders:detail", pk=pk)
 
     svc = _svc()
@@ -159,9 +224,9 @@ def workorder_reserve(request, pk: int):
         )
         messages.success(request, "Reserva creada correctamente.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo reservar: {ex}")
+        _add_validation_error(request, "No se pudo reservar", ex)
     except Exception as ex:
-        messages.error(request, f"Error inesperado al reservar: {ex}")
+        _add_unexpected_error(request, ex, public_message="No se pudo reservar")
 
     return redirect("workorders:detail", pk=pk)
 
@@ -189,7 +254,8 @@ def workorder_release_reservation(request, pk: int):
     if qty_raw:
         try:
             qty = Decimal(qty_raw)
-        except Exception:
+        except Exception as ex:
+            logger.warning("Cantidad inválida para liberar reserva.", exc_info=ex)
             messages.error(request, "Cantidad inválida para liberar.")
             return redirect("workorders:detail", pk=pk)
 
@@ -204,9 +270,9 @@ def workorder_release_reservation(request, pk: int):
         )
         messages.success(request, "Reserva liberada correctamente.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo liberar: {ex}")
+        _add_validation_error(request, "No se pudo liberar", ex)
     except Exception as ex:
-        messages.error(request, f"Error inesperado al liberar: {ex}")
+        _add_unexpected_error(request, ex, public_message="No se pudo liberar la reserva")
 
     return redirect("workorders:detail", pk=pk)
 
@@ -227,7 +293,7 @@ def workorder_issue(request, pk: int):
 
     form = ConsumeForm(request.POST, work_order=wo)
     if not form.is_valid():
-        messages.error(request, "Formulario de consumo inválido.")
+        _add_form_warning(request, form, "Formulario de consumo inválido.")
         return redirect("workorders:detail", pk=pk)
 
     svc = _svc()
@@ -256,9 +322,9 @@ def workorder_issue(request, pk: int):
         )
         messages.success(request, "Consumo registrado correctamente.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo consumir: {ex}")
+        _add_validation_error(request, "No se pudo consumir", ex)
     except Exception as ex:
-        messages.error(request, f"Error inesperado al consumir: {ex}")
+        _add_unexpected_error(request, ex, public_message="No se pudo registrar el consumo")
 
     return redirect("workorders:detail", pk=pk)
 
@@ -279,7 +345,7 @@ def workorder_return(request, pk: int):
 
     form = ReturnForm(request.POST, work_order=wo)
     if not form.is_valid():
-        messages.error(request, "Formulario de devolución inválido.")
+        _add_form_warning(request, form, "Formulario de devolución inválido.")
         return redirect("workorders:detail", pk=pk)
 
     svc = _svc()
@@ -306,11 +372,12 @@ def workorder_return(request, pk: int):
         )
         messages.success(request, "Devolución registrada correctamente.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo devolver: {ex}")
+        _add_validation_error(request, "No se pudo devolver", ex)
     except Exception as ex:
-        messages.error(request, f"Error inesperado al devolver: {ex}")
+        _add_unexpected_error(request, ex, public_message="No se pudo registrar la devolución")
 
     return redirect("workorders:detail", pk=pk)
+
 
 @login_required
 def workorder_reserve_page(request, pk: int):
@@ -325,25 +392,32 @@ def workorder_issue_page(request, pk: int):
     consume_form = ConsumeForm(work_order=wo)
     return render(request, "workorders/workorder_issue.html", {"wo": wo, "consume_form": consume_form})
 
+
 @login_required
 @transaction.atomic
 def workorder_create(request):
     if request.method == "POST":
         form = WorkOrderCreateForm(request.POST)
         if form.is_valid():
-            wo = form.save(commit=False)
-            wo.requested_by = request.user
+            try:
+                wo = form.save(commit=False)
+                wo.requested_by = request.user
 
-            # si no mandan code, autogenera
-            if not (wo.code or "").strip():
-                wo.code = f"WO-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+                # si no mandan code, autogenera
+                if not (wo.code or "").strip():
+                    wo.code = f"WO-{timezone.now().strftime('%Y%m%d%H%M%S')}"
 
-            wo.status = WorkOrder.Status.DRAFT
-            wo.save()
-            messages.success(request, "Work Order creada.")
-            return redirect("workorders:detail", pk=wo.id)
+                wo.status = WorkOrder.Status.DRAFT
+                wo.save()
+                messages.success(request, "Work Order creada.")
+                return redirect("workorders:detail", pk=wo.id)
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo crear la Work Order", ex)
+            except Exception as ex:
+                _add_unexpected_error(request, ex, public_message="No se pudo crear la Work Order")
+        else:
+            _add_form_warning(request, form, "Revisa el formulario.")
 
-        messages.error(request, "Revisa el formulario.")
     else:
         form = WorkOrderCreateForm()
 
@@ -362,57 +436,23 @@ def workorder_line_create(request, pk: int):
     if request.method == "POST":
         form = WorkOrderLineCreateForm(request.POST)
         if form.is_valid():
-            line = form.save(commit=False)
-            line.work_order = wo
-            line.save()
-            messages.success(request, "Línea agregada.")
-            return redirect("workorders:detail", pk=pk)
+            try:
+                line = form.save(commit=False)
+                line.work_order = wo
+                line.save()
+                messages.success(request, "Línea agregada.")
+                return redirect("workorders:detail", pk=pk)
+            except ValidationError as ex:
+                _add_validation_error(request, "No se pudo agregar la línea", ex)
+            except Exception as ex:
+                _add_unexpected_error(request, ex, public_message="No se pudo agregar la línea")
+        else:
+            _add_form_warning(request, form, "Revisa el formulario.")
 
-        messages.error(request, "Revisa el formulario.")
     else:
         form = WorkOrderLineCreateForm()
 
     return render(request, "workorders/workorder_line_create.html", {"wo": wo, "form": form})
-
-# -------------------------
-# Helpers
-# -------------------------
-def _format_validation_error(ex: ValidationError) -> str:
-    """
-    Django ValidationError puede venir como:
-    - mensaje string
-    - lista ex.messages
-    - dict ex.message_dict
-    """
-    if hasattr(ex, "message_dict") and ex.message_dict:
-        parts = []
-        for k, msgs in ex.message_dict.items():
-            if isinstance(msgs, (list, tuple)):
-                for m in msgs:
-                    parts.append(f"{k}: {m}")
-            else:
-                parts.append(f"{k}: {msgs}")
-        return " | ".join(parts)
-
-    if hasattr(ex, "messages") and ex.messages:
-        return " | ".join(ex.messages)
-
-    return str(ex)
-
-
-def _wf() -> WorkOrderWorkflowService:
-    """
-    Importante: el workflow debe usar el servicio de stock de WO,
-    porque cancel() libera reservas, etc.
-    """
-    stock = StockService()
-    wo_stock = WorkOrderStockService(stock)
-    return WorkOrderWorkflowService(wo_stock)
-
-
-def _deny(request, msg: str, pk: int):
-    messages.error(request, msg)
-    return redirect("workorders:detail", pk=pk)
 
 
 # -------------------------
@@ -428,9 +468,9 @@ def workorder_approve(request, pk: int):
         _wf().approve(work_order_id=pk, user=request.user)
         messages.success(request, "Work Order aprobada.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo aprobar: {_format_validation_error(ex)}")
+        _add_validation_error(request, "No se pudo aprobar", ex)
     except Exception as ex:
-        messages.error(request, f"Error inesperado al aprobar: {ex}")
+        _add_unexpected_error(request, ex, public_message="No se pudo aprobar la Work Order")
 
     return redirect("workorders:detail", pk=pk)
 
@@ -448,9 +488,9 @@ def workorder_complete(request, pk: int):
         _wf().complete(work_order_id=pk, user=request.user)
         messages.success(request, "Work Order completada.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo completar: {_format_validation_error(ex)}")
+        _add_validation_error(request, "No se pudo completar", ex)
     except Exception as ex:
-        messages.error(request, f"Error inesperado al completar: {ex}")
+        _add_unexpected_error(request, ex, public_message="No se pudo completar la Work Order")
 
     return redirect("workorders:detail", pk=pk)
 
@@ -468,9 +508,9 @@ def workorder_close(request, pk: int):
         _wf().close(work_order_id=pk, user=request.user)
         messages.success(request, "Work Order cerrada.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo cerrar: {_format_validation_error(ex)}")
+        _add_validation_error(request, "No se pudo cerrar", ex)
     except Exception as ex:
-        messages.error(request, f"Error inesperado al cerrar: {ex}")
+        _add_unexpected_error(request, ex, public_message="No se pudo cerrar la Work Order")
 
     return redirect("workorders:detail", pk=pk)
 
@@ -490,9 +530,9 @@ def workorder_cancel(request, pk: int):
         _wf().cancel(work_order_id=pk, user=request.user, reason=reason)
         messages.success(request, "Work Order cancelada. Reservas liberadas.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo cancelar: {_format_validation_error(ex)}")
+        _add_validation_error(request, "No se pudo cancelar", ex)
     except Exception as ex:
-        messages.error(request, f"Error inesperado al cancelar: {ex}")
+        _add_unexpected_error(request, ex, public_message="No se pudo cancelar la Work Order")
 
     return redirect("workorders:detail", pk=pk)
 
@@ -512,9 +552,9 @@ def workorder_pause(request, pk: int):
         _wf().pause(work_order_id=pk, user=request.user, reason=reason)
         messages.success(request, "Work Order pausada.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo pausar: {_format_validation_error(ex)}")
+        _add_validation_error(request, "No se pudo pausar", ex)
     except Exception as ex:
-        messages.error(request, f"Error inesperado al pausar: {ex}")
+        _add_unexpected_error(request, ex, public_message="No se pudo pausar la Work Order")
 
     return redirect("workorders:detail", pk=pk)
 
@@ -532,9 +572,8 @@ def workorder_resume(request, pk: int):
         _wf().resume(work_order_id=pk, user=request.user)
         messages.success(request, "Work Order reanudada.")
     except ValidationError as ex:
-        messages.error(request, f"No se pudo reanudar: {_format_validation_error(ex)}")
+        _add_validation_error(request, "No se pudo reanudar", ex)
     except Exception as ex:
-        messages.error(request, f"Error inesperado al reanudar: {ex}")
+        _add_unexpected_error(request, ex, public_message="No se pudo reanudar la Work Order")
 
     return redirect("workorders:detail", pk=pk)
-

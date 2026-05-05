@@ -37,38 +37,17 @@
     color: #fff;
     border-color: #2563eb;
   }
-  .btn-ui-primary:hover,
-  .btn-ui-primary:focus {
-    background: linear-gradient(135deg, #1d4ed8, #2563eb);
-    color: #fff;
-    border-color: #1d4ed8;
-    transform: translateY(-1px);
-  }
 
   .btn-ui-secondary {
     background: linear-gradient(135deg, #22c1e6, #1fb6d9);
     color: #0f172a;
     border-color: #22c1e6;
   }
-  .btn-ui-secondary:hover,
-  .btn-ui-secondary:focus {
-    background: linear-gradient(135deg, #12b5db, #0ea5c6);
-    color: #0f172a;
-    border-color: #0ea5c6;
-    transform: translateY(-1px);
-  }
 
   .btn-ui-neutral {
     background: linear-gradient(135deg, #f8fafc, #e2e8f0);
     color: #475569;
     border-color: #cbd5e1;
-  }
-  .btn-ui-neutral:hover,
-  .btn-ui-neutral:focus {
-    background: linear-gradient(135deg, #eef2f7, #dbe4ee);
-    color: #334155;
-    border-color: #b8c5d3;
-    transform: translateY(-1px);
   }
 
   .guide-block,
@@ -79,7 +58,10 @@
   .form-card .card-header,
   .guide-block .card-header{
     background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
-    border-bottom:1px solid #dbe3ee; padding:1rem 1.15rem; font-weight:800; color:#0f172a;
+    border-bottom:1px solid #dbe3ee;
+    padding:1rem 1.15rem;
+    font-weight:800;
+    color:#0f172a;
   }
 
   .form-card .card-body,
@@ -99,59 +81,60 @@
     border-radius:16px;
     background:#fbfdff;
     padding:1rem;
-    height:100%;
   }
 
   .guide-title{
     font-size:.82rem;
     font-weight:800;
     text-transform:uppercase;
-    letter-spacing:.05em;
     color:#64748b;
-    margin-bottom:.35rem;
   }
 
   .guide-text{
     color:#0f172a;
     font-weight:600;
-    line-height:1.55;
     font-size:.93rem;
   }
 
-  .section-label{
-    font-size:.86rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
-    color:#64748b; margin-bottom:.95rem;
-  }
-
   .field-card{
-    border:1px solid #e7edf5; border-radius:16px; background:#fbfdff; padding:1rem; height:100%;
+    border:1px solid #e7edf5;
+    border-radius:16px;
+    background:#fbfdff;
+    padding:1rem;
   }
 
   .field-card--soft{ background:linear-gradient(180deg,#fff 0%,#f8fafc 100%); }
 
   .field-label{
-    display:block; font-size:.9rem; font-weight:700; color:#334155; margin-bottom:.5rem;
+    font-size:.9rem;
+    font-weight:700;
+    color:#334155;
   }
 
-  .field-error{ margin-top:.4rem; font-size:.82rem; color:#dc2626; font-weight:600; }
+  /* 🔥 CORRECCIÓN CLAVE */
+  .field-error{
+    margin-top:.45rem;
+    font-size:.82rem;
+    color:#991b1b;
+    font-weight:700;
+    background:#fef2f2;
+    padding:.45rem .65rem;
+    border-radius:10px;
+    border:1px solid #fecaca;
+  }
 
   .error-summary{
-    border-radius:16px; border:1px solid #fecaca; background:#fef2f2;
-    color:#991b1b; padding:.95rem 1rem;
+    border-radius:16px;
+    border:1px solid #fecaca;
+    background:#fef2f2;
+    color:#991b1b;
+    padding:.95rem 1rem;
+    font-weight:700;
   }
 
   .form-divider{ margin:1.25rem 0; border-top:1px solid #e5e7eb; }
-  .sticky-actions{ display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; }
+  .sticky-actions{ display:flex; gap:.75rem; }
 
-  @media (max-width:1199.98px){
-    .guide-grid{ grid-template-columns:1fr; }
-  }
-
-  @media (max-width:767.98px){
-    .page-hero{ flex-direction:column; align-items:stretch; }
-    .page-title{ font-size:1.6rem; }
-    .page-hero .btn, .sticky-actions .btn{ width:100%; }
-  }
 </style>
 {% endblock %}
 
@@ -165,42 +148,8 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-      <button type="button"
-              class="btn btn-ui-secondary help-toggle-btn"
-              id="helpToggleBtn"
-              aria-expanded="false"
-              aria-controls="guideBlock">
-        Ayuda
-      </button>
+      <button type="button" class="btn btn-ui-secondary" id="helpToggleBtn">Ayuda</button>
       <a class="btn btn-ui-neutral" href="{% url 'workorders:detail' wo.id %}">Volver</a>
-    </div>
-  </section>
-
-  <section class="card shadow-sm guide-block" id="guideBlock">
-    <div class="card-header">Cómo funciona una reserva</div>
-    <div class="card-body">
-      <div class="guide-grid">
-        <div class="guide-box">
-          <div class="guide-title">Reserva lógica</div>
-          <div class="guide-text">
-            Reservar significa apartar stock para esta OT sin generar todavía una salida real de almacén.
-          </div>
-        </div>
-
-        <div class="guide-box">
-          <div class="guide-title">Ubicación y línea</div>
-          <div class="guide-text">
-            La reserva debe quedar ligada a la línea correcta y a la ubicación real para conservar coherencia operativa.
-          </div>
-        </div>
-
-        <div class="guide-box">
-          <div class="guide-title">Siguiente paso</div>
-          <div class="guide-text">
-            Cuando el material se use realmente, la operación correcta ya no es otra reserva, sino un <b>Issue</b>.
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -214,33 +163,43 @@
     <div class="card-header">Crear reserva</div>
 
     <div class="card-body">
-      <form method="post" action="{% url 'workorders:reserve' wo.id %}" novalidate>
+      <form method="post" novalidate>
         {% csrf_token %}
 
         {% if reserve_form.non_field_errors %}
           <div class="error-summary mb-4">
-            {{ reserve_form.non_field_errors }}
+            {% for e in reserve_form.non_field_errors %}
+              <div>• {{ e }}</div>
+            {% endfor %}
           </div>
         {% endif %}
 
-        <div class="section-label">Datos de la reserva</div>
         <div class="row g-3">
+
           <div class="col-md-12">
             <div class="field-card field-card--soft">
-              <label class="field-label">Línea (Item)</label>
+              <label class="field-label">Línea</label>
               {{ reserve_form.line }}
               {% if reserve_form.line.errors %}
-                <div class="field-error">{{ reserve_form.line.errors }}</div>
+                <div class="field-error">
+                  {% for e in reserve_form.line.errors %}
+                    <div>• {{ e }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>
 
           <div class="col-md-6">
-            <div class="field-card field-card--soft">
+            <div class="field-card">
               <label class="field-label">Ubicación</label>
               {{ reserve_form.location }}
               {% if reserve_form.location.errors %}
-                <div class="field-error">{{ reserve_form.location.errors }}</div>
+                <div class="field-error">
+                  {% for e in reserve_form.location.errors %}
+                    <div>• {{ e }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>
@@ -250,20 +209,29 @@
               <label class="field-label">Cantidad</label>
               {{ reserve_form.qty }}
               {% if reserve_form.qty.errors %}
-                <div class="field-error">{{ reserve_form.qty.errors }}</div>
+                <div class="field-error">
+                  {% for e in reserve_form.qty.errors %}
+                    <div>• {{ e }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>
 
           <div class="col-md-12">
             <div class="field-card">
-              <label class="field-label">Motivo (opcional)</label>
+              <label class="field-label">Motivo</label>
               {{ reserve_form.reason }}
               {% if reserve_form.reason.errors %}
-                <div class="field-error">{{ reserve_form.reason.errors }}</div>
+                <div class="field-error">
+                  {% for e in reserve_form.reason.errors %}
+                    <div>• {{ e }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>
+
         </div>
 
         <div class="form-divider"></div>
@@ -272,45 +240,10 @@
           <button class="btn btn-ui-primary" type="submit">Reservar</button>
           <a class="btn btn-ui-neutral" href="{% url 'workorders:detail' wo.id %}">Cancelar</a>
         </div>
+
       </form>
     </div>
   </section>
 
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-(function () {
-    const storageKey = "modo_para_retrasados";
-    const helpToggleBtn = document.getElementById("helpToggleBtn");
-    const guideBlock = document.getElementById("guideBlock");
-
-    function modoParaRetrasados(enabled) {
-        if (!helpToggleBtn || !guideBlock) return;
-
-        guideBlock.classList.toggle("guide-visible", enabled);
-        helpToggleBtn.setAttribute("aria-expanded", enabled ? "true" : "false");
-        helpToggleBtn.textContent = enabled ? "Ocultar ayuda" : "Ayuda";
-        localStorage.setItem(storageKey, enabled ? "1" : "0");
-    }
-
-    const inputs = document.querySelectorAll("input, select, textarea");
-    inputs.forEach(function (el) {
-        if (el.type === "checkbox") return;
-        if (el.tagName.toLowerCase() === "select") el.classList.add("form-select");
-        else el.classList.add("form-control");
-    });
-
-    if (helpToggleBtn && guideBlock) {
-        const savedState = localStorage.getItem(storageKey) === "1";
-        modoParaRetrasados(savedState);
-
-        helpToggleBtn.addEventListener("click", function () {
-            const isVisible = guideBlock.classList.contains("guide-visible");
-            modoParaRetrasados(!isVisible);
-        });
-    }
-})();
-</script>
 {% endblock %}

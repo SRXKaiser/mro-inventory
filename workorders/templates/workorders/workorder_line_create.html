@@ -192,10 +192,15 @@
   }
 
   .field-error {
-    margin-top: 0.4rem;
+    margin-top: 0.45rem;
     font-size: 0.82rem;
-    color: #dc2626;
-    font-weight: 600;
+    color: #991b1b;
+    font-weight: 700;
+    background: #fef2f2;
+    padding: 0.45rem 0.65rem;
+    border-radius: 10px;
+    border: 1px solid #fecaca;
+    line-height: 1.4;
   }
 
   .field-help {
@@ -211,6 +216,9 @@
     background: #fef2f2;
     color: #991b1b;
     padding: 0.95rem 1rem;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(153, 27, 27, 0.08);
+    line-height: 1.5;
   }
 
   .form-divider {
@@ -315,7 +323,9 @@
 
         {% if form.non_field_errors %}
           <div class="error-summary mb-4">
-            {{ form.non_field_errors }}
+            {% for error in form.non_field_errors %}
+              <div>• {{ error }}</div>
+            {% endfor %}
           </div>
         {% endif %}
 
@@ -326,7 +336,11 @@
               <label class="field-label">Item</label>
               {{ form.item }}
               {% if form.item.errors %}
-                <div class="field-error">{{ form.item.errors }}</div>
+                <div class="field-error">
+                  {% for error in form.item.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
               <div class="field-help">
                 Selecciona el artículo MRO que será requerido por esta orden de trabajo.
@@ -339,7 +353,11 @@
               <label class="field-label">Cantidad requerida</label>
               {{ form.qty_required }}
               {% if form.qty_required.errors %}
-                <div class="field-error">{{ form.qty_required.errors }}</div>
+                <div class="field-error">
+                  {% for error in form.qty_required.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
               <div class="field-help">
                 Cantidad planeada para la ejecución de la OT.
@@ -353,7 +371,11 @@
               <label class="field-label">Unidad</label>
               {{ form.uom }}
               {% if form.uom.errors %}
-                <div class="field-error">{{ form.uom.errors }}</div>
+                <div class="field-error">
+                  {% for error in form.uom.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>
@@ -365,7 +387,11 @@
               <label class="field-label">Notas</label>
               {{ form.notes }}
               {% if form.notes.errors %}
-                <div class="field-error">{{ form.notes.errors }}</div>
+                <div class="field-error">
+                  {% for error in form.notes.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>

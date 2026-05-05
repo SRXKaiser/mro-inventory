@@ -183,10 +183,15 @@
   }
 
   .field-error {
-    margin-top: 0.4rem;
+    margin-top: 0.45rem;
     font-size: 0.82rem;
-    color: #dc2626;
-    font-weight: 600;
+    color: #991b1b;
+    font-weight: 700;
+    background: #fef2f2;
+    padding: 0.45rem 0.65rem;
+    border-radius: 10px;
+    border: 1px solid #fecaca;
+    line-height: 1.4;
   }
 
   .field-help {
@@ -202,6 +207,9 @@
     background: #fef2f2;
     color: #991b1b;
     padding: 0.95rem 1rem;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(153, 27, 27, 0.08);
+    line-height: 1.5;
   }
 
   .form-divider {
@@ -306,7 +314,9 @@
 
         {% if form.non_field_errors %}
           <div class="error-summary mb-4">
-            {{ form.non_field_errors }}
+            {% for error in form.non_field_errors %}
+              <div>• {{ error }}</div>
+            {% endfor %}
           </div>
         {% endif %}
 
@@ -317,7 +327,11 @@
               <label class="field-label">Código</label>
               {{ form.code }}
               {% if form.code.errors %}
-                <div class="field-error">{{ form.code.errors }}</div>
+                <div class="field-error">
+                  {% for error in form.code.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
               <div class="field-help">
                 Identificador único de la OT para seguimiento, reservas, issue y cierre.
@@ -330,7 +344,11 @@
               <label class="field-label">Prioridad</label>
               {{ form.priority }}
               {% if form.priority.errors %}
-                <div class="field-error">{{ form.priority.errors }}</div>
+                <div class="field-error">
+                  {% for error in form.priority.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>
@@ -340,59 +358,31 @@
               <label class="field-label">Asignado a</label>
               {{ form.assigned_to }}
               {% if form.assigned_to.errors %}
-                <div class="field-error">{{ form.assigned_to.errors }}</div>
+                <div class="field-error">
+                  {% for error in form.assigned_to.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
           </div>
 
           <div class="col-md-6">
             <div class="field-card">
-              <label class="field-label">Fecha requerida</label>
-              {{ form.required_date }}
-              {% if form.required_date.errors %}
-                <div class="field-error">{{ form.required_date.errors }}</div>
-              {% endif %}
-            </div>
-          </div>
-
-          <div class="col-12">
-            <div class="field-card">
-              <label class="field-label">Descripción</label>
-              {{ form.description }}
-              {% if form.description.errors %}
-                <div class="field-error">{{ form.description.errors }}</div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="form-divider"></div>
-
-        <div class="section-label">Configuración operativa</div>
-        <div class="row g-3">
-          {% if form.status %}
-          <div class="col-md-4">
-            <div class="field-card field-card--soft">
-              <label class="field-label">Status</label>
-              {{ form.status }}
-              {% if form.status.errors %}
-                <div class="field-error">{{ form.status.errors }}</div>
-              {% endif %}
-            </div>
-          </div>
-          {% endif %}
-
-          {% if form.notes %}
-          <div class="col-md-8">
-            <div class="field-card">
               <label class="field-label">Notas internas</label>
               {{ form.notes }}
               {% if form.notes.errors %}
-                <div class="field-error">{{ form.notes.errors }}</div>
+                <div class="field-error">
+                  {% for error in form.notes.errors %}
+                    <div>• {{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
+              <div class="field-help">
+                Describe el contexto, alcance o instrucciones relevantes para la orden de trabajo.
+              </div>
             </div>
           </div>
-          {% endif %}
         </div>
 
         <div class="form-divider"></div>
