@@ -3,7 +3,7 @@ from __future__ import annotations
 
 class AuditContextMiddleware:
     """
-    Guarda el contexto mínimo de la request para que tus services puedan auditar:
+    Guarda el contexto minimo de la request para que los servicios puedan auditar:
     request.audit_ctx.ip_address
     request.audit_ctx.user_agent
     """

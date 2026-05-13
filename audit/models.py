@@ -6,14 +6,7 @@ from django.utils import timezone
 
 
 class AuditLog(models.Model):
-    """
-    Bitácora de auditoría (forense):
-    - Que paso (event_type)
-    - Quien lo hizo (actor)
-    - A que le pego (entity_type/entity_id)
-    - Antes / Despues (JSON)
-    - Contexto (ip, user_agent, metadata)
-    """
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     event_type = models.CharField(max_length=80)
