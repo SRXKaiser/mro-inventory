@@ -173,21 +173,33 @@ def dashboard(request):
         snap_qs
         .select_related("item", "location", "location__warehouse")
         .annotate(
-            reserved0=Coalesce("reserved", Value(Decimal("0.000")), output_field=DEC_QTY),
+            reserved0=Coalesce(
+                "reserved",
+                Value(Decimal("0.000")),
+                output_field=DEC_QTY,
+            ),
         )
         .annotate(
-            available=ExpressionWrapper(F("on_hand") - F("reserved0"), output_field=DEC_QTY)
+            available_calc=ExpressionWrapper(
+                F("on_hand") - F("reserved0"),
+                output_field=DEC_QTY,
+            )
         )
-        .filter(on_hand__lte=F("item__min_stock"))
+        .filter(available_calc__lte=F("item__min_stock"))
         .annotate(
             severity=Case(
-                When(available__lte=0, then=Value(3)),
+                When(available_calc__lte=0, then=Value(3)),
                 When(reserved0__gt=0, then=Value(2)),
                 default=Value(1),
                 output_field=IntegerField(),
             )
         )
-        .order_by("-severity", "item__sku", "location__warehouse__code", "location__code")
+        .order_by(
+            "-severity",
+            "item__sku",
+            "location__warehouse__code",
+            "location__code",
+        )
     )
 
     kpi_critical_count = low_stock.filter(severity=3).count()
